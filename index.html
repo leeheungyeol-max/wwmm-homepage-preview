@@ -58,6 +58,101 @@
       letter-spacing: 0;
     }
 
+    body.staging-locked {
+      overflow: hidden;
+    }
+
+    .staging-gate {
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--navy);
+      color: #fff;
+    }
+
+    body.staging-locked .staging-gate {
+      display: flex;
+    }
+
+    .staging-gate-panel {
+      width: min(100%, 460px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: clamp(28px, 6vw, 46px);
+      background: rgba(1, 28, 55, 0.96);
+    }
+
+    .staging-gate-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 42px;
+    }
+
+    .staging-gate-brand img {
+      width: 148px;
+      height: auto;
+    }
+
+    .staging-gate h1 {
+      margin: 0 0 12px;
+      font-size: clamp(34px, 7vw, 54px);
+      line-height: 0.95;
+      color: var(--gold);
+      letter-spacing: 0;
+    }
+
+    .staging-gate p {
+      margin: 0 0 28px;
+      color: rgba(255, 255, 255, 0.74);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .staging-gate label {
+      display: grid;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.72);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .staging-gate input {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      padding: 15px 16px;
+      outline: none;
+    }
+
+    .staging-gate button {
+      width: 100%;
+      margin-top: 16px;
+      border: 1px solid var(--gold);
+      background: var(--gold);
+      color: var(--navy);
+      padding: 15px 18px;
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+    }
+
+    .staging-gate-status {
+      min-height: 22px;
+      margin-top: 14px;
+      color: #f3b7b7;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
     img,
     video {
       display: block;
@@ -1550,6 +1645,22 @@
     </div>
   </footer>
 
+  <div class="staging-gate" id="stagingGate" aria-live="polite">
+    <form class="staging-gate-panel" id="stagingGateForm">
+      <div class="staging-gate-brand">
+        <img src="assets/images/wwmm_w.png" alt="ww'mm">
+      </div>
+      <h1>Staging Access</h1>
+      <p>검토용 ww'mm staging 사이트입니다. 공유받은 비밀번호를 입력하면 사이트를 확인할 수 있습니다.</p>
+      <label for="stagingPassword">
+        Password
+        <input id="stagingPassword" name="password" type="password" autocomplete="current-password" required>
+      </label>
+      <button type="submit">Enter Staging</button>
+      <div class="staging-gate-status" id="stagingGateStatus"></div>
+    </form>
+  </div>
+
   <script>
     const header = document.getElementById("siteHeader");
     const menuToggle = document.getElementById("menuToggle");
@@ -1565,6 +1676,57 @@
     const formStatus = document.getElementById("formStatus");
     const submitConsultation = document.getElementById("submitConsultation");
     const fileInputs = consultationForm.querySelectorAll("input[type='file']");
+    const stagingGate = document.getElementById("stagingGate");
+    const stagingGateForm = document.getElementById("stagingGateForm");
+    const stagingGateStatus = document.getElementById("stagingGateStatus");
+
+    function initStagingAccessGate() {
+      if (window.location.hostname !== "staging.wwmm.co") {
+        return;
+      }
+
+      const storedAccess = Number(localStorage.getItem("wwmmStagingAccessExpiresAt") || 0);
+      if (storedAccess > Date.now()) {
+        return;
+      }
+
+      document.body.classList.add("staging-locked");
+      stagingGate.removeAttribute("hidden");
+
+      stagingGateForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        stagingGateStatus.textContent = "확인 중입니다.";
+        const submitButton = stagingGateForm.querySelector("button");
+        submitButton.disabled = true;
+
+        try {
+          const response = await fetch("/api/staging-access", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              password: document.getElementById("stagingPassword").value
+            })
+          });
+          const result = await response.json();
+
+          if (!response.ok || !result.ok) {
+            throw new Error(result.error || "비밀번호를 확인하지 못했습니다.");
+          }
+
+          localStorage.setItem("wwmmStagingAccessExpiresAt", String(result.expiresAt));
+          document.body.classList.remove("staging-locked");
+          stagingGate.setAttribute("hidden", "");
+        } catch (error) {
+          stagingGateStatus.textContent = "비밀번호가 맞지 않거나 설정이 완료되지 않았습니다.";
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+    }
+
+    initStagingAccessGate();
 
     function syncHeader() {
       header.classList.toggle("scrolled", window.scrollY > 24);
