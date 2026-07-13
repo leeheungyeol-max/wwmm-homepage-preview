@@ -1,0 +1,12 @@
+{
+  "name": "wwmm-web-page",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "check": "node --check api/reservations.js && node --check api/admin-login.js && node --check api/admin-reservations.js && node --check api/update-reservation.js && node --check api/admin-photo-url.js && node --check api/save-reply.js && node --check api/send-reply-sms.js && node --check api/analytics.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

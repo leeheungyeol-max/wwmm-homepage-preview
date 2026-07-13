@@ -1,0 +1,2184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ww'mm Admin</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    :root {
+      --navy: #011c37;
+      --white: #fafbfc;
+      --gold: #caaa68;
+      --mist: #e7edf2;
+      --ink: #161c20;
+      --muted: #66717d;
+      --line: rgba(1, 28, 55, 0.14);
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f6f8;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .admin-shell {
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow-x: hidden;
+    }
+
+    .sidebar {
+      background: var(--navy);
+      color: #fff;
+      padding: clamp(28px, 5vw, 62px) clamp(20px, 6vw, 82px) 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+    }
+
+    .brand {
+      display: grid;
+      gap: 20px;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: clamp(18px, 3vw, 34px);
+      min-width: 0;
+    }
+
+    .brand-wordmark {
+      width: clamp(190px, 29vw, 390px);
+      min-width: 0;
+      flex: 0 0 auto;
+    }
+
+    .brand-wordmark img {
+      width: 100%;
+      height: auto;
+    }
+
+    .brand-current {
+      color: var(--gold);
+      font-size: clamp(42px, 6.5vw, 86px);
+      line-height: 0.92;
+      font-weight: 700;
+      white-space: nowrap;
+      transform: translateY(0.08em);
+      border-bottom: 0.055em solid var(--gold);
+      padding-bottom: 0.015em;
+    }
+
+    .sidebar p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .admin-nav {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .nav-button {
+      width: 100%;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.78);
+      padding: 0 14px;
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+    }
+
+    .nav-button.active {
+      border-color: rgba(202, 170, 104, 0.78);
+      color: var(--gold);
+      background: rgba(202, 170, 104, 0.1);
+    }
+
+    .admin-header-tools {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .sidebar .button.ghost {
+      border-color: rgba(255, 255, 255, 0.42);
+      color: #fff;
+    }
+
+    .main {
+      padding: 34px clamp(20px, 4vw, 56px) 56px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .page-heading {
+      display: grid;
+      gap: 8px;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      color: var(--navy);
+      font-size: clamp(24px, 3vw, 38px);
+    }
+
+    .page-subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .button {
+      min-height: 42px;
+      border: 1px solid var(--navy);
+      background: var(--navy);
+      color: #fff;
+      padding: 0 16px;
+      font-size: 13px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .button.ghost {
+      background: transparent;
+      color: var(--navy);
+    }
+
+    .login-panel {
+      width: min(100%, 440px);
+      margin: 12vh auto;
+      padding: 34px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .login-panel h1 {
+      margin: 0 0 22px;
+      color: var(--navy);
+      font-size: 30px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .field label {
+      color: var(--navy);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .field input,
+    .field textarea,
+    .filters input,
+    .filters select,
+    .status-select {
+      width: 100%;
+      border: 1px solid rgba(1, 28, 55, 0.18);
+      background: #fff;
+      color: var(--ink);
+      padding: 12px;
+      outline: none;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 180px 150px;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+      align-items: center;
+      gap: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 18px 18px 16px;
+      box-shadow: 0 16px 34px rgba(1, 28, 55, 0.05);
+    }
+
+    button.stat {
+      width: 100%;
+      color: inherit;
+      text-align: inherit;
+    }
+
+    button.stat:hover,
+    button.stat:focus-visible {
+      border-color: rgba(0, 126, 255, 0.56);
+      outline: none;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      min-width: 0;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 0;
+      color: var(--navy);
+      font-size: 28px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat small {
+      display: block;
+      margin-top: 0;
+      color: var(--gold);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      text-align: right;
+      min-width: 0;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .dashboard-panel {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 18px;
+      box-shadow: 0 16px 34px rgba(1, 28, 55, 0.05);
+    }
+
+    .dashboard-panel h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      color: var(--navy);
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .dashboard-panel h3::before {
+      content: "";
+      width: 28px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    .dashboard-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .analytics-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .visitor-panel {
+      border: 1px solid var(--line);
+      background: var(--navy);
+      color: #fff;
+      padding: 22px;
+      box-shadow: 0 20px 42px rgba(1, 28, 55, 0.16);
+    }
+
+    .visitor-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .visitor-head span {
+      display: block;
+      color: rgba(255, 255, 255, 0.64);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .visitor-head strong {
+      display: block;
+      margin-top: 6px;
+      color: #fff;
+      font-size: clamp(34px, 4vw, 54px);
+      line-height: 1;
+    }
+
+    .visitor-head p {
+      color: rgba(255, 255, 255, 0.72);
+      margin: 0;
+      line-height: 1.65;
+    }
+
+    .range-control {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .range-button {
+      min-height: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.74);
+      padding: 0 9px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .range-button.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(202, 170, 104, 0.12);
+    }
+
+    .line-chart {
+      width: 100%;
+      height: 250px;
+      display: block;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+      background-size: 100% 25%, 12.5% 100%;
+    }
+
+    .line-axis {
+      stroke: rgba(255, 255, 255, 0.16);
+      stroke-width: 1;
+    }
+
+    .line-path {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .line-area {
+      fill: rgba(202, 170, 104, 0.16);
+    }
+
+    .line-dot {
+      fill: var(--gold);
+      stroke: var(--navy);
+      stroke-width: 2;
+    }
+
+    .line-label {
+      fill: rgba(255, 255, 255, 0.6);
+      font-size: 11px;
+    }
+
+    .chart-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .chart-row {
+      display: grid;
+      gap: 7px;
+    }
+
+    .chart-row-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--navy);
+      font-size: 13px;
+    }
+
+    .bar-track {
+      height: 10px;
+      overflow: hidden;
+      background: #edf2f5;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: var(--bar-width, 0%);
+      background: #007eff;
+    }
+
+    .bar-fill.highest {
+      background: #007eff;
+    }
+
+    .bar-fill.lowest {
+      background: #9aa9b8;
+    }
+
+    .bar-fill.middle {
+      background: #0c5fb6;
+    }
+
+    .dashboard-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .dashboard-item strong {
+      display: block;
+      color: var(--navy);
+      font-size: 14px;
+    }
+
+    .page-admin-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+      gap: 16px;
+    }
+
+    .page-admin-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .page-admin-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 16px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .page-admin-row strong {
+      color: var(--navy);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+    }
+
+    .master-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
+      gap: 16px;
+    }
+
+    .admin-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .admin-form .button {
+      align-self: end;
+    }
+
+    .admin-user-list,
+    .audit-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .admin-user-card,
+    .audit-item {
+      border-top: 1px solid var(--line);
+      padding: 12px 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .admin-user-card {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .admin-user-card strong,
+    .audit-item strong {
+      display: block;
+      color: var(--navy);
+    }
+
+    .admin-user-card small,
+    .audit-item small {
+      display: block;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .admin-user-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--navy);
+      background: var(--mist);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    td small {
+      display: block;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 10px;
+      border: 1px solid rgba(202, 170, 104, 0.52);
+      color: var(--navy);
+      background: rgba(202, 170, 104, 0.14);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    button.status-pill {
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.status-pill:hover,
+    button.status-pill:focus-visible {
+      border-color: #007eff;
+      outline: none;
+    }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 14px;
+    }
+
+    .page-button {
+      min-width: 34px;
+      min-height: 34px;
+      border: 1px solid rgba(1, 28, 55, 0.18);
+      background: #fff;
+      color: var(--navy);
+      padding: 0 8px;
+      font-size: 12px;
+    }
+
+    .page-button.active {
+      border-color: var(--gold);
+      background: rgba(202, 170, 104, 0.14);
+      color: var(--navy);
+    }
+
+    .page-button:disabled {
+      opacity: 0.42;
+      cursor: default;
+    }
+
+    .photo-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .photo-button {
+      min-height: 28px;
+      border: 1px solid rgba(1, 28, 55, 0.18);
+      background: #fff;
+      color: var(--navy);
+      padding: 0 9px;
+      font-size: 12px;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--navy);
+      background: transparent;
+      color: var(--navy);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .reply-panel {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .reply-panel textarea {
+      width: 100%;
+      min-height: 92px;
+      resize: vertical;
+      border: 1px solid rgba(1, 28, 55, 0.18);
+      padding: 10px;
+      color: var(--ink);
+    }
+
+    .reply-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .reply-history {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .history-item {
+      padding: 8px 10px;
+      border-left: 2px solid var(--gold);
+      background: rgba(231, 237, 242, 0.52);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .history-item strong {
+      display: block;
+      color: var(--navy);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .photo-modal {
+      position: fixed;
+      z-index: 80;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(1, 28, 55, 0.74);
+    }
+
+    .photo-modal-inner {
+      width: min(100%, 920px);
+      max-height: calc(100svh - 48px);
+      display: grid;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      padding: 14px;
+    }
+
+    .photo-modal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--navy);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .photo-modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .photo-modal img {
+      width: 100%;
+      max-height: calc(100svh - 140px);
+      object-fit: contain;
+      background: var(--mist);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .notice {
+      min-height: 24px;
+      color: var(--navy);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .notice.error {
+      color: #9d2b2b;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 900px) {
+      .admin-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        padding: 24px;
+        gap: 20px;
+      }
+
+      .brand {
+        gap: 6px;
+      }
+
+      .brand-mark {
+        gap: 12px;
+      }
+
+      .brand-wordmark {
+        width: clamp(180px, 42vw, 320px);
+      }
+
+      .sidebar p {
+        max-width: 420px;
+      }
+
+      .admin-nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .stats,
+      .page-admin-grid,
+      .master-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .analytics-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .filters {
+        grid-template-columns: minmax(0, 1fr) 160px 112px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: row;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .login-panel {
+        width: calc(100% - 32px);
+        margin: 9vh 16px;
+        padding: 24px;
+      }
+
+      .sidebar {
+        align-items: flex-start;
+      }
+
+      .sidebar p {
+        max-width: none;
+      }
+
+      .main {
+        padding: 24px 16px 42px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .topbar .button,
+      .filters .button {
+        width: 100%;
+      }
+
+      .stats,
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .stat {
+        grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
+        padding: 14px 16px;
+      }
+
+      .stat strong {
+        font-size: 24px;
+      }
+
+      .table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+      }
+
+      table,
+      thead,
+      tbody,
+      tr,
+      th,
+      td {
+        display: block;
+      }
+
+      table {
+        min-width: 0;
+      }
+
+      thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+
+      tbody {
+        display: grid;
+        gap: 12px;
+      }
+
+      tr {
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      td {
+        display: grid;
+        grid-template-columns: 96px minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        overflow-wrap: anywhere;
+      }
+
+      td:last-child {
+        border-bottom: 0;
+      }
+
+      td::before {
+        content: attr(data-label);
+        color: var(--navy);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      td[colspan] {
+        grid-template-columns: 1fr;
+      }
+
+      td[colspan]::before {
+        content: "";
+        display: none;
+      }
+
+      .status-select {
+        min-width: 0;
+      }
+
+      .admin-form {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-user-card {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-user-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .brand-mark {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .brand-current {
+        font-size: 42px;
+        transform: none;
+      }
+
+      .admin-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .topbar h2 {
+        font-size: 23px;
+      }
+
+      td {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .stat {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .stat strong,
+      .stat small {
+        text-align: left;
+      }
+
+      .page-admin-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="login-panel" id="loginPanel">
+    <h1>ww'mm Concierge</h1>
+    <form id="loginForm">
+      <div class="field">
+        <label for="adminPassword">Password</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="button" type="submit">Sign In</button>
+      <p class="notice" id="loginNotice" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="admin-shell" id="adminShell" hidden>
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <div class="brand-mark">
+            <span class="brand-wordmark">
+              <img src="assets/images/wwmm_w.png" alt="ww'mm">
+            </span>
+            <span class="brand-current" id="currentSectionLabel" aria-current="page">Admin</span>
+          </div>
+          <p id="sectionHeaderCopy">Traffic, demand, and concierge response signals in one operational view.</p>
+        </div>
+        <nav class="admin-nav" aria-label="Admin navigation">
+          <button class="nav-button active" type="button" data-view-target="dashboard">Dashboard</button>
+          <button class="nav-button" type="button" data-view-target="home">Home</button>
+          <button class="nav-button" type="button" data-view-target="atelier">Atelier</button>
+          <button class="nav-button" type="button" data-view-target="gallery">Gallery</button>
+          <button class="nav-button" type="button" data-view-target="studio">Studio</button>
+          <button class="nav-button" type="button" data-view-target="concierge">Concierge</button>
+          <button class="nav-button" type="button" data-view-target="master">Master</button>
+        </nav>
+      </div>
+      <div class="admin-header-tools">
+        <button class="button ghost" id="logoutButton" type="button">Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="page-heading">
+          <h2 id="pageTitle">Dashboard</h2>
+          <p class="page-subtitle" id="pageSubtitle">Traffic, demand, and concierge response signals in one operational view.</p>
+        </div>
+        <button class="button ghost" id="refreshButton" type="button">Refresh</button>
+      </div>
+
+      <section id="dashboardView">
+        <div class="stats">
+          <div class="stat"><span>Consultations</span><strong id="totalCount">0</strong><small>All requests</small></div>
+          <button class="stat" type="button" data-status-jump="new"><span>New</span><strong id="newCount">0</strong><small>Needs review</small></button>
+          <div class="stat"><span>Confirmed</span><strong id="confirmedCount">0</strong><small>Booked cases</small></div>
+          <div class="stat"><span>Find Line</span><strong id="findLineCount">0</strong><small>Photo analysis</small></div>
+        </div>
+        <div class="analytics-hero">
+          <section class="visitor-panel">
+            <div class="visitor-head">
+              <div>
+                <span>Total Visitors</span>
+                <strong id="visitorCount">0</strong>
+                <p id="visitorInsight">방문 데이터가 쌓이면 전환 흐름을 빠르게 볼 수 있습니다.</p>
+              </div>
+              <div class="range-control" aria-label="Visitor chart range">
+                <button class="range-button" type="button" data-range="day">Day</button>
+                <button class="range-button active" type="button" data-range="week">Week</button>
+                <button class="range-button" type="button" data-range="month">Month</button>
+                <button class="range-button" type="button" data-range="quarter">Quarter</button>
+              </div>
+            </div>
+            <svg class="line-chart" id="visitorLineChart" viewBox="0 0 720 250" role="img" aria-label="Visitor trend line chart"></svg>
+          </section>
+          <section class="dashboard-panel">
+            <h3>Page Hits</h3>
+            <div class="chart-list" id="pageHitChart"></div>
+          </section>
+        </div>
+        <div class="dashboard-grid">
+          <section class="dashboard-panel">
+            <h3>Access Regions</h3>
+            <div class="chart-list" id="regionChart"></div>
+          </section>
+          <section class="dashboard-panel">
+            <h3>Recent Requests</h3>
+            <div class="dashboard-list" id="recentRequests"></div>
+            <div class="pagination" id="recentRequestsPager"></div>
+          </section>
+          <section class="dashboard-panel">
+            <h3>Follow-up History</h3>
+            <div class="dashboard-list" id="recentHistory"></div>
+            <div class="pagination" id="recentHistoryPager"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="pageAdminView" hidden>
+        <div class="page-admin-grid">
+          <section class="dashboard-panel">
+            <h3 id="pageAdminTitle">Page Management</h3>
+            <div class="page-admin-list" id="pageAdminDetails"></div>
+          </section>
+          <section class="dashboard-panel">
+            <h3>Page Signals</h3>
+            <div class="chart-list" id="pageAdminSignals"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="conciergeView" hidden>
+        <div class="filters">
+          <input id="searchInput" type="search" placeholder="이름, 연락처, 스튜디오 검색">
+          <select id="statusFilter">
+            <option value="">All status</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="hold">Hold</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button class="button ghost" id="exportButton" type="button">CSV</button>
+        </div>
+
+        <p class="notice" id="adminNotice" role="status" aria-live="polite"></p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Created</th>
+                <th>Client</th>
+                <th>Studio</th>
+                <th>Request</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="reservationRows">
+              <tr>
+                <td colspan="6" class="muted">예약 데이터를 불러오세요.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="reservationPager"></div>
+      </section>
+
+      <section id="masterView" hidden>
+        <div class="master-grid">
+          <section class="dashboard-panel">
+            <h3>Admin Authority</h3>
+            <form class="admin-form" id="adminUserForm">
+              <div class="field">
+                <label for="adminUserName">Name</label>
+                <input id="adminUserName" type="text" placeholder="관리자 이름">
+              </div>
+              <div class="field">
+                <label for="adminUserEmail">Email</label>
+                <input id="adminUserEmail" type="email" placeholder="name@example.com">
+              </div>
+              <div class="field">
+                <label for="adminUserRole">Role</label>
+                <select id="adminUserRole">
+                  <option value="manager">Manager</option>
+                  <option value="master">Master</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              </div>
+              <button class="button" type="submit">Grant Access</button>
+            </form>
+            <div class="admin-user-list" id="adminUserList"></div>
+          </section>
+          <section class="dashboard-panel">
+            <h3>Admin Logs</h3>
+            <div class="reply-actions">
+              <button class="button ghost" id="downloadLogButton" type="button">Download CSV</button>
+              <button class="button ghost" id="clearLogButton" type="button">Clear Local Logs</button>
+            </div>
+            <div class="audit-list" id="auditLogList"></div>
+            <div class="pagination" id="auditLogPager"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <div class="photo-modal" id="photoModal" hidden>
+    <div class="photo-modal-inner" role="dialog" aria-modal="true" aria-label="예약 사진 미리보기">
+      <div class="photo-modal-bar">
+        <span id="photoModalTitle">Reservation photo</span>
+        <div class="photo-modal-actions">
+          <a class="icon-button" id="photoDownload" href="#" download aria-label="Download photo" title="Download photo">↓</a>
+          <button class="icon-button" id="photoModalClose" type="button" aria-label="Close preview" title="Close preview">×</button>
+        </div>
+      </div>
+      <img id="photoModalImage" alt="예약 사진 미리보기">
+    </div>
+  </div>
+
+  <script>
+    const loginPanel = document.getElementById("loginPanel");
+    const adminShell = document.getElementById("adminShell");
+    const loginForm = document.getElementById("loginForm");
+    const loginNotice = document.getElementById("loginNotice");
+    const adminNotice = document.getElementById("adminNotice");
+    const reservationRows = document.getElementById("reservationRows");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const refreshButton = document.getElementById("refreshButton");
+    const logoutButton = document.getElementById("logoutButton");
+    const exportButton = document.getElementById("exportButton");
+    const currentSectionLabel = document.getElementById("currentSectionLabel");
+    const sectionHeaderCopy = document.getElementById("sectionHeaderCopy");
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSubtitle = document.getElementById("pageSubtitle");
+    const dashboardView = document.getElementById("dashboardView");
+    const pageAdminView = document.getElementById("pageAdminView");
+    const conciergeView = document.getElementById("conciergeView");
+    const masterView = document.getElementById("masterView");
+    const pageAdminTitle = document.getElementById("pageAdminTitle");
+    const pageAdminDetails = document.getElementById("pageAdminDetails");
+    const pageAdminSignals = document.getElementById("pageAdminSignals");
+    const recentRequests = document.getElementById("recentRequests");
+    const recentRequestsPager = document.getElementById("recentRequestsPager");
+    const recentHistory = document.getElementById("recentHistory");
+    const recentHistoryPager = document.getElementById("recentHistoryPager");
+    const reservationPager = document.getElementById("reservationPager");
+    const adminUserForm = document.getElementById("adminUserForm");
+    const adminUserName = document.getElementById("adminUserName");
+    const adminUserEmail = document.getElementById("adminUserEmail");
+    const adminUserRole = document.getElementById("adminUserRole");
+    const adminUserList = document.getElementById("adminUserList");
+    const auditLogList = document.getElementById("auditLogList");
+    const auditLogPager = document.getElementById("auditLogPager");
+    const downloadLogButton = document.getElementById("downloadLogButton");
+    const clearLogButton = document.getElementById("clearLogButton");
+    const visitorCount = document.getElementById("visitorCount");
+    const visitorInsight = document.getElementById("visitorInsight");
+    const visitorLineChart = document.getElementById("visitorLineChart");
+    const pageHitChart = document.getElementById("pageHitChart");
+    const regionChart = document.getElementById("regionChart");
+    const navButtons = document.querySelectorAll("[data-view-target]");
+    const rangeButtons = document.querySelectorAll("[data-range]");
+    const photoModal = document.getElementById("photoModal");
+    const photoModalImage = document.getElementById("photoModalImage");
+    const photoModalTitle = document.getElementById("photoModalTitle");
+    const photoModalClose = document.getElementById("photoModalClose");
+    const photoDownload = document.getElementById("photoDownload");
+
+    let reservations = [];
+    let analytics = {
+      totalVisitors: 0,
+      totalHits: 0,
+      pageHits: [],
+      regions: [],
+      recent: [],
+      visitorSeries: []
+    };
+    let currentView = "dashboard";
+    let analyticsRange = "week";
+    const paginationState = {
+      reservations: 1,
+      requests: 1,
+      history: 1,
+      audit: 1
+    };
+    const pageSizes = {
+      reservations: 6,
+      requests: 5,
+      history: 5,
+      audit: 8
+    };
+    const pageSections = {
+      home: {
+        title: "Home",
+        description: "Hero, first impression, headline, and primary CTA management.",
+        fields: [
+          ["Hero media", "Main video and poster image"],
+          ["Headline", "Precision Defines Beauty"],
+          ["Primary CTA", "Find My WW'MM Line"]
+        ]
+      },
+      atelier: {
+        title: "Atelier",
+        description: "Technology, craftsmanship, and facial harmony narrative management.",
+        fields: [
+          ["Hero image", "Atelier visual"],
+          ["Core copy", "0.01mm precision story"],
+          ["Research cards", "Master artisan content"]
+        ]
+      },
+      gallery: {
+        title: "Gallery",
+        description: "Transformation images and visual proof content management.",
+        fields: [
+          ["Hero image", "Gallery visual"],
+          ["Gallery cards", "Smile Line / Natural Balance / Veneer Detail"],
+          ["Signals", "Image engagement and page hits"]
+        ]
+      },
+      studio: {
+        title: "Studio",
+        description: "Certified studio list, location data, and sorting signals management.",
+        fields: [
+          ["Studios", "Certified clinic list"],
+          ["Location", "Map and contact data"],
+          ["Sorting", "Distance and recommendation rules"]
+        ]
+      }
+    };
+
+    function getToken() {
+      return localStorage.getItem("wwmmAdminToken") || "";
+    }
+
+    function getAdminUsers() {
+      try {
+        const users = JSON.parse(localStorage.getItem("wwmmAdminUsers") || "[]");
+        return Array.isArray(users) ? users : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function setAdminUsers(users) {
+      localStorage.setItem("wwmmAdminUsers", JSON.stringify(users));
+    }
+
+    function getAuditLogs() {
+      try {
+        const logs = JSON.parse(localStorage.getItem("wwmmAdminLogs") || "[]");
+        return Array.isArray(logs) ? logs : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function setAuditLogs(logs) {
+      localStorage.setItem("wwmmAdminLogs", JSON.stringify(logs.slice(0, 500)));
+    }
+
+    function recordAudit(action, detail) {
+      const logs = getAuditLogs();
+      logs.unshift({
+        at: new Date().toISOString(),
+        actor: localStorage.getItem("wwmmAdminActor") || "local master",
+        action,
+        detail: detail || "-",
+        page: currentView
+      });
+      setAuditLogs(logs);
+      if (currentView === "master") {
+        renderMaster();
+      }
+    }
+
+    function setSignedIn(signedIn) {
+      loginPanel.hidden = signedIn;
+      adminShell.hidden = !signedIn;
+    }
+
+    function formatDate(value) {
+      if (!value) {
+        return "-";
+      }
+
+      return new Intl.DateTimeFormat("ko-KR", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }).format(new Date(value));
+    }
+
+    function filteredReservations() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      const status = statusFilter.value;
+
+      return reservations.filter((item) => {
+        const haystack = [item.name, item.phone, item.email, item.studioName, item.message].join(" ").toLowerCase();
+        return (!status || item.status === status) && (!keyword || haystack.includes(keyword));
+      });
+    }
+
+    function paginate(items, key) {
+      const size = pageSizes[key];
+      const pageCount = Math.max(1, Math.ceil(items.length / size));
+      paginationState[key] = Math.min(Math.max(1, paginationState[key]), pageCount);
+      const start = (paginationState[key] - 1) * size;
+      return {
+        items: items.slice(start, start + size),
+        page: paginationState[key],
+        pageCount
+      };
+    }
+
+    function pageSequence(current, total) {
+      if (total <= 7) {
+        return Array.from({ length: total }, (_, index) => index + 1);
+      }
+
+      const pages = [1];
+      const start = Math.max(2, current - 1);
+      const end = Math.min(total - 1, current + 1);
+
+      if (start > 2) {
+        pages.push("...");
+      }
+
+      for (let page = start; page <= end; page += 1) {
+        pages.push(page);
+      }
+
+      if (end < total - 1) {
+        pages.push("...");
+      }
+
+      pages.push(total);
+      return pages;
+    }
+
+    function renderPager(target, key, pageCount) {
+      if (pageCount <= 1) {
+        target.innerHTML = "";
+        return;
+      }
+
+      const current = paginationState[key];
+      target.innerHTML = `
+        <button class="page-button" type="button" data-page-key="${key}" data-page="${current - 1}" ${current === 1 ? "disabled" : ""}>&lt;</button>
+        ${pageSequence(current, pageCount).map((page) => page === "..."
+          ? '<button class="page-button" type="button" disabled>...</button>'
+          : `<button class="page-button ${page === current ? "active" : ""}" type="button" data-page-key="${key}" data-page="${page}">${page}</button>`
+        ).join("")}
+        <button class="page-button" type="button" data-page-key="${key}" data-page="${current + 1}" ${current === pageCount ? "disabled" : ""}>&gt;</button>
+      `;
+    }
+
+    function syncStats() {
+      document.getElementById("totalCount").textContent = reservations.length;
+      document.getElementById("newCount").textContent = reservations.filter((item) => item.status === "new").length;
+      document.getElementById("confirmedCount").textContent = reservations.filter((item) => item.status === "confirmed").length;
+      document.getElementById("findLineCount").textContent = reservations.filter((item) => item.findLine).length;
+    }
+
+    function showView(view) {
+      currentView = view;
+      const isPageAdmin = Boolean(pageSections[view]);
+      const label = view === "dashboard" ? "Dashboard" : isPageAdmin ? pageSections[view].title : view === "master" ? "Master Admin" : "Concierge";
+      const subtitle = view === "dashboard"
+        ? "Traffic, demand, and concierge response signals in one operational view."
+        : isPageAdmin
+          ? pageSections[view].description
+          : view === "master"
+            ? "Manage administrator authority, audit access, and download operational logs."
+            : "Review requests, inspect photos, manage follow-up history, and send client replies.";
+      currentSectionLabel.textContent = "Admin";
+      pageTitle.textContent = label === "Concierge" ? "Consultation Requests" : label;
+      pageSubtitle.textContent = subtitle;
+      sectionHeaderCopy.textContent = subtitle;
+      dashboardView.hidden = view !== "dashboard";
+      pageAdminView.hidden = !isPageAdmin;
+      conciergeView.hidden = view !== "concierge";
+      masterView.hidden = view !== "master";
+      navButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.viewTarget === view);
+      });
+      if (isPageAdmin) {
+        renderPageAdmin(view);
+      }
+      if (view === "master") {
+        renderMaster();
+      }
+      recordAudit("view", label);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderUploads(item) {
+      const uploads = Array.isArray(item.uploads)
+        ? item.uploads.filter((upload) => upload.path || upload.dataUrl)
+        : [];
+
+      if (!uploads.length) {
+        return '<small>사진: -</small>';
+      }
+
+      return `
+        <div class="photo-list">
+          ${uploads.map((upload, index) => `
+            <button class="photo-button" type="button" data-reservation-id="${escapeHtml(item.id)}" data-upload-index="${index}">
+              Photo ${index + 1}
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderHistory(item) {
+      const history = Array.isArray(item.replyHistory) ? item.replyHistory : [];
+      if (!history.length) {
+        return '<small>답변 이력: -</small>';
+      }
+
+      return `
+        <div class="reply-history">
+          ${history.slice(0, 4).map((entry) => `
+            <div class="history-item">
+              <strong>${entry.type === "sms" ? "SMS" : "Note"} · ${formatDate(entry.createdAt)}</strong>
+              ${escapeHtml(entry.text || "")}
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderReplyPanel(item) {
+      return `
+        <div class="reply-panel">
+          <textarea data-reply-id="${escapeHtml(item.id)}" placeholder="상담 답변 내용을 입력"></textarea>
+          <div class="reply-actions">
+            <button class="button ghost reply-save" type="button" data-id="${escapeHtml(item.id)}">Save Reply</button>
+            <button class="button reply-sms" type="button" data-id="${escapeHtml(item.id)}">Send SMS</button>
+          </div>
+          ${renderHistory(item)}
+        </div>
+      `;
+    }
+
+    function renderDashboard() {
+      syncStats();
+      renderAnalytics();
+
+      const latest = paginate(reservations, "requests");
+      recentRequests.innerHTML = latest.items.length
+        ? latest.items.map((item) => `
+          <div class="dashboard-item">
+            <div>
+              <strong>${escapeHtml(item.name || "-")}</strong>
+              ${escapeHtml(item.studioName || "-")} · ${escapeHtml(item.phone || "-")}
+            </div>
+            <button class="status-pill" type="button" data-status-jump="${escapeHtml(item.status || "new")}">${escapeHtml(item.status || "new")}</button>
+          </div>
+        `).join("")
+        : '<p class="muted">최근 상담 신청이 없습니다.</p>';
+      renderPager(recentRequestsPager, "requests", latest.pageCount);
+
+      const historyItems = reservations
+        .flatMap((item) => (Array.isArray(item.replyHistory) ? item.replyHistory : []).map((entry) => ({
+          ...entry,
+          clientName: item.name
+        })))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const historyPage = paginate(historyItems, "history");
+
+      recentHistory.innerHTML = historyPage.items.length
+        ? historyPage.items.map((entry) => `
+          <div class="dashboard-item">
+            <div>
+              <strong>${escapeHtml(entry.clientName || "-")} · ${entry.type === "sms" ? "SMS" : "Note"}</strong>
+              ${escapeHtml(entry.text || "")}
+            </div>
+            <small>${formatDate(entry.createdAt)}</small>
+          </div>
+        `).join("")
+        : '<p class="muted">아직 답변 이력이 없습니다.</p>';
+      renderPager(recentHistoryPager, "history", historyPage.pageCount);
+    }
+
+    function renderPageAdmin(view) {
+      const section = pageSections[view];
+      const pageHit = (analytics.pageHits || []).find((item) => item.label === view);
+      pageAdminTitle.textContent = `${section.title} Management`;
+      pageAdminDetails.innerHTML = section.fields.map(([label, value]) => `
+        <div class="page-admin-row">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(value)}</span>
+        </div>
+      `).join("");
+      renderBarChart(pageAdminSignals, [
+        { label: `${section.title} hits`, value: pageHit ? pageHit.value : 0 },
+        { label: "Total site hits", value: analytics.totalHits || 0 },
+        { label: "Total visitors", value: analytics.totalVisitors || 0 }
+      ], "아직 페이지 데이터가 없습니다.");
+    }
+
+    function renderBarChart(target, rows, emptyText) {
+      const max = Math.max(...rows.map((row) => row.value), 1);
+      const positiveValues = rows.map((row) => row.value).filter((value) => value > 0);
+      const minPositive = positiveValues.length ? Math.min(...positiveValues) : 0;
+      target.innerHTML = rows.length
+        ? rows.slice(0, 7).map((row) => {
+          const tone = row.value === max && row.value > 0 ? "highest" : row.value === minPositive && row.value > 0 ? "lowest" : "middle";
+          return `
+          <div class="chart-row">
+            <div class="chart-row-head">
+              <strong>${escapeHtml(row.label)}</strong>
+              <span>${row.value}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill ${tone}" style="--bar-width: ${Math.max(row.value ? 6 : 0, Math.round((row.value / max) * 100))}%"></div>
+            </div>
+          </div>
+        `;
+        }).join("")
+        : `<p class="muted">${emptyText}</p>`;
+    }
+
+    function renderLineChart(points) {
+      const width = 720;
+      const height = 250;
+      const padding = { top: 18, right: 18, bottom: 34, left: 38 };
+      const plotWidth = width - padding.left - padding.right;
+      const plotHeight = height - padding.top - padding.bottom;
+      const max = Math.max(...points.map((point) => point.visitors), 1);
+
+      if (!points.length) {
+        visitorLineChart.innerHTML = '<text x="360" y="128" text-anchor="middle" class="line-label">No visitor data</text>';
+        return;
+      }
+
+      const coords = points.map((point, index) => {
+        const x = padding.left + (points.length === 1 ? 0 : (index / (points.length - 1)) * plotWidth);
+        const y = padding.top + plotHeight - (point.visitors / max) * plotHeight;
+        return { ...point, x, y };
+      });
+      const path = coords.map((point, index) => `${index ? "L" : "M"} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
+      const area = `${path} L ${coords[coords.length - 1].x.toFixed(1)} ${padding.top + plotHeight} L ${coords[0].x.toFixed(1)} ${padding.top + plotHeight} Z`;
+      const labels = coords.filter((_, index) => {
+        const interval = Math.ceil(coords.length / 6);
+        return index % interval === 0 || index === coords.length - 1;
+      });
+
+      visitorLineChart.innerHTML = `
+        <line class="line-axis" x1="${padding.left}" y1="${padding.top + plotHeight}" x2="${width - padding.right}" y2="${padding.top + plotHeight}"></line>
+        <line class="line-axis" x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + plotHeight}"></line>
+        <path class="line-area" d="${area}"></path>
+        <path class="line-path" d="${path}"></path>
+        ${coords.map((point) => `<circle class="line-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="4"></circle>`).join("")}
+        ${labels.map((point) => `<text class="line-label" x="${point.x.toFixed(1)}" y="${height - 10}" text-anchor="middle">${escapeHtml(point.label)}</text>`).join("")}
+        <text class="line-label" x="${padding.left - 10}" y="${padding.top + 4}" text-anchor="end">${max}</text>
+        <text class="line-label" x="${padding.left - 10}" y="${padding.top + plotHeight + 4}" text-anchor="end">0</text>
+      `;
+    }
+
+    function renderAnalytics() {
+      visitorCount.textContent = analytics.totalVisitors || 0;
+      const rangeLabel = analytics.range === "day" ? "since yesterday 00:00" : analytics.range;
+      visitorInsight.textContent = `${analytics.totalHits || 0} page hits tracked across ${analytics.pageHits.length || 0} sections · ${rangeLabel}.`;
+      renderLineChart(analytics.visitorSeries || []);
+      renderBarChart(pageHitChart, analytics.pageHits, "아직 페이지 방문 데이터가 없습니다.");
+      renderBarChart(regionChart, analytics.regions, "아직 접속 지역 데이터가 없습니다.");
+    }
+
+    function renderAll() {
+      renderDashboard();
+      renderRows();
+      if (pageSections[currentView]) {
+        renderPageAdmin(currentView);
+      }
+    }
+
+    function jumpToStatus(status) {
+      paginationState.reservations = 1;
+      statusFilter.value = status || "";
+      showView("concierge");
+      renderRows();
+    }
+
+    function renderRows() {
+      const rows = filteredReservations();
+      syncStats();
+
+      if (!rows.length) {
+        reservationRows.innerHTML = '<tr><td colspan="6" class="muted">표시할 예약이 없습니다.</td></tr>';
+        reservationPager.innerHTML = "";
+        return;
+      }
+
+      const page = paginate(rows, "reservations");
+      reservationRows.innerHTML = page.items.map((item) => `
+        <tr>
+          <td data-label="Created">${formatDate(item.createdAt)}<small>${escapeHtml(item.id)}</small></td>
+          <td data-label="Client">
+            <strong>${escapeHtml(item.name || "-")}</strong>
+            <small>${escapeHtml(item.phone || "-")}</small>
+            <small>${escapeHtml(item.email || "-")}</small>
+          </td>
+          <td data-label="Studio">${escapeHtml(item.studioName || item.studioId || "-")}<small>${escapeHtml(item.locale || "ko")}</small></td>
+          <td data-label="Request">
+            <span class="status-pill">${item.findLine ? "Find Line" : "Consultation"}</span>
+            <small>희망일: ${escapeHtml(item.preferredDate || "-")}</small>
+            <small>${escapeHtml(item.message || "-")}</small>
+            ${renderUploads(item)}
+            ${renderReplyPanel(item)}
+          </td>
+          <td data-label="Status"><button class="status-pill" type="button" data-status-jump="${escapeHtml(item.status || "new")}">${escapeHtml(item.status || "new")}</button></td>
+          <td data-label="Action">
+            <select class="status-select" data-id="${escapeHtml(item.id)}">
+              ${["new", "contacted", "confirmed", "completed", "hold", "cancelled"].map((status) => `
+                <option value="${status}" ${status === item.status ? "selected" : ""}>${status}</option>
+              `).join("")}
+            </select>
+          </td>
+        </tr>
+      `).join("");
+      renderPager(reservationPager, "reservations", page.pageCount);
+    }
+
+    function seedMasterUser() {
+      const users = getAdminUsers();
+      if (users.length) {
+        return;
+      }
+
+      setAdminUsers([{
+        id: `admin_${Date.now()}`,
+        name: "Local Master",
+        email: "local@wwmm.admin",
+        role: "master",
+        active: true,
+        createdAt: new Date().toISOString()
+      }]);
+    }
+
+    function renderMaster() {
+      seedMasterUser();
+      const users = getAdminUsers();
+      adminUserList.innerHTML = users.length
+        ? users.map((user) => `
+          <div class="admin-user-card">
+            <div>
+              <strong>${escapeHtml(user.name || "-")} <span class="status-pill">${escapeHtml(user.role || "manager")}</span></strong>
+              <small>${escapeHtml(user.email || "-")} · ${user.active ? "Active" : "Revoked"} · ${formatDate(user.createdAt)}</small>
+            </div>
+            <div class="admin-user-actions">
+              <button class="button ghost" type="button" data-admin-toggle="${escapeHtml(user.id)}">${user.active ? "Revoke" : "Restore"}</button>
+              <button class="button ghost" type="button" data-admin-remove="${escapeHtml(user.id)}">Remove</button>
+            </div>
+          </div>
+        `).join("")
+        : '<p class="muted">등록된 관리자가 없습니다.</p>';
+
+      const logs = getAuditLogs();
+      const auditPage = paginate(logs, "audit");
+      auditLogList.innerHTML = auditPage.items.length
+        ? auditPage.items.map((log) => `
+          <div class="audit-item">
+            <strong>${escapeHtml(log.action || "-")} · ${escapeHtml(log.actor || "-")}</strong>
+            <small>${formatDate(log.at)} · ${escapeHtml(log.page || "-")}</small>
+            <small>${escapeHtml(log.detail || "-")}</small>
+          </div>
+        `).join("")
+        : '<p class="muted">아직 기록된 관리자 로그가 없습니다.</p>';
+      renderPager(auditLogPager, "audit", auditPage.pageCount);
+    }
+
+    async function loadReservations() {
+      adminNotice.classList.remove("error");
+      adminNotice.textContent = "예약 데이터를 불러오는 중입니다.";
+
+      const response = await fetch("/api/admin-reservations", {
+        headers: {
+          Authorization: `Bearer ${getToken()}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "예약 데이터를 불러오지 못했습니다.");
+      }
+
+      reservations = result.reservations || [];
+      adminNotice.textContent = `${reservations.length}건의 예약을 불러왔습니다.`;
+      recordAudit("load reservations", `${reservations.length} records`);
+      renderAll();
+    }
+
+    async function loadAnalytics() {
+      const response = await fetch(`/api/analytics?range=${encodeURIComponent(analyticsRange)}`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`
+        }
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "Analytics 데이터를 불러오지 못했습니다.");
+      }
+
+      analytics = result.analytics || analytics;
+      recordAudit("load analytics", analyticsRange);
+      renderDashboard();
+    }
+
+    async function refreshAll() {
+      await loadReservations();
+      await loadAnalytics();
+    }
+
+    async function updateStatus(id, status) {
+      adminNotice.classList.remove("error");
+      adminNotice.textContent = "상태를 업데이트하고 있습니다.";
+
+      const response = await fetch("/api/update-reservation", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id, status })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "상태를 업데이트하지 못했습니다.");
+      }
+
+      reservations = reservations.map((item) => item.id === id ? { ...item, status } : item);
+      adminNotice.textContent = "상태가 업데이트되었습니다.";
+      recordAudit("update status", `${id} → ${status}`);
+      renderAll();
+    }
+
+    function getReplyText(id) {
+      const input = reservationRows.querySelector(`[data-reply-id="${CSS.escape(id)}"]`);
+      return input ? input.value.trim() : "";
+    }
+
+    async function submitReply(id, sendSms) {
+      const reply = getReplyText(id);
+      if (!reply) {
+        throw new Error("답변 내용을 입력해 주세요.");
+      }
+
+      adminNotice.classList.remove("error");
+      adminNotice.textContent = sendSms ? "답변을 문자로 발송하고 있습니다." : "답변 이력을 저장하고 있습니다.";
+
+      const response = await fetch(sendSms ? "/api/send-reply-sms" : "/api/save-reply", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id, reply })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "답변을 처리하지 못했습니다.");
+      }
+
+      reservations = reservations.map((item) => item.id === id ? result.reservation : item);
+      const smsSkipped = result.sms && result.sms.skipped;
+      adminNotice.textContent = sendSms
+        ? smsSkipped
+          ? "문자 서비스가 아직 연결되지 않아 이력만 저장했습니다."
+          : "답변 문자를 발송하고 이력을 저장했습니다."
+        : "답변 이력을 저장했습니다.";
+      recordAudit(sendSms ? "send sms reply" : "save reply", id);
+      renderAll();
+    }
+
+    function showPhoto(src, title) {
+      photoModalImage.src = src;
+      photoModalTitle.textContent = title || "Reservation photo";
+      photoDownload.href = src;
+      photoDownload.download = title || "wwmm-reservation-photo";
+      photoModal.hidden = false;
+    }
+
+    function closePhoto() {
+      photoModal.hidden = true;
+      photoModalImage.removeAttribute("src");
+      photoDownload.removeAttribute("href");
+      photoDownload.removeAttribute("download");
+    }
+
+    async function openPhoto(reservationId, uploadIndex) {
+      adminNotice.classList.remove("error");
+      adminNotice.textContent = "사진 링크를 준비하고 있습니다.";
+
+      const reservation = reservations.find((item) => item.id === reservationId);
+      const upload = reservation && Array.isArray(reservation.uploads) ? reservation.uploads[Number(uploadIndex)] : null;
+
+      if (!upload) {
+        throw new Error("사진 정보를 찾을 수 없습니다.");
+      }
+
+      if (upload.dataUrl) {
+        showPhoto(upload.dataUrl, upload.name || "Local photo");
+        adminNotice.textContent = "로컬 미리보기 사진을 표시했습니다.";
+        recordAudit("open photo", `${reservationId} · local`);
+        return;
+      }
+
+      const response = await fetch("/api/admin-photo-url", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ path: upload.path })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "사진을 열 수 없습니다.");
+      }
+
+      showPhoto(result.url, upload.name || "Stored photo");
+      adminNotice.textContent = "사진 임시 링크를 표시했습니다.";
+      recordAudit("open photo", `${reservationId} · storage`);
+    }
+
+    function exportCsv() {
+      const rows = filteredReservations();
+      const header = ["createdAt", "status", "name", "phone", "email", "studioName", "preferredDate", "findLine", "message"];
+      const csv = [
+        header.join(","),
+        ...rows.map((row) => header.map((key) => `"${String(row[key] ?? "").replaceAll('"', '""')}"`).join(","))
+      ].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `wwmm-reservations-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      recordAudit("download reservations csv", `${rows.length} records`);
+    }
+
+    function downloadAuditCsv() {
+      const logs = getAuditLogs();
+      const header = ["at", "actor", "action", "page", "detail"];
+      const csv = [
+        header.join(","),
+        ...logs.map((row) => header.map((key) => `"${String(row[key] ?? "").replaceAll('"', '""')}"`).join(","))
+      ].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `wwmm-admin-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      recordAudit("download admin logs", `${logs.length} records`);
+    }
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      loginNotice.classList.remove("error");
+      loginNotice.textContent = "로그인 중입니다.";
+
+      try {
+        const response = await fetch("/api/admin-login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            password: document.getElementById("adminPassword").value
+          })
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "로그인에 실패했습니다.");
+        }
+
+        localStorage.setItem("wwmmAdminToken", result.token);
+        localStorage.setItem("wwmmAdminActor", "local master");
+        recordAudit("login", "admin password");
+        setSignedIn(true);
+        await refreshAll();
+      } catch (error) {
+        loginNotice.classList.add("error");
+        loginNotice.textContent = error.message;
+      }
+    });
+
+    reservationRows.addEventListener("change", async (event) => {
+      if (!event.target.matches(".status-select")) {
+        return;
+      }
+
+      try {
+        await updateStatus(event.target.dataset.id, event.target.value);
+      } catch (error) {
+        adminNotice.classList.add("error");
+        adminNotice.textContent = error.message;
+      }
+    });
+
+    reservationRows.addEventListener("click", async (event) => {
+      const button = event.target.closest(".photo-button");
+      const saveButton = event.target.closest(".reply-save");
+      const smsButton = event.target.closest(".reply-sms");
+
+      try {
+        if (button) {
+          await openPhoto(button.dataset.reservationId, button.dataset.uploadIndex);
+        } else if (saveButton) {
+          await submitReply(saveButton.dataset.id, false);
+        } else if (smsButton) {
+          await submitReply(smsButton.dataset.id, true);
+        }
+      } catch (error) {
+        adminNotice.classList.add("error");
+        adminNotice.textContent = error.message;
+      }
+    });
+
+    refreshButton.addEventListener("click", () => {
+      refreshAll().catch((error) => {
+        adminNotice.classList.add("error");
+        adminNotice.textContent = error.message;
+      });
+    });
+
+    logoutButton.addEventListener("click", () => {
+      recordAudit("logout", "admin session ended");
+      localStorage.removeItem("wwmmAdminToken");
+      setSignedIn(false);
+    });
+
+    searchInput.addEventListener("input", () => {
+      paginationState.reservations = 1;
+      renderRows();
+    });
+    statusFilter.addEventListener("change", () => {
+      paginationState.reservations = 1;
+      renderRows();
+    });
+    exportButton.addEventListener("click", exportCsv);
+    downloadLogButton.addEventListener("click", downloadAuditCsv);
+    clearLogButton.addEventListener("click", () => {
+      localStorage.removeItem("wwmmAdminLogs");
+      recordAudit("clear local logs", "local audit storage reset");
+      renderMaster();
+    });
+    adminUserForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = adminUserName.value.trim();
+      const email = adminUserEmail.value.trim();
+
+      if (!name || !email) {
+        adminNotice.classList.add("error");
+        adminNotice.textContent = "관리자 이름과 이메일을 입력해 주세요.";
+        return;
+      }
+
+      const users = getAdminUsers();
+      const existing = users.find((user) => user.email.toLowerCase() === email.toLowerCase());
+      if (existing) {
+        existing.name = name;
+        existing.role = adminUserRole.value;
+        existing.active = true;
+        recordAudit("update admin authority", `${email} · ${adminUserRole.value}`);
+      } else {
+        users.unshift({
+          id: `admin_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          name,
+          email,
+          role: adminUserRole.value,
+          active: true,
+          createdAt: new Date().toISOString()
+        });
+        recordAudit("grant admin authority", `${email} · ${adminUserRole.value}`);
+      }
+
+      setAdminUsers(users);
+      adminUserForm.reset();
+      renderMaster();
+    });
+    navButtons.forEach((button) => {
+      button.addEventListener("click", () => showView(button.dataset.viewTarget));
+    });
+    rangeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        analyticsRange = button.dataset.range;
+        rangeButtons.forEach((rangeButton) => {
+          rangeButton.classList.toggle("active", rangeButton === button);
+        });
+        loadAnalytics().catch((error) => {
+          adminNotice.classList.add("error");
+          adminNotice.textContent = error.message;
+        });
+      });
+    });
+    photoModalClose.addEventListener("click", closePhoto);
+    photoModal.addEventListener("click", (event) => {
+      if (event.target === photoModal) {
+        closePhoto();
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      const statusJump = event.target.closest("[data-status-jump]");
+      const pageButton = event.target.closest("[data-page-key]");
+      const adminToggle = event.target.closest("[data-admin-toggle]");
+      const adminRemove = event.target.closest("[data-admin-remove]");
+
+      if (statusJump) {
+        jumpToStatus(statusJump.dataset.statusJump);
+        return;
+      }
+
+      if (adminToggle) {
+        const users = getAdminUsers().map((user) => user.id === adminToggle.dataset.adminToggle
+          ? { ...user, active: !user.active }
+          : user);
+        const changed = users.find((user) => user.id === adminToggle.dataset.adminToggle);
+        setAdminUsers(users);
+        recordAudit(changed && changed.active ? "restore admin authority" : "revoke admin authority", changed ? changed.email : adminToggle.dataset.adminToggle);
+        renderMaster();
+        return;
+      }
+
+      if (adminRemove) {
+        const users = getAdminUsers();
+        const removed = users.find((user) => user.id === adminRemove.dataset.adminRemove);
+        setAdminUsers(users.filter((user) => user.id !== adminRemove.dataset.adminRemove));
+        recordAudit("remove admin account", removed ? removed.email : adminRemove.dataset.adminRemove);
+        renderMaster();
+        return;
+      }
+
+      if (pageButton && !pageButton.disabled) {
+        const key = pageButton.dataset.pageKey;
+        paginationState[key] = Number(pageButton.dataset.page);
+        if (key === "reservations") {
+          renderRows();
+        } else if (key === "audit") {
+          renderMaster();
+        } else {
+          renderDashboard();
+        }
+      }
+    });
+
+    if (getToken()) {
+      setSignedIn(true);
+      refreshAll().catch(() => {
+        localStorage.removeItem("wwmmAdminToken");
+        setSignedIn(false);
+      });
+    }
+  </script>
+</body>
+</html>
