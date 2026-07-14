@@ -6,10 +6,17 @@ function normalizePhone(value) {
   return String(value || "").replace(/[^\d]/g, "");
 }
 
+function environmentValue(name) {
+  return String(process.env[name] || "").trim();
+}
+
 function getSolapiConfig() {
-  const apiKey = process.env.SOLAPI_API_KEY;
-  const apiSecret = process.env.SOLAPI_API_SECRET;
-  const from = process.env.SOLAPI_FROM_NUMBER || process.env.SOLAPI_FROM || process.env.SOLAPI_SENDER;
+  const apiKey = environmentValue("SOLAPI_API_KEY");
+  const apiSecret = environmentValue("SOLAPI_API_SECRET");
+  const from =
+    environmentValue("SOLAPI_FROM_NUMBER") ||
+    environmentValue("SOLAPI_FROM") ||
+    environmentValue("SOLAPI_SENDER");
 
   return {
     apiKey,
