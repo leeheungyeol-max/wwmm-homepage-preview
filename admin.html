@@ -818,13 +818,22 @@
       line-height: 1.55;
     }
 
-    .history-item strong {
-      display: block;
-      color: var(--navy);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
+.history-item strong {
+  display: block;
+  color: var(--navy);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.history-item small {
+  display: block;
+  margin-top: 6px;
+  color: #a13a30;
+  line-height: 1.45;
+  text-transform: none;
+  letter-spacing: 0;
+}
 
     .photo-modal {
       position: fixed;
@@ -1238,6 +1247,7 @@
         </div>
 
         <p class="notice" id="adminNotice" role="status" aria-live="polite"></p>
+        <p class="notice" id="smsConnectionStatus" role="status" aria-live="polite"></p>
 
         <div class="table-wrap">
           <table>
@@ -1335,6 +1345,7 @@
     const loginForm = document.getElementById("loginForm");
     const loginNotice = document.getElementById("loginNotice");
     const adminNotice = document.getElementById("adminNotice");
+    const smsConnectionStatus = document.getElementById("smsConnectionStatus");
     const reservationRows = document.getElementById("reservationRows");
     const searchInput = document.getElementById("searchInput");
     const statusFilter = document.getElementById("statusFilter");
@@ -1684,6 +1695,36 @@
       `;
     }
 
+    function getHistoryLabel(entry) {
+      if (!entry || entry.type !== "sms") {
+        return "Note";
+      }
+
+      const result = entry.result || {};
+  if (entry.status === "accepted" || entry.status === "sent" || result.accepted || result.ok) {
+    return "SOLAPI 접수";
+      }
+
+      if (entry.status === "skipped" || result.skipped) {
+        return "SMS 미연결";
+      }
+
+      if (entry.status === "failed" || result.ok === false) {
+        return "SMS 실패";
+      }
+
+      return "SMS";
+    }
+
+    function getHistoryIssue(entry) {
+      if (!entry || entry.type !== "sms") {
+        return "";
+      }
+
+      const result = entry.result || {};
+      return entry.error || result.error || result.reason || "";
+    }
+
     function renderHistory(item) {
       const history = Array.isArray(item.replyHistory) ? item.replyHistory : [];
       if (!history.length) {
@@ -1692,12 +1733,16 @@
 
       return `
         <div class="reply-history">
-          ${history.slice(0, 4).map((entry) => `
-            <div class="history-item">
-              <strong>${entry.type === "sms" ? "SMS" : "Note"} · ${formatDate(entry.createdAt)}</strong>
-              ${escapeHtml(entry.text || "")}
-            </div>
-          `).join("")}
+          ${history.slice(0, 4).map((entry) => {
+            const issue = getHistoryIssue(entry);
+            return `
+              <div class="history-item">
+                <strong>${escapeHtml(getHistoryLabel(entry))} · ${formatDate(entry.createdAt)}</strong>
+                ${escapeHtml(entry.text || "")}
+                ${issue ? `<small>${escapeHtml(issue)}</small>` : ""}
+              </div>
+            `;
+          }).join("")}
         </div>
       `;
     }
@@ -1965,7 +2010,7 @@
       renderAll();
     }
 
-    async function loadAnalytics() {
+async function loadAnalytics() {
       const response = await fetch(`/api/analytics?range=${encodeURIComponent(analyticsRange)}`, {
         headers: {
           Authorization: `Bearer ${getToken()}`
@@ -1979,13 +2024,45 @@
 
       analytics = result.analytics || analytics;
       recordAudit("load analytics", analyticsRange);
-      renderDashboard();
+  renderDashboard();
+}
+
+async function loadSmsConnectionStatus() {
+  smsConnectionStatus.classList.remove("error");
+  smsConnectionStatus.textContent = "SOLAPI 발송 설정을 확인하고 있습니다.";
+
+  try {
+    const response = await fetch("/api/admin-sms-status", {
+      headers: { Authorization: `Bearer ${getToken()}` }
+    });
+    const result = await response.json();
+
+    if (!response.ok || !result.ok || !result.sms) {
+      throw new Error(result.error || "SOLAPI 발송 설정을 확인하지 못했습니다.");
     }
 
-    async function refreshAll() {
-      await loadReservations();
-      await loadAnalytics();
+    if (!result.sms.configured) {
+      smsConnectionStatus.classList.add("error");
+      smsConnectionStatus.textContent = `SOLAPI 설정이 비어 있습니다: ${(result.sms.missing || []).join(", ")}`;
+      return;
     }
+
+    const sender = result.sms.senderLastFour
+      ? `발신번호 끝 ${result.sms.senderLastFour}`
+      : "발신번호 설정됨";
+    smsConnectionStatus.textContent =
+      `SOLAPI 설정값이 입력되어 있습니다. ${sender}. 실제 접수 결과는 답변 발송 후 이력에서 확인합니다.`;
+  } catch (error) {
+    smsConnectionStatus.classList.add("error");
+    smsConnectionStatus.textContent = `SOLAPI 설정 확인 실패: ${error.message}`;
+  }
+}
+
+async function refreshAll() {
+  await loadReservations();
+  await loadAnalytics();
+  await loadSmsConnectionStatus();
+}
 
     async function updateStatus(id, status) {
       adminNotice.classList.remove("error");
@@ -2042,12 +2119,21 @@
       }
 
       reservations = reservations.map((item) => item.id === id ? result.reservation : item);
-      const smsSkipped = result.sms && result.sms.skipped;
-      adminNotice.textContent = sendSms
-        ? smsSkipped
-          ? "문자 서비스가 아직 연결되지 않아 이력만 저장했습니다."
-          : "답변 문자를 발송하고 이력을 저장했습니다."
-        : "답변 이력을 저장했습니다.";
+  if (sendSms) {
+    const sms = result.sms || {};
+    const accepted = Boolean(sms.accepted || sms.ok);
+    const issue = sms.error || sms.reason;
+
+    if (accepted) {
+      adminNotice.textContent =
+        "SOLAPI가 문자 요청을 접수했습니다. 실제 수신 결과는 SOLAPI 발송 내역에서 확인하세요.";
+    } else {
+      adminNotice.classList.add("error");
+      adminNotice.textContent = `SOLAPI가 문자 요청을 접수하지 못했습니다.${issue ? ` ${issue}` : ""} 답변 이력은 저장했습니다.`;
+    }
+  } else {
+    adminNotice.textContent = "답변 이력을 저장했습니다.";
+  }
       recordAudit(sendSms ? "send sms reply" : "save reply", id);
       renderAll();
     }

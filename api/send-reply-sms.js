@@ -7,6 +7,19 @@ function cleanText(value, maxLength = 1000) {
   return String(value || "").trim().slice(0, maxLength);
 }
 
+function summarizeSmsResult(sms) {
+  return {
+    provider: sms && sms.provider ? sms.provider : "unknown",
+    accepted: Boolean(sms && sms.ok),
+    skipped: Boolean(sms && sms.skipped),
+    status: sms && sms.status ? sms.status : null,
+    messageId: sms && sms.messageId ? sms.messageId : null,
+    groupId: sms && sms.groupId ? sms.groupId : null,
+    error: sms && sms.error ? sms.error : "",
+    reason: sms && sms.reason ? sms.reason : ""
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (!requireMethod(req, res, ["POST"])) {
     return;
@@ -38,15 +51,21 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const sms = await sendClientSms(reservation.phone, reply);
+    const sms = summarizeSmsResult(await sendClientSms(reservation.phone, reply));
+    const smsStatus = sms.accepted ? "accepted" : sms.skipped ? "skipped" : "failed";
+    const smsIssue = sms.error || sms.reason;
     const history = Array.isArray(reservation.replyHistory) ? reservation.replyHistory : [];
     const entry = {
       id: `sms_${Date.now()}`,
       type: "sms",
+      status: smsStatus,
       text: reply,
       result: sms,
       createdAt: new Date().toISOString()
     };
+    if (smsIssue) {
+      entry.error = smsIssue;
+    }
 
     const updated = await updateReservation(id, {
       adminReply: reply,
