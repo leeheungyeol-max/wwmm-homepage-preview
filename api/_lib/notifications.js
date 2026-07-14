@@ -47,7 +47,8 @@ function getSolapiStatus() {
 
 function createSolapiAuthorization(apiKey, apiSecret) {
   const date = new Date().toISOString();
-  const salt = crypto.randomBytes(16).toString("hex");
+  // Solapi requires a 32-byte random salt, serialized as hexadecimal.
+  const salt = crypto.randomBytes(32).toString("hex");
   const signature = crypto
     .createHmac("sha256", apiSecret)
     .update(date + salt)
