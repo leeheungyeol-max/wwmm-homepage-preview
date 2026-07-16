@@ -1344,6 +1344,7 @@
               </label>
               <button class="button" type="submit">Save Manager</button>
             </form>
+            <p class="notice" id="consultationManagerNotice" role="status" aria-live="polite"></p>
             <div class="manager-status" id="consultationManagerStatus">
               <p class="muted">담당자 설정을 불러오고 있습니다.</p>
             </div>
@@ -1429,6 +1430,7 @@
     const consultationManagerName = document.getElementById("consultationManagerName");
     const consultationManagerPhone = document.getElementById("consultationManagerPhone");
     const consultationManagerActive = document.getElementById("consultationManagerActive");
+    const consultationManagerNotice = document.getElementById("consultationManagerNotice");
     const consultationManagerStatus = document.getElementById("consultationManagerStatus");
     const auditLogList = document.getElementById("auditLogList");
     const auditLogPager = document.getElementById("auditLogPager");
@@ -2014,6 +2016,11 @@
       }]);
     }
 
+    function setConsultationManagerNotice(message, isError = false) {
+      consultationManagerNotice.classList.toggle("error", isError);
+      consultationManagerNotice.textContent = message || "";
+    }
+
     function renderConsultationManager() {
       const manager = consultationManager || {};
       consultationManagerName.value = manager.name || "";
@@ -2145,6 +2152,7 @@ async function loadSmsConnectionStatus() {
 }
 
 async function loadConsultationManager() {
+  setConsultationManagerNotice("담당자 설정을 확인하고 있습니다.");
   const response = await fetch("/api/admin-consultation-manager", {
     headers: { Authorization: `Bearer ${getToken()}` }
   });
@@ -2156,6 +2164,9 @@ async function loadConsultationManager() {
 
   consultationManager = result.manager || null;
   renderConsultationManager();
+  setConsultationManagerNotice(consultationManager && consultationManager.phone
+    ? "담당자 설정을 불러왔습니다."
+    : "담당자 수신번호가 아직 지정되지 않았습니다.", false);
 }
 
 async function saveConsultationManager() {
@@ -2165,6 +2176,8 @@ async function saveConsultationManager() {
   if (!name || !phone) {
     throw new Error("상담관리 담당자 이름과 휴대폰 번호를 입력해 주세요.");
   }
+
+  setConsultationManagerNotice("담당자 설정을 저장하고 있습니다.");
 
   const response = await fetch("/api/admin-consultation-manager", {
     method: "PATCH",
@@ -2186,6 +2199,7 @@ async function saveConsultationManager() {
 
   consultationManager = result.manager;
   renderConsultationManager();
+  setConsultationManagerNotice("상담관리 담당자 설정을 저장했습니다.");
   adminNotice.classList.remove("error");
   adminNotice.textContent = "상담관리 담당자 설정을 저장했습니다.";
   recordAudit("update consultation manager", `${consultationManager.name} · ${consultationManager.phone.slice(-4)}`);
@@ -2457,6 +2471,7 @@ async function refreshAll() {
       try {
         await saveConsultationManager();
       } catch (error) {
+        setConsultationManagerNotice(error.message, true);
         adminNotice.classList.add("error");
         adminNotice.textContent = error.message;
       }
