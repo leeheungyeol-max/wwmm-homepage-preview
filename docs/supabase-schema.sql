@@ -46,3 +46,5 @@ create policy "service role manages admin settings"
   for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
+
+grant select, insert, update on public.admin_settings to service_role;
