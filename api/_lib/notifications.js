@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const { getConsultationManager } = require("./storage");
 
 const SOLAPI_ENDPOINT = "https://api.solapi.com/messages/v4/send";
 
@@ -169,20 +170,57 @@ async function sendEmail(reservation) {
   return { ok: true };
 }
 
+function buildAdminSmsText(reservation, manager) {
+  const requestType = reservation.findLine ? "윔라인 분석 요청" : "일반 상담 요청";
+  return [
+    `[ww'mm] 신규 ${requestType}`,
+    `고객: ${reservation.name || "-"}`,
+    `연락처: ${reservation.phone || "-"}`,
+    `스튜디오: ${reservation.studioName || reservation.studioId || "미선택"}`,
+    `희망일: ${reservation.preferredDate || "-"}`,
+    `담당: ${(manager && manager.name) || "상담관리 담당자"}`
+  ].join("\n");
+}
+
+async function getAdminSmsRecipient() {
+  try {
+    const manager = await getConsultationManager();
+    return {
+      manager,
+      phone: manager && manager.active ? manager.phone : ""
+    };
+  } catch (error) {
+    return {
+      manager: { name: process.env.NOTIFY_ADMIN_NAME || "상담관리 담당자", source: "env" },
+      phone: normalizePhone(process.env.NOTIFY_ADMIN_PHONE),
+      warning: error.message
+    };
+  }
+}
+
 async function sendSms(reservation) {
+  const recipient = await getAdminSmsRecipient();
+  const text = buildAdminSmsText(reservation, recipient.manager);
+
   if (hasSolapiSettings()) {
-    if (!process.env.NOTIFY_ADMIN_PHONE) {
-      return { skipped: true, reason: "NOTIFY_ADMIN_PHONE is not configured" };
+    if (!recipient.phone) {
+      return { skipped: true, reason: "Consultation manager phone is not configured" };
     }
 
-    return sendSolapiMessage(
-      process.env.NOTIFY_ADMIN_PHONE,
-      `[ww'mm] 신규 상담: ${reservation.name} / ${reservation.phone}`
-    );
+    const result = await sendSolapiMessage(recipient.phone, text);
+    return {
+      ...result,
+      recipient: {
+        name: recipient.manager && recipient.manager.name,
+        phoneLastFour: recipient.phone.slice(-4),
+        source: recipient.manager && recipient.manager.source
+      },
+      warning: recipient.warning
+    };
   }
 
-  if (!process.env.SMS_WEBHOOK_URL || !process.env.NOTIFY_ADMIN_PHONE) {
-    return { skipped: true, reason: "SMS_WEBHOOK_URL or NOTIFY_ADMIN_PHONE is not configured" };
+  if (!process.env.SMS_WEBHOOK_URL || !recipient.phone) {
+    return { skipped: true, reason: "SMS_WEBHOOK_URL or consultation manager phone is not configured" };
   }
 
   const response = await fetch(process.env.SMS_WEBHOOK_URL, {
@@ -192,8 +230,8 @@ async function sendSms(reservation) {
       Authorization: process.env.SMS_WEBHOOK_TOKEN ? `Bearer ${process.env.SMS_WEBHOOK_TOKEN}` : ""
     },
     body: JSON.stringify({
-      to: process.env.NOTIFY_ADMIN_PHONE,
-      text: `[ww'mm] 신규 상담: ${reservation.name} / ${reservation.phone}`
+      to: recipient.phone,
+      text
     })
   });
 
@@ -201,7 +239,15 @@ async function sendSms(reservation) {
     return { ok: false, error: await response.text() };
   }
 
-  return { ok: true };
+  return {
+    ok: true,
+    recipient: {
+      name: recipient.manager && recipient.manager.name,
+      phoneLastFour: recipient.phone.slice(-4),
+      source: recipient.manager && recipient.manager.source
+    },
+    warning: recipient.warning
+  };
 }
 
 async function sendClientSms(phone, text) {

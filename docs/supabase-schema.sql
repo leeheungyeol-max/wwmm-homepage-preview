@@ -32,3 +32,17 @@ create policy "service role manages reservations"
   for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
+
+create table if not exists public.admin_settings (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.admin_settings enable row level security;
+
+create policy "service role manages admin settings"
+  on public.admin_settings
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');

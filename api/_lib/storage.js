@@ -3,8 +3,11 @@ const os = require("os");
 const path = require("path");
 
 const LOCAL_DB_PATH = path.join(os.tmpdir(), "wwmm-reservations.json");
+const LOCAL_SETTINGS_PATH = path.join(os.tmpdir(), "wwmm-admin-settings.json");
 const SUPABASE_TABLE = process.env.SUPABASE_RESERVATIONS_TABLE || "reservations";
+const SUPABASE_SETTINGS_TABLE = process.env.SUPABASE_SETTINGS_TABLE || "admin_settings";
 const SUPABASE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "reservation-photos";
+const CONSULTATION_MANAGER_KEY = "consultation_manager";
 
 function hasSupabase() {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -46,6 +49,120 @@ async function readLocalRows() {
 
 async function writeLocalRows(rows) {
   await fs.writeFile(LOCAL_DB_PATH, JSON.stringify(rows, null, 2));
+}
+
+
+function normalizePhone(value) {
+  return String(value || "").replace(/[^\d]/g, "");
+}
+
+function fallbackConsultationManager() {
+  return {
+    name: process.env.NOTIFY_ADMIN_NAME || "상담관리 담당자",
+    phone: normalizePhone(process.env.NOTIFY_ADMIN_PHONE),
+    active: Boolean(process.env.NOTIFY_ADMIN_PHONE),
+    source: process.env.NOTIFY_ADMIN_PHONE ? "env" : "unset",
+    updatedAt: null
+  };
+}
+
+function normalizeConsultationManager(value) {
+  const fallback = fallbackConsultationManager();
+  const source = value && typeof value === "object" ? value : {};
+  const phone = normalizePhone(source.phone);
+
+  return {
+    name: String(source.name || fallback.name || "상담관리 담당자").trim().slice(0, 80),
+    phone: phone || fallback.phone,
+    active: source.active === undefined ? Boolean(phone || fallback.phone) : Boolean(source.active),
+    source: source.source || (phone ? "admin" : fallback.source),
+    updatedAt: source.updatedAt || null
+  };
+}
+
+async function readLocalSettings() {
+  try {
+    const settings = JSON.parse(await fs.readFile(LOCAL_SETTINGS_PATH, "utf8"));
+    return settings && typeof settings === "object" ? settings : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+async function writeLocalSettings(settings) {
+  await fs.writeFile(LOCAL_SETTINGS_PATH, JSON.stringify(settings, null, 2));
+}
+
+async function getConsultationManager() {
+  if (hasSupabase()) {
+    const response = await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/${SUPABASE_SETTINGS_TABLE}?key=eq.${encodeURIComponent(CONSULTATION_MANAGER_KEY)}&select=value&limit=1`,
+      {
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const manager = fallbackConsultationManager();
+      manager.warning = `Supabase settings select failed: ${await response.text()}`;
+      return manager;
+    }
+
+    const [row] = await response.json();
+    return normalizeConsultationManager(row && row.value);
+  }
+
+  const settings = await readLocalSettings();
+  return normalizeConsultationManager(settings[CONSULTATION_MANAGER_KEY]);
+}
+
+async function updateConsultationManager(input) {
+  const name = String(input.name || "").trim().slice(0, 80);
+  const phone = normalizePhone(input.phone);
+
+  if (!name || !phone) {
+    throw new Error("Consultation manager name and phone are required");
+  }
+
+  const manager = normalizeConsultationManager({
+    name,
+    phone,
+    active: input.active,
+    source: "admin",
+    updatedAt: new Date().toISOString()
+  });
+
+  if (hasSupabase()) {
+    const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${SUPABASE_SETTINGS_TABLE}?on_conflict=key`, {
+      method: "POST",
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=representation"
+      },
+      body: JSON.stringify({
+        key: CONSULTATION_MANAGER_KEY,
+        value: manager,
+        updated_at: manager.updatedAt
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Supabase settings upsert failed: ${await response.text()}`);
+    }
+
+    const [row] = await response.json();
+    return normalizeConsultationManager(row && row.value);
+  }
+
+  const settings = await readLocalSettings();
+  settings[CONSULTATION_MANAGER_KEY] = manager;
+  await writeLocalSettings(settings);
+  return manager;
 }
 
 async function createReservation(input) {
@@ -270,7 +387,9 @@ async function updateReservation(id, patch) {
 module.exports = {
   createReservation,
   createSignedPhotoUrl,
+  getConsultationManager,
   listReservations,
   updateReservation,
+  updateConsultationManager,
   uploadReservationFiles
 };

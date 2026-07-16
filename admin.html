@@ -629,9 +629,40 @@
     }
 
     .admin-user-list,
-    .audit-list {
+    .audit-list,
+    .manager-status {
       display: grid;
       gap: 10px;
+    }
+
+    .manager-card {
+      border: 1px solid var(--line);
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .manager-card strong,
+    .manager-card small {
+      display: block;
+    }
+
+    .manager-card small {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      color: var(--navy);
+      font-size: 13px;
+    }
+
+    .checkbox-field input {
+      width: 16px;
+      height: 16px;
     }
 
     .admin-user-card,
@@ -1297,6 +1328,27 @@
             <div class="admin-user-list" id="adminUserList"></div>
           </section>
           <section class="dashboard-panel">
+            <h3>Consultation Manager</h3>
+            <form class="admin-form" id="consultationManagerForm">
+              <div class="field">
+                <label for="consultationManagerName">Name</label>
+                <input id="consultationManagerName" type="text" placeholder="상담관리 담당자">
+              </div>
+              <div class="field">
+                <label for="consultationManagerPhone">Mobile</label>
+                <input id="consultationManagerPhone" type="tel" placeholder="01000000000">
+              </div>
+              <label class="checkbox-field">
+                <input id="consultationManagerActive" type="checkbox" checked>
+                <span>신규 상담 문자 수신</span>
+              </label>
+              <button class="button" type="submit">Save Manager</button>
+            </form>
+            <div class="manager-status" id="consultationManagerStatus">
+              <p class="muted">담당자 설정을 불러오고 있습니다.</p>
+            </div>
+          </section>
+          <section class="dashboard-panel">
             <h3>Admin Logs</h3>
             <div class="reply-actions">
               <button class="button ghost" id="downloadLogButton" type="button">Download CSV</button>
@@ -1373,6 +1425,11 @@
     const adminUserEmail = document.getElementById("adminUserEmail");
     const adminUserRole = document.getElementById("adminUserRole");
     const adminUserList = document.getElementById("adminUserList");
+    const consultationManagerForm = document.getElementById("consultationManagerForm");
+    const consultationManagerName = document.getElementById("consultationManagerName");
+    const consultationManagerPhone = document.getElementById("consultationManagerPhone");
+    const consultationManagerActive = document.getElementById("consultationManagerActive");
+    const consultationManagerStatus = document.getElementById("consultationManagerStatus");
     const auditLogList = document.getElementById("auditLogList");
     const auditLogPager = document.getElementById("auditLogPager");
     const downloadLogButton = document.getElementById("downloadLogButton");
@@ -1442,6 +1499,7 @@
     initStagingAccessGate();
 
     let reservations = [];
+    let consultationManager = null;
     let analytics = {
       totalVisitors: 0,
       totalHits: 0,
@@ -1956,8 +2014,30 @@
       }]);
     }
 
+    function renderConsultationManager() {
+      const manager = consultationManager || {};
+      consultationManagerName.value = manager.name || "";
+      consultationManagerPhone.value = manager.phone || "";
+      consultationManagerActive.checked = manager.active !== false;
+
+      const sourceLabel = manager.source === "admin"
+        ? "어드민 지정"
+        : manager.source === "env"
+          ? "환경변수 기본값"
+          : "미설정";
+      consultationManagerStatus.innerHTML = `
+        <div class="manager-card">
+          <strong>${escapeHtml(manager.name || "상담관리 담당자 미지정")}</strong>
+          <small>수신번호: ${manager.phone ? escapeHtml(manager.phone) : "-"}</small>
+          <small>상태: ${manager.active === false ? "문자 수신 중지" : "신규 상담 문자 수신"} · ${sourceLabel}</small>
+          <small>최근 수정: ${manager.updatedAt ? formatDate(manager.updatedAt) : "-"}</small>
+        </div>
+      `;
+    }
+
     function renderMaster() {
       seedMasterUser();
+      renderConsultationManager();
       const users = getAdminUsers();
       adminUserList.innerHTML = users.length
         ? users.map((user) => `
@@ -2029,7 +2109,7 @@ async function loadAnalytics() {
 
 async function loadSmsConnectionStatus() {
   smsConnectionStatus.classList.remove("error");
-  smsConnectionStatus.textContent = "SOLAPI 발송 설정을 확인하고 있습니다.";
+  smsConnectionStatus.textContent = "SOLAPI 발송 설정과 상담관리 담당자를 확인하고 있습니다.";
 
   try {
     const response = await fetch("/api/admin-sms-status", {
@@ -2041,6 +2121,9 @@ async function loadSmsConnectionStatus() {
       throw new Error(result.error || "SOLAPI 발송 설정을 확인하지 못했습니다.");
     }
 
+    consultationManager = result.manager || consultationManager;
+    renderConsultationManager();
+
     if (!result.sms.configured) {
       smsConnectionStatus.classList.add("error");
       smsConnectionStatus.textContent = `SOLAPI 설정이 비어 있습니다: ${(result.sms.missing || []).join(", ")}`;
@@ -2050,17 +2133,69 @@ async function loadSmsConnectionStatus() {
     const sender = result.sms.senderLastFour
       ? `발신번호 끝 ${result.sms.senderLastFour}`
       : "발신번호 설정됨";
+    const managerText = consultationManager && consultationManager.phone
+      ? `수신 담당자 ${consultationManager.name || "-"}(${consultationManager.phone.slice(-4)})`
+      : "수신 담당자 미지정";
     smsConnectionStatus.textContent =
-      `SOLAPI 설정값이 입력되어 있습니다. ${sender}. 실제 접수 결과는 답변 발송 후 이력에서 확인합니다.`;
+      `SOLAPI 설정값이 입력되어 있습니다. ${sender}. ${managerText}. 신규 신청 알림은 요청 유형을 구분해 발송합니다.`;
   } catch (error) {
     smsConnectionStatus.classList.add("error");
     smsConnectionStatus.textContent = `SOLAPI 설정 확인 실패: ${error.message}`;
   }
 }
 
+async function loadConsultationManager() {
+  const response = await fetch("/api/admin-consultation-manager", {
+    headers: { Authorization: `Bearer ${getToken()}` }
+  });
+  const result = await response.json();
+
+  if (!response.ok || !result.ok) {
+    throw new Error(result.error || "상담관리 담당자 설정을 불러오지 못했습니다.");
+  }
+
+  consultationManager = result.manager || null;
+  renderConsultationManager();
+}
+
+async function saveConsultationManager() {
+  const name = consultationManagerName.value.trim();
+  const phone = consultationManagerPhone.value.trim();
+
+  if (!name || !phone) {
+    throw new Error("상담관리 담당자 이름과 휴대폰 번호를 입력해 주세요.");
+  }
+
+  const response = await fetch("/api/admin-consultation-manager", {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name,
+      phone,
+      active: consultationManagerActive.checked
+    })
+  });
+  const result = await response.json();
+
+  if (!response.ok || !result.ok) {
+    throw new Error(result.error || "상담관리 담당자 설정을 저장하지 못했습니다.");
+  }
+
+  consultationManager = result.manager;
+  renderConsultationManager();
+  adminNotice.classList.remove("error");
+  adminNotice.textContent = "상담관리 담당자 설정을 저장했습니다.";
+  recordAudit("update consultation manager", `${consultationManager.name} · ${consultationManager.phone.slice(-4)}`);
+  await loadSmsConnectionStatus();
+}
+
 async function refreshAll() {
   await loadReservations();
   await loadAnalytics();
+  await loadConsultationManager();
   await loadSmsConnectionStatus();
 }
 
@@ -2317,6 +2452,16 @@ async function refreshAll() {
       recordAudit("clear local logs", "local audit storage reset");
       renderMaster();
     });
+    consultationManagerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        await saveConsultationManager();
+      } catch (error) {
+        adminNotice.classList.add("error");
+        adminNotice.textContent = error.message;
+      }
+    });
+
     adminUserForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const name = adminUserName.value.trim();
