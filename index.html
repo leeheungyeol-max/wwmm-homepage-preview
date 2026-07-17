@@ -678,13 +678,22 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 24px;
+      isolation: isolate;
     }
 
     .research-card {
+      position: relative;
+      z-index: 1;
       height: 440px;
+      overflow: hidden;
       background: var(--navy);
       cursor: pointer;
       isolation: isolate;
+    }
+
+    .research-card.is-active,
+    .research-card.is-info-panel {
+      z-index: 2;
     }
 
     .research-card img {
@@ -729,16 +738,16 @@
       position: absolute;
       inset: 0;
       z-index: 1;
-      background: linear-gradient(180deg, rgba(1, 28, 55, 0.05), rgba(1, 28, 55, 0.72));
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.03), rgba(1, 28, 55, 0.36));
       transition: background 280ms ease;
     }
 
     .research-card.is-active::after {
-      background: linear-gradient(180deg, rgba(1, 28, 55, 0.1), rgba(1, 28, 55, 0.42));
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.04), rgba(1, 28, 55, 0.24));
     }
 
     .research-card.is-info-panel::after {
-      background: rgba(1, 28, 55, 0.62);
+      background: rgba(1, 28, 55, 0.32);
     }
 
     .research-default-copy {
@@ -783,6 +792,13 @@
       font-weight: 800;
       line-height: 1.45;
       letter-spacing: 0;
+      transition: opacity 240ms ease, transform 240ms ease;
+    }
+
+    .research-card.is-active .research-promise {
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
     }
 
     .research-info {
@@ -794,29 +810,46 @@
       justify-content: flex-start;
       padding: 8px;
       color: #fff;
-      background: linear-gradient(180deg, rgba(1, 28, 55, 0.46), rgba(1, 28, 55, 0.72));
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.22), rgba(1, 28, 55, 0.36));
       opacity: 0;
       pointer-events: none;
       transform: translateY(8px);
       transition: opacity 240ms ease, transform 240ms ease;
     }
 
+    .research-card.is-active .research-info,
     .research-card.is-info-panel .research-info {
       opacity: 1;
       pointer-events: auto;
       transform: translateY(0);
     }
 
+    .research-card.is-active .research-info {
+      justify-content: flex-start;
+      padding: 216px 28px 28px;
+      background: transparent;
+    }
+
+    .research-card.is-active .research-info-kicker,
+    .research-card.is-active .research-info h3,
+    .research-card.is-active .research-info-copy {
+      display: none;
+    }
+
+    .research-card.is-info-panel .research-location-link {
+      display: none;
+    }
+
 
     .research-pair-outline {
       position: absolute;
-      left: calc(var(--pair-left, 0px) - 8px);
-      top: calc(var(--pair-top, 0px) - 8px);
-      width: calc(var(--pair-width, 0px) + 16px);
-      height: calc(var(--pair-height, 0px) + 16px);
-      z-index: 4;
-      border: 1px solid rgba(215, 176, 104, 0.9);
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset;
+      left: calc(var(--pair-left, 0px) - 10px);
+      top: calc(var(--pair-top, 0px) - 10px);
+      width: calc(var(--pair-width, 0px) + 20px);
+      height: calc(var(--pair-height, 0px) + 20px);
+      z-index: 0;
+      background: rgba(215, 176, 104, 0.72);
+      box-shadow: 0 18px 42px rgba(1, 28, 55, 0.14);
       opacity: 0;
       pointer-events: none;
       transition: opacity 180ms ease, left 180ms ease, top 180ms ease, width 180ms ease, height 180ms ease;
@@ -848,6 +881,8 @@
     }
 
     .research-location-link {
+      position: relative;
+      z-index: 4;
       align-self: flex-start;
       border: 1px solid rgba(215, 176, 104, 0.88);
       background: rgba(1, 28, 55, 0.2);
@@ -2001,6 +2036,8 @@
     const researchCards = Array.from(document.querySelectorAll(".research-card"));
     const researchGrid = document.querySelector(".research-grid");
     const researchPairOutline = document.querySelector(".research-pair-outline");
+    let activeArtisanSource = null;
+    let activeArtisanInfo = null;
 
     function getArtisanInfoIndex(index) {
       const column = index % 3;
@@ -2012,6 +2049,8 @@
     function resetArtisanCards() {
       researchCards.forEach((card) => card.classList.remove("is-active", "is-info-panel"));
       researchGrid?.classList.remove("has-active-pair");
+      activeArtisanSource = null;
+      activeArtisanInfo = null;
     }
 
     function positionArtisanPair(activeCard, infoCard) {
@@ -2037,7 +2076,9 @@ function renderArtisanInfo(sourceCard, infoCard) {
       const kicker = infoCard.querySelector(".research-info-kicker");
       const heading = infoCard.querySelector(".research-info h3");
       const copy = infoCard.querySelector(".research-info-copy");
-      const link = infoCard.querySelector(".research-location-link");
+      const links = [sourceCard, infoCard]
+        .map((card) => card.querySelector(".research-location-link"))
+        .filter(Boolean);
 
       if (clinicImage && sourceCard.dataset.clinicImage) {
         clinicImage.src = sourceCard.dataset.clinicImage;
@@ -2046,19 +2087,22 @@ function renderArtisanInfo(sourceCard, infoCard) {
       if (kicker) kicker.textContent = sourceCard.dataset.role || "";
       if (heading) heading.textContent = `${sourceCard.dataset.doctor || ""} 원장 · ${sourceCard.dataset.clinic || ""}`;
       if (copy) copy.textContent = sourceCard.dataset.bio || "";
-      if (link) {
+      links.forEach((link) => {
         link.dataset.studio = sourceCard.dataset.studio || sourceCard.dataset.clinic || "";
         link.dataset.phone = sourceCard.dataset.phone || "";
         link.dataset.address = sourceCard.dataset.address || "";
-      }
+      });
     }
 
     function activateArtisanCard(card) {
+      if (card.classList.contains("is-info-panel") && activeArtisanSource) return;
       const index = researchCards.indexOf(card);
       if (index < 0) return;
       const infoCard = researchCards[getArtisanInfoIndex(index)];
       resetArtisanCards();
       card.classList.add("is-active");
+      activeArtisanSource = card;
+      activeArtisanInfo = infoCard || null;
       if (infoCard) {
         renderArtisanInfo(card, infoCard);
         infoCard.classList.add("is-info-panel");
@@ -2081,9 +2125,7 @@ function renderArtisanInfo(sourceCard, infoCard) {
     researchGrid?.addEventListener("mouseleave", resetArtisanCards);
 
 window.addEventListener("resize", () => {
-  const activeCard = researchCards.find((card) => card.classList.contains("is-active"));
-  const infoCard = researchCards.find((card) => card.classList.contains("is-info-panel"));
-  if (activeCard && infoCard) positionArtisanPair(activeCard, infoCard);
+  if (activeArtisanSource && activeArtisanInfo) positionArtisanPair(activeArtisanSource, activeArtisanInfo);
 });
 
     document.querySelectorAll(".research-location-link").forEach((button) => {
