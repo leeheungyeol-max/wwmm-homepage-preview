@@ -674,6 +674,7 @@
     }
 
     .research-grid {
+      position: relative;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 24px;
@@ -713,12 +714,10 @@
       transform: scale(1.03);
     }
 
-    .research-card.is-active .research-portrait,
     .research-card.is-info-panel .research-portrait {
       opacity: 0;
     }
 
-    .research-card.is-active .research-clinic-image,
     .research-card.is-info-panel .research-clinic-image {
       opacity: 1;
       filter: grayscale(0);
@@ -756,7 +755,6 @@
       transition: opacity 240ms ease, transform 240ms ease;
     }
 
-    .research-card.is-active .research-default-copy,
     .research-card.is-info-panel .research-default-copy {
       opacity: 0;
       transform: translateY(-28%);
@@ -789,17 +787,17 @@
 
     .research-info {
       position: absolute;
-      inset: 8px;
+      inset: 0;
       z-index: 3;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-      padding: 20px;
+      justify-content: flex-start;
+      padding: 8px;
       color: #fff;
-      background: linear-gradient(0deg, rgba(1, 28, 55, 0.9), rgba(1, 28, 55, 0.2));
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.46), rgba(1, 28, 55, 0.72));
       opacity: 0;
       pointer-events: none;
-      transform: translateY(12px);
+      transform: translateY(8px);
       transition: opacity 240ms ease, transform 240ms ease;
     }
 
@@ -807,6 +805,25 @@
       opacity: 1;
       pointer-events: auto;
       transform: translateY(0);
+    }
+
+
+    .research-pair-outline {
+      position: absolute;
+      left: calc(var(--pair-left, 0px) - 8px);
+      top: calc(var(--pair-top, 0px) - 8px);
+      width: calc(var(--pair-width, 0px) + 16px);
+      height: calc(var(--pair-height, 0px) + 16px);
+      z-index: 4;
+      border: 1px solid rgba(215, 176, 104, 0.9);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, left 180ms ease, top 180ms ease, width 180ms ease, height 180ms ease;
+    }
+
+    .research-grid.has-active-pair .research-pair-outline {
+      opacity: 1;
     }
 
     .research-info-kicker {
@@ -1551,6 +1568,7 @@
           </div>
         </div>
         <div class="research-grid">
+          <div class="research-pair-outline" aria-hidden="true"></div>
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="바른턱 치과" data-doctor="김도윤" data-role="Occlusion Master" data-bio="교합 안정성과 안모 균형을 동시에 설계하는 초정밀 분석을 이끕니다." data-studio="Gangnam Signature Dental" data-phone="02-0000-0101" data-address="서울 강남구 테헤란로 01" data-clinic-image="assets/images/S01.png">
             <img class="research-portrait" src="assets/images/R01.png" alt="김도윤 원장">
             <img class="research-clinic-image" src="assets/images/S01.png" alt="바른턱 치과 진료 공간" aria-hidden="true">
@@ -1982,6 +2000,7 @@
 
     const researchCards = Array.from(document.querySelectorAll(".research-card"));
     const researchGrid = document.querySelector(".research-grid");
+    const researchPairOutline = document.querySelector(".research-pair-outline");
 
     function getArtisanInfoIndex(index) {
       const column = index % 3;
@@ -1992,9 +2011,27 @@
 
     function resetArtisanCards() {
       researchCards.forEach((card) => card.classList.remove("is-active", "is-info-panel"));
+      researchGrid?.classList.remove("has-active-pair");
     }
 
-    function renderArtisanInfo(sourceCard, infoCard) {
+    function positionArtisanPair(activeCard, infoCard) {
+  if (!researchGrid || !researchPairOutline || !activeCard || !infoCard) return;
+  const gridRect = researchGrid.getBoundingClientRect();
+  const activeRect = activeCard.getBoundingClientRect();
+  const infoRect = infoCard.getBoundingClientRect();
+  const left = Math.min(activeRect.left, infoRect.left) - gridRect.left;
+  const top = Math.min(activeRect.top, infoRect.top) - gridRect.top;
+  const right = Math.max(activeRect.right, infoRect.right) - gridRect.left;
+  const bottom = Math.max(activeRect.bottom, infoRect.bottom) - gridRect.top;
+
+  researchPairOutline.style.setProperty("--pair-left", `${left}px`);
+  researchPairOutline.style.setProperty("--pair-top", `${top}px`);
+  researchPairOutline.style.setProperty("--pair-width", `${right - left}px`);
+  researchPairOutline.style.setProperty("--pair-height", `${bottom - top}px`);
+  researchGrid.classList.add("has-active-pair");
+}
+
+function renderArtisanInfo(sourceCard, infoCard) {
       if (!sourceCard || !infoCard) return;
       const clinicImage = infoCard.querySelector(".research-clinic-image");
       const kicker = infoCard.querySelector(".research-info-kicker");
@@ -2025,6 +2062,7 @@
       if (infoCard) {
         renderArtisanInfo(card, infoCard);
         infoCard.classList.add("is-info-panel");
+        positionArtisanPair(card, infoCard);
       }
     }
 
@@ -2041,6 +2079,12 @@
     });
 
     researchGrid?.addEventListener("mouseleave", resetArtisanCards);
+
+window.addEventListener("resize", () => {
+  const activeCard = researchCards.find((card) => card.classList.contains("is-active"));
+  const infoCard = researchCards.find((card) => card.classList.contains("is-info-panel"));
+  if (activeCard && infoCard) positionArtisanPair(activeCard, infoCard);
+});
 
     document.querySelectorAll(".research-location-link").forEach((button) => {
       button.addEventListener("click", (event) => {
