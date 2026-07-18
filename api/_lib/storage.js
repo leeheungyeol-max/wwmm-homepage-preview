@@ -9,6 +9,7 @@ const SUPABASE_SETTINGS_TABLE = process.env.SUPABASE_SETTINGS_TABLE || "admin_se
 const SUPABASE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "reservation-photos";
 const CONSULTATION_MANAGER_KEY = "consultation_manager";
 const ATELIER_CARDS_KEY = "atelier_cards";
+const STUDIO_CARDS_KEY = "studio_cards";
 
 function hasSupabase() {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -215,6 +216,43 @@ async function updateAtelierCards(cards) {
     await writeLocalSettings(settings);
   }
 
+  return value;
+}
+
+async function getStudioCards() {
+  if (hasSupabase()) {
+    const response = await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/${SUPABASE_SETTINGS_TABLE}?key=eq.${encodeURIComponent(STUDIO_CARDS_KEY)}&select=value&limit=1`,
+      { headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` } }
+    );
+    if (!response.ok) throw new Error(`Supabase studio settings read failed: ${await response.text()}`);
+    const [row] = await response.json();
+    return row && Array.isArray(row.value) ? row.value : null;
+  }
+  const settings = await readLocalSettings();
+  return Array.isArray(settings[STUDIO_CARDS_KEY]) ? settings[STUDIO_CARDS_KEY] : null;
+}
+
+async function updateStudioCards(cards) {
+  const value = Array.isArray(cards) ? cards : [];
+  const updatedAt = new Date().toISOString();
+  if (hasSupabase()) {
+    const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${SUPABASE_SETTINGS_TABLE}?on_conflict=key`, {
+      method: "POST",
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=representation"
+      },
+      body: JSON.stringify({ key: STUDIO_CARDS_KEY, value, updated_at: updatedAt })
+    });
+    if (!response.ok) throw new Error(`Supabase studio settings upsert failed: ${await response.text()}`);
+  } else {
+    const settings = await readLocalSettings();
+    settings[STUDIO_CARDS_KEY] = value;
+    await writeLocalSettings(settings);
+  }
   return value;
 }
 
@@ -441,9 +479,11 @@ module.exports = {
   createReservation,
   createSignedPhotoUrl,
   getAtelierCards,
+  getStudioCards,
   getConsultationManager,
   listReservations,
   updateAtelierCards,
+  updateStudioCards,
   updateReservation,
   updateConsultationManager,
   uploadReservationFiles

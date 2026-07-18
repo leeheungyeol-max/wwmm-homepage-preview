@@ -873,6 +873,48 @@
       line-height: 1.6;
     }
 
+    .content-list-pager {
+      margin: 12px 0 14px;
+    }
+
+    .studio-preview-card {
+      position: relative;
+      aspect-ratio: 6 / 7;
+      overflow: hidden;
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .studio-preview-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .studio-preview-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.06), rgba(1, 28, 55, 0.72));
+    }
+
+    .studio-preview-copy {
+      position: absolute;
+      z-index: 1;
+      left: 24px;
+      right: 24px;
+      bottom: 24px;
+      text-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .studio-preview-copy strong,
+    .studio-preview-copy span {
+      display: block;
+    }
+
+    .studio-preview-copy strong { font-size: 21px; }
+    .studio-preview-copy span { margin-top: 6px; color: rgba(255, 255, 255, 0.82); }
+
     .master-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
@@ -1536,6 +1578,7 @@
           <section class="dashboard-panel">
             <h3>원장 카드</h3>
             <div class="atelier-card-list" id="atelierCardList"></div>
+            <div class="pagination content-list-pager" id="atelierCardPager"></div>
             <div class="atelier-list-actions">
               <button class="button" id="addAtelierCard" type="button">+ 원장 추가하기</button>
               <button class="button ghost" id="toggleAtelierOrder" type="button" aria-pressed="false">순서 바꾸기</button>
@@ -1604,6 +1647,54 @@
                 </div>
               </article>
             </div>
+          </section>
+        </div>
+        <div class="atelier-admin-layout" id="studioAdminPanel" hidden>
+          <section class="dashboard-panel">
+            <h3>스튜디오 치과</h3>
+            <div class="atelier-card-list" id="studioCardList"></div>
+            <div class="pagination content-list-pager" id="studioCardPager"></div>
+            <div class="atelier-list-actions">
+              <button class="button" id="addStudioCard" type="button">+ 스튜디오 추가하기</button>
+            </div>
+          </section>
+          <section class="dashboard-panel">
+            <h3>스튜디오 편집</h3>
+            <form class="atelier-editor-form" id="studioEditorForm">
+              <div class="field"><label for="studioOrder">노출 순서 번호</label><input id="studioOrder" type="number" min="1" required></div>
+              <div class="field"><label for="studioName">치과 이름</label><input id="studioName" required placeholder="Gangnam Signature Dental"></div>
+              <div class="field"><label for="studioPhone">전화번호</label><input id="studioPhone" placeholder="02-0000-0000"></div>
+              <div class="field"><label for="studioAddress">전체 주소</label><input id="studioAddress" required placeholder="서울특별시 강남구 테헤란로 01"></div>
+              <div class="atelier-crop-grid">
+                <div class="atelier-cropper" data-studio-cropper>
+                  <strong>치과 이미지</strong>
+                  <input id="studioImageFile" type="file" accept="image/jpeg,image/png,image/webp">
+                  <div class="atelier-crop-stage"><img id="studioCropImage" alt="스튜디오 이미지 크롭"></div>
+                  <div class="atelier-crop-controls">
+                    <label>확대 <input id="studioCropZoom" type="range" min="1" max="2.5" step="0.01" value="1"></label>
+                    <label>가로 <input id="studioCropX" type="range" min="-30" max="30" step="1" value="0"></label>
+                    <label>세로 <input id="studioCropY" type="range" min="-30" max="30" step="1" value="0"></label>
+                  </div>
+                </div>
+              </div>
+              <p class="atelier-format-note">순서 번호를 변경하면 해당 번호에 치과가 배치되고, 기존 치과는 한 칸씩 뒤로 이동합니다. 주소는 프런트에서 지역 규칙에 맞게 자동 축약됩니다.</p>
+              <div class="atelier-editor-actions">
+                <button class="button ghost" id="deleteStudioCard" type="button">스튜디오 삭제하기</button>
+                <button class="button" type="submit">저장</button>
+              </div>
+              <p class="notice" id="studioEditorNotice" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+          <section class="dashboard-panel atelier-preview-wrap">
+            <h3>미리보기</h3>
+            <article class="studio-preview-card">
+              <img id="studioPreviewImage" alt="스튜디오 카드 미리보기">
+              <div class="studio-preview-copy">
+                <strong id="studioPreviewName">치과 이름</strong>
+                <span id="studioPreviewRegion">지역</span>
+              </div>
+            </article>
+            <p class="atelier-format-note" id="studioPreviewAddress">전체 주소가 이곳에 표시됩니다.</p>
           </section>
         </div>
       </section>
@@ -1800,6 +1891,7 @@
     const pageAdminOverview = document.getElementById("pageAdminOverview");
     const atelierAdminPanel = document.getElementById("atelierAdminPanel");
     const atelierCardList = document.getElementById("atelierCardList");
+    const atelierCardPager = document.getElementById("atelierCardPager");
     const addAtelierCard = document.getElementById("addAtelierCard");
     const toggleAtelierOrder = document.getElementById("toggleAtelierOrder");
     const deleteAtelierCard = document.getElementById("deleteAtelierCard");
@@ -1823,6 +1915,28 @@
     const atelierPreviewRole = document.getElementById("atelierPreviewRole");
     const atelierPreviewHeading = document.getElementById("atelierPreviewHeading");
     const atelierPreviewBio = document.getElementById("atelierPreviewBio");
+    const studioAdminPanel = document.getElementById("studioAdminPanel");
+    const studioCardList = document.getElementById("studioCardList");
+    const studioCardPager = document.getElementById("studioCardPager");
+    const addStudioCard = document.getElementById("addStudioCard");
+    const deleteStudioCard = document.getElementById("deleteStudioCard");
+    const studioEditorForm = document.getElementById("studioEditorForm");
+    const studioEditorNotice = document.getElementById("studioEditorNotice");
+    const studioFields = {
+      order: document.getElementById("studioOrder"),
+      name: document.getElementById("studioName"),
+      phone: document.getElementById("studioPhone"),
+      address: document.getElementById("studioAddress")
+    };
+    const studioImageFile = document.getElementById("studioImageFile");
+    const studioCropImage = document.getElementById("studioCropImage");
+    const studioCropZoom = document.getElementById("studioCropZoom");
+    const studioCropX = document.getElementById("studioCropX");
+    const studioCropY = document.getElementById("studioCropY");
+    const studioPreviewImage = document.getElementById("studioPreviewImage");
+    const studioPreviewName = document.getElementById("studioPreviewName");
+    const studioPreviewRegion = document.getElementById("studioPreviewRegion");
+    const studioPreviewAddress = document.getElementById("studioPreviewAddress");
 
     function initStagingAccessGate() {
       if (window.location.hostname !== "staging.wwmm.co") {
@@ -1892,10 +2006,22 @@
       { id: "artisan_5", clinic: "베니어랩 치과", doctor: "서민재", role: "Veneer Specialist", bio: "자연치와 가장 가까운 볼륨, 투명도, 착용감을 설계합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Luxe Smile Clinic", phone: "02-0000-0505", address: "서울 강남구 선릉로 05", portrait: "assets/images/R04.png", clinicImage: "assets/images/S05.png" },
       { id: "artisan_6", clinic: "하모니덴탈", doctor: "한지율", role: "Harmony Director", bio: "치아와 입술, 얼굴선이 이어지는 최종 균형을 검수합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Luxe Smile Botanical", phone: "02-0000-0606", address: "서울 서초구 반포대로 06", portrait: "assets/images/R06.png", clinicImage: "assets/images/S06.png" }
     ];
+    const defaultStudioCards = [
+      { id: "studio_1", name: "Gangnam Signature Dental", phone: "02-0000-0101", address: "서울특별시 강남구 테헤란로 01", image: "assets/images/S01.png" },
+      { id: "studio_2", name: "Aurora Dental Studio", phone: "02-0000-0202", address: "서울특별시 강남구 언주로 02", image: "assets/images/S02.png" },
+      { id: "studio_3", name: "Harmony Dental House", phone: "02-0000-0303", address: "서울특별시 서초구 사평대로 03", image: "assets/images/S03.png" },
+      { id: "studio_4", name: "Aegis Dental", phone: "02-0000-0404", address: "서울특별시 강남구 도산대로 04", image: "assets/images/S04.png" },
+      { id: "studio_5", name: "Luxe Smile Clinic", phone: "02-0000-0505", address: "서울특별시 강남구 선릉로 05", image: "assets/images/S05.png" },
+      { id: "studio_6", name: "Luxe Smile Botanical", phone: "02-0000-0606", address: "서울특별시 서초구 반포대로 06", image: "assets/images/S06.png" }
+    ];
     let atelierCards = [];
     let activeAtelierCardId = "";
     let atelierEditorDirty = false;
     let atelierOrderMode = false;
+    let studioCards = [];
+    let activeStudioCardId = "";
+    let studioEditorDirty = false;
+    let studioCropState = { src: "", zoom: 1, x: 0, y: 0, dirty: false };
     const cropStates = {
       portrait: { src: "", zoom: 1, x: 0, y: 0, dirty: false },
       clinic: { src: "", zoom: 1, x: 0, y: 0, dirty: false }
@@ -1904,13 +2030,17 @@
       reservations: 1,
       requests: 1,
       history: 1,
-      audit: 1
+      audit: 1,
+      atelierCards: 1,
+      studioCards: 1
     };
     const pageSizes = {
       reservations: 6,
       requests: 5,
       history: 5,
-      audit: 8
+      audit: 8,
+      atelierCards: 6,
+      studioCards: 6
     };
     const pageSections = {
       home: {
@@ -2121,9 +2251,14 @@
     function renderAtelierCardList() {
       if (!atelierCards.length) {
         atelierCardList.innerHTML = '<p class="muted">등록된 원장이 없습니다. 원장 추가하기를 눌러 새 카드를 만드세요.</p>';
+        atelierCardPager.innerHTML = "";
         return;
       }
-      atelierCardList.innerHTML = atelierCards.map((card, index) => `
+      const page = paginate(atelierCards, "atelierCards");
+      const pageStart = (page.page - 1) * pageSizes.atelierCards;
+      atelierCardList.innerHTML = page.items.map((card, pageIndex) => {
+        const index = pageStart + pageIndex;
+        return `
         <div class="atelier-list-row">
           <button class="atelier-card-item ${card.id === activeAtelierCardId ? "active" : ""}" type="button" data-atelier-card-id="${escapeHtml(card.id)}">
             <strong>${index + 1}. ${escapeHtml(card.doctor || "새 원장")}</strong>
@@ -2136,7 +2271,8 @@
             </span>
           ` : ""}
         </div>
-      `).join("");
+      `}).join("");
+      renderPager(atelierCardPager, "atelierCards", page.pageCount);
     }
 
     function clearAtelierEditor() {
@@ -2188,6 +2324,8 @@
       const card = atelierCards.find((item) => item.id === id);
       if (!card) return;
       activeAtelierCardId = id;
+      const selectedIndex = atelierCards.findIndex((item) => item.id === id);
+      paginationState.atelierCards = Math.floor(selectedIndex / pageSizes.atelierCards) + 1;
       deleteAtelierCard.disabled = false;
       Object.entries(atelierFields).forEach(([key, input]) => {
         input.value = card[key] || "";
@@ -2283,6 +2421,177 @@
       recordAudit("save atelier card", `${values.doctor} · ${values.clinic}`);
     }
 
+    function formatStudioRegion(address) {
+      const parts = String(address || "").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "지역 미입력";
+      const cityMap = {
+        "서울특별시": "서울", "부산광역시": "부산", "대구광역시": "대구", "인천광역시": "인천",
+        "광주광역시": "광주", "대전광역시": "대전", "울산광역시": "울산", "세종특별자치시": "세종"
+      };
+      const provinceMap = {
+        "경기도": "경기", "강원특별자치도": "강원", "강원도": "강원", "충청북도": "충북", "충청남도": "충남",
+        "전북특별자치도": "전북", "전라북도": "전북", "전라남도": "전남", "경상북도": "경북", "경상남도": "경남",
+        "제주특별자치도": "제주"
+      };
+      const isProvince = Boolean(provinceMap[parts[0]]);
+      const region = cityMap[parts[0]] || provinceMap[parts[0]] || parts[0]
+        .replace(/특별자치시|특별시|광역시|특별자치도|도$/, "");
+      const district = isProvince ? String(parts[1] || "").replace(/시$/, "") : parts[1];
+      return [region, district].filter(Boolean).join(" ");
+    }
+
+    function activeStudioCard() {
+      return studioCards.find((card) => card.id === activeStudioCardId) || null;
+    }
+
+    function applyStudioCropState() {
+      studioCropImage.src = studioCropState.src || "";
+      studioCropImage.style.setProperty("--crop-zoom", studioCropState.zoom);
+      studioCropImage.style.setProperty("--crop-x", `${studioCropState.x}%`);
+      studioCropImage.style.setProperty("--crop-y", `${studioCropState.y}%`);
+      studioCropZoom.value = studioCropState.zoom;
+      studioCropX.value = studioCropState.x;
+      studioCropY.value = studioCropState.y;
+    }
+
+    function updateStudioPreview() {
+      studioPreviewName.textContent = studioFields.name.value.trim() || "치과 이름";
+      studioPreviewRegion.textContent = formatStudioRegion(studioFields.address.value);
+      studioPreviewAddress.textContent = studioFields.address.value.trim() || "전체 주소가 이곳에 표시됩니다.";
+      studioPreviewImage.src = studioCropState.src || "assets/images/S01.png";
+      studioPreviewImage.style.objectPosition = `${50 + Number(studioCropState.x)}% ${50 + Number(studioCropState.y)}%`;
+      studioPreviewImage.style.transform = `scale(${studioCropState.zoom})`;
+    }
+
+    function renderStudioCardList() {
+      if (!studioCards.length) {
+        studioCardList.innerHTML = '<p class="muted">등록된 스튜디오가 없습니다. 스튜디오 추가하기를 눌러 새 카드를 만드세요.</p>';
+        studioCardPager.innerHTML = "";
+        return;
+      }
+      const page = paginate(studioCards, "studioCards");
+      const start = (page.page - 1) * pageSizes.studioCards;
+      studioCardList.innerHTML = page.items.map((card, index) => `
+        <div class="atelier-list-row">
+          <button class="atelier-card-item ${card.id === activeStudioCardId ? "active" : ""}" type="button" data-studio-card-id="${escapeHtml(card.id)}">
+            <strong>${start + index + 1}. ${escapeHtml(card.name || "새 스튜디오")}</strong>
+            <small>${escapeHtml(formatStudioRegion(card.address))}</small>
+          </button>
+        </div>
+      `).join("");
+      renderPager(studioCardPager, "studioCards", page.pageCount);
+    }
+
+    function clearStudioEditor() {
+      activeStudioCardId = "";
+      Object.values(studioFields).forEach((input) => { input.value = ""; });
+      studioCropState = { src: "", zoom: 1, x: 0, y: 0, dirty: false };
+      applyStudioCropState();
+      deleteStudioCard.disabled = true;
+      studioEditorDirty = false;
+      renderStudioCardList();
+      updateStudioPreview();
+    }
+
+    function selectStudioCard(id) {
+      const card = studioCards.find((item) => item.id === id);
+      if (!card) return;
+      activeStudioCardId = id;
+      const index = studioCards.findIndex((item) => item.id === id);
+      paginationState.studioCards = Math.floor(index / pageSizes.studioCards) + 1;
+      studioFields.order.value = index + 1;
+      studioFields.name.value = card.name || "";
+      studioFields.phone.value = card.phone || "";
+      studioFields.address.value = card.address || "";
+      studioCropState = { src: card.image || "", zoom: 1, x: 0, y: 0, dirty: false };
+      applyStudioCropState();
+      deleteStudioCard.disabled = false;
+      renderStudioCardList();
+      updateStudioPreview();
+      studioEditorDirty = false;
+      studioEditorNotice.textContent = "";
+    }
+
+    function cropStudioImage() {
+      if (!studioCropState.src || !studioCropState.dirty) return Promise.resolve(studioCropState.src);
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 900;
+          canvas.height = 1050;
+          const context = canvas.getContext("2d");
+          const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight) * studioCropState.zoom;
+          const width = image.naturalWidth * scale;
+          const height = image.naturalHeight * scale;
+          const maxX = Math.max(0, (width - canvas.width) / 2);
+          const maxY = Math.max(0, (height - canvas.height) / 2);
+          context.drawImage(image, (canvas.width - width) / 2 + (studioCropState.x / 30) * maxX, (canvas.height - height) / 2 + (studioCropState.y / 30) * maxY, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.82));
+        };
+        image.onerror = () => reject(new Error("이미지를 처리하지 못했습니다."));
+        image.src = studioCropState.src;
+      });
+    }
+
+    async function loadStudioCards() {
+      const response = await fetch("/api/studio-cards");
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Studio 카드를 불러오지 못했습니다.");
+      studioCards = result.configured ? (result.cards || []) : defaultStudioCards.map((card) => ({ ...card }));
+      if (studioCards.length) selectStudioCard(studioCards[0].id);
+      else clearStudioEditor();
+    }
+
+    async function persistStudioCards(message) {
+      const response = await fetch("/api/studio-cards", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ cards: studioCards })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Studio 카드를 저장하지 못했습니다.");
+      studioCards = result.cards;
+      studioEditorNotice.classList.remove("error");
+      studioEditorNotice.textContent = message;
+    }
+
+    function placeStudioCardAtOrder(card, targetIndex) {
+      const oldIndex = studioCards.findIndex((item) => item.id === card.id);
+      if (oldIndex < 0) return;
+
+      if (targetIndex > oldIndex) {
+        for (let index = oldIndex; index < targetIndex; index += 1) {
+          studioCards[index] = studioCards[index + 1];
+        }
+      } else if (targetIndex < oldIndex) {
+        for (let index = oldIndex; index > targetIndex; index -= 1) {
+          studioCards[index] = studioCards[index - 1];
+        }
+      }
+
+      studioCards[targetIndex] = card;
+    }
+
+    async function saveStudioCard() {
+      const current = activeStudioCard();
+      if (!current) throw new Error("저장할 스튜디오를 선택해 주세요.");
+      const name = studioFields.name.value.trim();
+      const phone = studioFields.phone.value.trim();
+      const address = studioFields.address.value.trim();
+      if (!name || !address) throw new Error("치과 이름과 전체 주소를 입력해 주세요.");
+      if (!studioCropState.src) throw new Error("치과 이미지를 선택해 주세요.");
+      const image = await cropStudioImage();
+      const oldIndex = studioCards.findIndex((card) => card.id === current.id);
+      const desiredIndex = Math.max(0, Math.min(studioCards.length - 1, Number(studioFields.order.value || oldIndex + 1) - 1));
+      const updated = { ...current, name, phone, address, image };
+      placeStudioCardAtOrder(updated, desiredIndex);
+      await persistStudioCards("스튜디오를 저장했습니다. 공개 Studio 페이지에도 반영됩니다.");
+      selectStudioCard(current.id);
+      studioEditorNotice.textContent = "스튜디오를 저장했습니다. 공개 Studio 페이지에도 반영됩니다.";
+      recordAudit("save studio card", `${name} · ${desiredIndex + 1}번`);
+    }
+
     function showView(view) {
       currentView = view;
       const isPageAdmin = Boolean(pageSections[view]);
@@ -2305,8 +2614,9 @@
       navButtons.forEach((button) => {
         button.classList.toggle("active", button.dataset.viewTarget === view);
       });
-      pageAdminOverview.hidden = view === "atelier";
+      pageAdminOverview.hidden = view === "atelier" || view === "studio";
       atelierAdminPanel.hidden = view !== "atelier";
+      studioAdminPanel.hidden = view !== "studio";
       if (isPageAdmin) {
         renderPageAdmin(view);
       }
@@ -2801,6 +3111,7 @@ async function refreshAll(showFeedback = false) {
     ["예약", loadReservations],
     ["분석", loadAnalytics],
     ["Atelier", loadAtelierCards],
+    ["Studio", loadStudioCards],
     ["상담 담당자", loadConsultationManager],
     ["문자 설정", loadSmsConnectionStatus]
   ];
@@ -2816,6 +3127,13 @@ async function refreshAll(showFeedback = false) {
       : failed.length
         ? `Atelier 카드를 새로 불러왔습니다. 일부 관리 정보(${failed.join(", ")})는 갱신하지 못했습니다.`
         : "Atelier 카드와 관리 정보를 최신 상태로 새로 불러왔습니다.";
+  }
+
+  if (showFeedback && currentView === "studio") {
+    studioEditorNotice.classList.toggle("error", failed.includes("Studio"));
+    studioEditorNotice.textContent = failed.includes("Studio")
+      ? "Studio 최신 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+      : "Studio 카드와 관리 정보를 최신 상태로 새로 불러왔습니다.";
   }
 
   if (failed.length === jobs.length) {
@@ -3060,6 +3378,10 @@ async function refreshAll(showFeedback = false) {
             atelierEditorNotice.classList.add("error");
             atelierEditorNotice.textContent = error.message;
           }
+          if (currentView === "studio") {
+            studioEditorNotice.classList.add("error");
+            studioEditorNotice.textContent = error.message;
+          }
         })
         .finally(() => {
           refreshButton.disabled = false;
@@ -3172,6 +3494,76 @@ async function refreshAll(showFeedback = false) {
         atelierEditorNotice.textContent = error.message;
       }
     });
+    studioCardList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-studio-card-id]");
+      if (button) selectStudioCard(button.dataset.studioCardId);
+    });
+    addStudioCard.addEventListener("click", () => {
+      const card = { id: `studio_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: "", phone: "", address: "", image: "" };
+      studioCards.push(card);
+      paginationState.studioCards = Math.ceil(studioCards.length / pageSizes.studioCards);
+      selectStudioCard(card.id);
+      studioFields.order.value = studioCards.length;
+      studioEditorDirty = true;
+      studioEditorNotice.textContent = "새 스튜디오입니다. 내용을 입력하고 저장해 주세요.";
+    });
+    deleteStudioCard.addEventListener("click", async () => {
+      const removed = activeStudioCard();
+      if (!removed) return;
+      studioCards = studioCards.filter((card) => card.id !== removed.id);
+      try {
+        await persistStudioCards(studioCards.length ? "스튜디오를 삭제했습니다." : "모든 스튜디오를 삭제했습니다. 프런트 목록도 비워졌습니다.");
+        if (studioCards.length) selectStudioCard(studioCards[0].id);
+        else clearStudioEditor();
+        studioEditorNotice.textContent = studioCards.length
+          ? "스튜디오를 삭제했습니다."
+          : "모든 스튜디오를 삭제했습니다. 프런트 목록도 비워졌습니다.";
+        recordAudit("delete studio card", removed.name || "-");
+      } catch (error) {
+        studioEditorNotice.classList.add("error");
+        studioEditorNotice.textContent = error.message;
+        await loadStudioCards();
+      }
+    });
+    studioEditorForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try { await saveStudioCard(); }
+      catch (error) {
+        studioEditorNotice.classList.add("error");
+        studioEditorNotice.textContent = error.message;
+      }
+    });
+    Object.values(studioFields).forEach((input) => input.addEventListener("input", () => {
+      studioEditorDirty = true;
+      studioEditorNotice.classList.remove("error");
+      studioEditorNotice.textContent = "저장되지 않은 변경 사항이 있습니다.";
+      updateStudioPreview();
+    }));
+    studioImageFile.addEventListener("change", () => {
+      const file = studioImageFile.files && studioImageFile.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/") || file.size > 12 * 1024 * 1024) {
+        studioEditorNotice.classList.add("error");
+        studioEditorNotice.textContent = "12MB 이하의 이미지 파일을 선택해 주세요.";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        studioCropState = { src: reader.result, zoom: 1, x: 0, y: 0, dirty: true };
+        applyStudioCropState();
+        updateStudioPreview();
+        studioEditorDirty = true;
+      };
+      reader.readAsDataURL(file);
+    });
+    [studioCropZoom, studioCropX, studioCropY].forEach((input) => input.addEventListener("input", () => {
+      studioCropState.zoom = Number(studioCropZoom.value);
+      studioCropState.x = Number(studioCropX.value);
+      studioCropState.y = Number(studioCropY.value);
+      studioCropState.dirty = true;
+      applyStudioCropState();
+      updateStudioPreview();
+    }));
     Object.values(atelierFields).forEach((input) => input.addEventListener("input", () => {
       atelierEditorDirty = true;
       atelierEditorNotice.classList.remove("error");
@@ -3295,6 +3687,10 @@ async function refreshAll(showFeedback = false) {
           renderRows();
         } else if (key === "audit") {
           renderMaster();
+        } else if (key === "atelierCards") {
+          renderAtelierCardList();
+        } else if (key === "studioCards") {
+          renderStudioCardList();
         } else {
           renderDashboard();
         }

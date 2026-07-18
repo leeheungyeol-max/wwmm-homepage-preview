@@ -1812,32 +1812,32 @@
           <a class="studio-card" href="#location" data-studio="Gangnam Signature Dental" data-phone="02-0000-0101" data-address="서울 강남구 테헤란로 01">
             <img src="assets/images/S01.png" alt="Gangnam Signature Dental">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Gangnam Signature Dental</h3><p>Seoul Gangnam-gu<br>02-0000-0101</p></div>
+            <div class="studio-info"><h3>Gangnam Signature Dental</h3><p>서울 강남구</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Aurora Dental Studio" data-phone="02-0000-0202" data-address="서울 강남구 언주로 02">
             <img src="assets/images/S02.png" alt="Aurora Dental Studio">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Aurora Dental Studio</h3><p>Seoul Gangnam-gu<br>02-0000-0202</p></div>
+            <div class="studio-info"><h3>Aurora Dental Studio</h3><p>서울 강남구</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Harmony Dental House" data-phone="02-0000-0303" data-address="서울 서초구 사평대로 03">
             <img src="assets/images/S03.png" alt="Harmony Dental House">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Harmony Dental House</h3><p>Seoul Seocho-gu<br>02-0000-0303</p></div>
+            <div class="studio-info"><h3>Harmony Dental House</h3><p>서울 서초구</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Aegis Dental" data-phone="02-0000-0404" data-address="서울 강남구 도산대로 04">
             <img src="assets/images/S04.png" alt="Aegis Dental">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Aegis Dental</h3><p>Seoul Gangnam-gu<br>02-0000-0404</p></div>
+            <div class="studio-info"><h3>Aegis Dental</h3><p>서울 강남구</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Luxe Smile Clinic" data-phone="02-0000-0505" data-address="서울 강남구 선릉로 05">
             <img src="assets/images/S05.png" alt="Luxe Smile Clinic">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Luxe Smile Clinic</h3><p>Seoul Gangnam-gu<br>02-0000-0505</p></div>
+            <div class="studio-info"><h3>Luxe Smile Clinic</h3><p>서울 강남구</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Luxe Smile Botanical" data-phone="02-0000-0606" data-address="서울 서초구 반포대로 06">
             <img src="assets/images/S06.png" alt="Luxe Smile Botanical">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Luxe Smile Botanical</h3><p>Seoul Seocho-gu<br>02-0000-0606</p></div>
+            <div class="studio-info"><h3>Luxe Smile Botanical</h3><p>서울 서초구</p></div>
           </a>
         </div>
 
@@ -1982,7 +1982,8 @@
     const mobilePanel = document.getElementById("mobilePanel");
     const findLine = document.getElementById("findLine");
     const uploadArea = document.getElementById("uploadArea");
-    const studioCards = document.querySelectorAll(".studio-card");
+    let studioCards = Array.from(document.querySelectorAll(".studio-card"));
+    const studioGrid = document.querySelector(".studio-grid");
     const selectedStudio = document.getElementById("selectedStudio");
     const selectedPhone = document.getElementById("selectedPhone");
     const selectedAddress = document.getElementById("selectedAddress");
@@ -2084,12 +2085,14 @@
       if (selectedStudioInput && studio) selectedStudioInput.value = studio;
     }
 
-    studioCards.forEach((card) => {
+    function bindStudioCard(card) {
       card.addEventListener("click", () => {
         locationReturnSource = { type: "studio", element: card };
         selectStudioDetails(card.dataset.studio, card.dataset.phone, card.dataset.address);
       });
-    });
+    }
+
+    studioCards.forEach(bindStudioCard);
 
     let researchCards = Array.from(document.querySelectorAll(".research-card"));
     const researchGrid = document.querySelector(".research-grid");
@@ -2223,6 +2226,49 @@ window.addEventListener("resize", () => {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
+
+    function formatStudioRegion(address) {
+      const parts = String(address || "").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "지역 미입력";
+      const cityMap = {
+        "서울특별시": "서울", "부산광역시": "부산", "대구광역시": "대구", "인천광역시": "인천",
+        "광주광역시": "광주", "대전광역시": "대전", "울산광역시": "울산", "세종특별자치시": "세종"
+      };
+      const provinceMap = {
+        "경기도": "경기", "강원특별자치도": "강원", "강원도": "강원", "충청북도": "충북", "충청남도": "충남",
+        "전북특별자치도": "전북", "전라북도": "전북", "전라남도": "전남", "경상북도": "경북", "경상남도": "경남",
+        "제주특별자치도": "제주"
+      };
+      const isProvince = Boolean(provinceMap[parts[0]]);
+      const region = cityMap[parts[0]] || provinceMap[parts[0]] || parts[0]
+        .replace(/특별자치시|특별시|광역시|특별자치도|도$/, "");
+      const district = isProvince ? String(parts[1] || "").replace(/시$/, "") : parts[1];
+      return [region, district].filter(Boolean).join(" ");
+    }
+
+    function renderSavedStudioCards(cards) {
+      if (!studioGrid || !Array.isArray(cards)) return;
+      locationReturnSource = null;
+      studioGrid.innerHTML = cards.map((card) => `
+        <a class="studio-card" href="#location" data-studio="${escapeAtelier(card.name)}" data-phone="${escapeAtelier(card.phone)}" data-address="${escapeAtelier(card.address)}">
+          <img src="${escapeAtelier(card.image)}" alt="${escapeAtelier(card.name)}">
+          <span class="more-mark">+</span>
+          <div class="studio-info"><h3>${escapeAtelier(card.name)}</h3><p>${escapeAtelier(formatStudioRegion(card.address))}</p></div>
+        </a>
+      `).join("");
+      studioCards = Array.from(studioGrid.querySelectorAll(".studio-card"));
+      studioCards.forEach(bindStudioCard);
+      if (studioCards[0]) {
+        selectStudioDetails(studioCards[0].dataset.studio, studioCards[0].dataset.phone, studioCards[0].dataset.address);
+      }
+    }
+
+    fetch("/api/studio-cards")
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (result && result.ok && result.configured) renderSavedStudioCards(result.cards);
+      })
+      .catch(() => {});
 
     function renderSavedAtelierCards(cards) {
       if (!researchGrid || !Array.isArray(cards)) return;
