@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vercel dev",
-    "check": "node --check api/reservations.js && node --check api/admin-login.js && node --check api/admin-reservations.js && node --check api/update-reservation.js && node --check api/admin-photo-url.js && node --check api/save-reply.js && node --check api/send-reply-sms.js && node --check api/_lib/notifications.js && node --check api/admin-sms-status.js && node --check api/admin-consultation-manager.js && node --check api/analytics.js && node --check api/staging-access.js"
+    "check": "node --check api/reservations.js && node --check api/admin-login.js && node --check api/admin-reservations.js && node --check api/update-reservation.js && node --check api/admin-photo-url.js && node --check api/save-reply.js && node --check api/send-reply-sms.js && node --check api/_lib/notifications.js && node --check api/admin-sms-status.js && node --check api/admin-consultation-manager.js && node --check api/atelier-cards.js && node --check api/analytics.js && node --check api/staging-access.js"
   },
   "engines": {
     "node": ">=20"

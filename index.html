@@ -752,7 +752,7 @@
     }
 
     .research-card.is-info-panel::after {
-      background: rgba(1, 28, 55, 0.16);
+      background: rgba(1, 28, 55, 0.52);
     }
 
     .research-default-copy {
@@ -800,10 +800,13 @@
     .research-promise {
       margin-top: 22px;
       margin-bottom: 0;
+      padding-left: 0.42em;
       font-size: 20px;
       font-weight: 800;
       line-height: 1.45;
       letter-spacing: 0;
+      text-indent: -0.42em;
+      white-space: pre-line;
       transition: opacity 240ms ease, transform 240ms ease;
     }
 
@@ -897,6 +900,19 @@
       font-size: 14px;
     }
 
+    .research-info .research-bio-label {
+      margin: 12px 0 4px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .research-info .research-info-copy {
+      white-space: pre-line;
+    }
+
     .research-location-link {
       position: relative;
       z-index: 4;
@@ -916,6 +932,18 @@
     .location-actions {
       display: grid;
       gap: 12px;
+    }
+
+    .info-panel .location-actions .button.ghost {
+      border-color: rgba(255, 255, 255, 0.62);
+      color: #fff;
+    }
+
+    .info-panel .location-actions #locationReturn {
+      border-color: var(--gold);
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 800;
     }
 
     .gallery-grid {
@@ -1627,14 +1655,15 @@
             <div class="research-default-copy">
               <p class="research-clinic">바른턱 치과</p>
               <p class="research-doctor">김도윤 원장</p>
-              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
+              <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Occlusion Master</p>
               <h3>김도윤 원장 · 바른턱 치과</h3>
+              <p class="research-bio-label">약력</p>
               <p class="research-info-copy">교합 안정성과 안모 균형을 동시에 설계하는 초정밀 분석을 이끕니다.</p>
-              <button class="research-location-link" type="button">치과 찾아가기</button>
+              <button class="research-location-link" type="button">치과 위치 보기</button>
             </div>
           </article>
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="미소라인 치과" data-doctor="이준서" data-role="Facial Designer" data-bio="스마일 아크와 미드라인의 미세한 변화를 조율합니다." data-studio="Aurora Dental Studio" data-phone="02-0000-0202" data-address="서울 강남구 언주로 02" data-clinic-image="assets/images/S02.png">
@@ -1643,14 +1672,15 @@
             <div class="research-default-copy">
               <p class="research-clinic">미소라인 치과</p>
               <p class="research-doctor">이준서 원장</p>
-              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
+              <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Facial Designer</p>
               <h3>이준서 원장 · 미소라인 치과</h3>
+              <p class="research-bio-label">약력</p>
               <p class="research-info-copy">스마일 아크와 미드라인의 미세한 변화를 조율합니다.</p>
-              <button class="research-location-link" type="button">치과 찾아가기</button>
+              <button class="research-location-link" type="button">치과 위치 보기</button>
             </div>
           </article>
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="페이스밸런스 치과" data-doctor="박현우" data-role="Line Analyst" data-bio="정면과 측면의 데이터를 결합해 개인별 조화 기준을 정교화합니다." data-studio="Harmony Dental House" data-phone="02-0000-0303" data-address="서울 서초구 사평대로 03" data-clinic-image="assets/images/S03.png">
@@ -1659,14 +1689,15 @@
             <div class="research-default-copy">
               <p class="research-clinic">페이스밸런스 치과</p>
               <p class="research-doctor">박현우 원장</p>
-              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
+              <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Line Analyst</p>
               <h3>박현우 원장 · 페이스밸런스 치과</h3>
+              <p class="research-bio-label">약력</p>
               <p class="research-info-copy">정면과 측면의 데이터를 결합해 개인별 조화 기준을 정교화합니다.</p>
-              <button class="research-location-link" type="button">치과 찾아가기</button>
+              <button class="research-location-link" type="button">치과 위치 보기</button>
             </div>
           </article>
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="라인아트 치과" data-doctor="정하윤" data-role="Micro Technician" data-bio="0.01mm 단위의 감각으로 표면과 경계를 완성합니다." data-studio="Aegis Dental" data-phone="02-0000-0404" data-address="서울 강남구 도산대로 04" data-clinic-image="assets/images/S04.png">
@@ -1675,14 +1706,15 @@
             <div class="research-default-copy">
               <p class="research-clinic">라인아트 치과</p>
               <p class="research-doctor">정하윤 원장</p>
-              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
+              <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Micro Technician</p>
               <h3>정하윤 원장 · 라인아트 치과</h3>
+              <p class="research-bio-label">약력</p>
               <p class="research-info-copy">0.01mm 단위의 감각으로 표면과 경계를 완성합니다.</p>
-              <button class="research-location-link" type="button">치과 찾아가기</button>
+              <button class="research-location-link" type="button">치과 위치 보기</button>
             </div>
           </article>
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="베니어랩 치과" data-doctor="서민재" data-role="Veneer Specialist" data-bio="자연치와 가장 가까운 볼륨, 투명도, 착용감을 설계합니다." data-studio="Luxe Smile Clinic" data-phone="02-0000-0505" data-address="서울 강남구 선릉로 05" data-clinic-image="assets/images/S05.png">
@@ -1691,14 +1723,15 @@
             <div class="research-default-copy">
               <p class="research-clinic">베니어랩 치과</p>
               <p class="research-doctor">서민재 원장</p>
-              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
+              <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Veneer Specialist</p>
               <h3>서민재 원장 · 베니어랩 치과</h3>
+              <p class="research-bio-label">약력</p>
               <p class="research-info-copy">자연치와 가장 가까운 볼륨, 투명도, 착용감을 설계합니다.</p>
-              <button class="research-location-link" type="button">치과 찾아가기</button>
+              <button class="research-location-link" type="button">치과 위치 보기</button>
             </div>
           </article>
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="하모니덴탈" data-doctor="한지율" data-role="Harmony Director" data-bio="치아와 입술, 얼굴선이 이어지는 최종 균형을 검수합니다." data-studio="Luxe Smile Botanical" data-phone="02-0000-0606" data-address="서울 서초구 반포대로 06" data-clinic-image="assets/images/S06.png">
@@ -1707,14 +1740,15 @@
             <div class="research-default-copy">
               <p class="research-clinic">하모니덴탈</p>
               <p class="research-doctor">한지율 원장</p>
-              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
+              <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Harmony Director</p>
               <h3>한지율 원장 · 하모니덴탈</h3>
+              <p class="research-bio-label">약력</p>
               <p class="research-info-copy">치아와 입술, 얼굴선이 이어지는 최종 균형을 검수합니다.</p>
-              <button class="research-location-link" type="button">치과 찾아가기</button>
+              <button class="research-location-link" type="button">치과 위치 보기</button>
             </div>
           </article>
         </div>
@@ -1816,8 +1850,7 @@
               <p id="selectedAddress">서울 강남구 테헤란로 01</p>
             </div>
             <div class="location-actions">
-              <a class="button ghost" href="#studio-list">Back to List</a>
-              <a class="button ghost" href="#master-artisans" id="artisanReturn">← 돌아가기</a>
+              <a class="button ghost" href="#studio-list" id="locationReturn">← 이전 화면으로 돌아가기</a>
             </div>
           </aside>
           <div class="map-panel">
@@ -1954,6 +1987,7 @@
     const selectedPhone = document.getElementById("selectedPhone");
     const selectedAddress = document.getElementById("selectedAddress");
     const selectedStudioInput = document.getElementById("selectedStudioInput");
+    const locationReturn = document.getElementById("locationReturn");
     const consultationForm = document.getElementById("consultationForm");
     const formStatus = document.getElementById("formStatus");
     const submitConsultation = document.getElementById("submitConsultation");
@@ -2052,15 +2086,17 @@
 
     studioCards.forEach((card) => {
       card.addEventListener("click", () => {
+        locationReturnSource = { type: "studio", element: card };
         selectStudioDetails(card.dataset.studio, card.dataset.phone, card.dataset.address);
       });
     });
 
-    const researchCards = Array.from(document.querySelectorAll(".research-card"));
+    let researchCards = Array.from(document.querySelectorAll(".research-card"));
     const researchGrid = document.querySelector(".research-grid");
-    const researchPairOutline = document.querySelector(".research-pair-outline");
+    let researchPairOutline = document.querySelector(".research-pair-outline");
     let activeArtisanSource = null;
     let activeArtisanInfo = null;
+    let locationReturnSource = null;
 
     function getArtisanInfoIndex(index) {
       const column = index % 3;
@@ -2133,7 +2169,7 @@ function renderArtisanInfo(sourceCard, infoCard) {
       }
     }
 
-    researchCards.forEach((card) => {
+    function bindArtisanCard(card) {
       card.addEventListener("mouseenter", () => activateArtisanCard(card));
       card.addEventListener("focus", () => activateArtisanCard(card));
       card.addEventListener("click", () => activateArtisanCard(card));
@@ -2143,6 +2179,34 @@ function renderArtisanInfo(sourceCard, infoCard) {
           activateArtisanCard(card);
         }
       });
+      card.querySelectorAll(".research-location-link").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const target = event.currentTarget;
+          locationReturnSource = {
+            type: "artisan",
+            element: activeArtisanSource || target.closest(".research-card")
+          };
+          selectStudioDetails(target.dataset.studio, target.dataset.phone, target.dataset.address);
+          document.getElementById("location")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    }
+
+    researchCards.forEach(bindArtisanCard);
+
+    locationReturn?.addEventListener("click", (event) => {
+      const source = locationReturnSource?.element;
+      if (!source || !document.contains(source)) return;
+      event.preventDefault();
+      if (locationReturnSource.type === "artisan") activateArtisanCard(source);
+      source.scrollIntoView({ behavior: "smooth", block: "center" });
+      source.focus({ preventScroll: true });
+      window.history.replaceState(
+        null,
+        "",
+        locationReturnSource.type === "artisan" ? "#master-artisans" : "#studio-list"
+      );
     });
 
     researchGrid?.addEventListener("mouseleave", resetArtisanCards);
@@ -2151,14 +2215,59 @@ window.addEventListener("resize", () => {
   if (activeArtisanSource && activeArtisanInfo) positionArtisanPair(activeArtisanSource, activeArtisanInfo);
 });
 
-    document.querySelectorAll(".research-location-link").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        const target = event.currentTarget;
-        selectStudioDetails(target.dataset.studio, target.dataset.phone, target.dataset.address);
-        document.getElementById("location")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
+    function escapeAtelier(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderSavedAtelierCards(cards) {
+      if (!researchGrid || !Array.isArray(cards)) return;
+      if (locationReturnSource?.type === "artisan") locationReturnSource = null;
+      if (!cards.length) {
+        researchGrid.innerHTML = '<div class="research-pair-outline" aria-hidden="true"></div>';
+        researchCards = [];
+        researchPairOutline = researchGrid.querySelector(".research-pair-outline");
+        return;
+      }
+      researchGrid.innerHTML = `
+        <div class="research-pair-outline" aria-hidden="true"></div>
+        ${cards.map((card) => `
+          <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="${escapeAtelier(card.clinic)}" data-doctor="${escapeAtelier(card.doctor)}" data-role="${escapeAtelier(card.role)}" data-bio="${escapeAtelier(card.bio)}" data-studio="${escapeAtelier(card.studio)}" data-phone="${escapeAtelier(card.phone)}" data-address="${escapeAtelier(card.address)}" data-clinic-image="${escapeAtelier(card.clinicImage)}">
+            <img class="research-portrait" src="${escapeAtelier(card.portrait)}" alt="${escapeAtelier(card.doctor)} 원장">
+            <img class="research-clinic-image" src="${escapeAtelier(card.clinicImage)}" alt="${escapeAtelier(card.clinic)} 진료 공간" aria-hidden="true">
+            <div class="research-default-copy">
+              <p class="research-clinic">${escapeAtelier(card.clinic)}</p>
+              <p class="research-doctor">${escapeAtelier(card.doctor)} 원장</p>
+              <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
+              <p class="research-promise">&quot;${escapeAtelier(card.promise || "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.")}&quot;</p>
+            </div>
+            <div class="research-info">
+              <p class="research-info-kicker">${escapeAtelier(card.role)}</p>
+              <h3>${escapeAtelier(card.doctor)} 원장 · ${escapeAtelier(card.clinic)}</h3>
+              <p class="research-bio-label">약력</p>
+              <p class="research-info-copy">${escapeAtelier(card.bio)}</p>
+              <button class="research-location-link" type="button">치과 위치 보기</button>
+            </div>
+          </article>
+        `).join("")}
+      `;
+      researchCards = Array.from(researchGrid.querySelectorAll(".research-card"));
+      researchPairOutline = researchGrid.querySelector(".research-pair-outline");
+      researchCards.forEach(bindArtisanCard);
+    }
+
+    fetch("/api/atelier-cards")
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (result && result.ok && result.configured) {
+          renderSavedAtelierCards(result.cards);
+        }
+      })
+      .catch(() => {});
 
     function getVisitorKey() {
       const existing = localStorage.getItem("wwmmVisitorKey");

@@ -611,6 +611,268 @@
       letter-spacing: 0.06em;
     }
 
+    .atelier-admin-layout {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr) 340px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .atelier-card-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .atelier-list-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .atelier-card-item {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--navy);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .atelier-card-item.active {
+      border-color: var(--gold);
+      background: rgba(202, 170, 104, 0.12);
+    }
+
+    .atelier-card-item strong,
+    .atelier-card-item small {
+      display: block;
+    }
+
+    .atelier-card-item small {
+      margin-top: 3px;
+      color: var(--muted);
+    }
+
+    .atelier-order-actions {
+      display: grid;
+      grid-template-rows: repeat(2, 1fr);
+      gap: 4px;
+    }
+
+    .atelier-order-button {
+      min-width: 34px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--navy);
+      cursor: pointer;
+    }
+
+    .atelier-order-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
+    }
+
+    .atelier-list-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .atelier-editor-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .atelier-editor-form .field.full,
+    .atelier-crop-grid,
+    .atelier-editor-actions {
+      grid-column: 1 / -1;
+    }
+
+    .atelier-editor-form textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    .atelier-crop-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .atelier-cropper {
+      border: 1px solid var(--line);
+      padding: 12px;
+      background: var(--mist);
+    }
+
+    .atelier-crop-stage {
+      position: relative;
+      aspect-ratio: 6 / 7;
+      overflow: hidden;
+      margin: 10px 0;
+      background: #dbe2e8;
+    }
+
+    .atelier-crop-stage img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: translate(var(--crop-x, 0%), var(--crop-y, 0%)) scale(var(--crop-zoom, 1));
+      transform-origin: center;
+    }
+
+    .atelier-crop-controls {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .atelier-crop-controls label {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .atelier-crop-controls input[type="range"] {
+      width: 100%;
+    }
+
+    .atelier-editor-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 4px;
+    }
+
+    .atelier-preview-wrap {
+      position: sticky;
+      top: 18px;
+    }
+
+    .atelier-preview-card {
+      position: relative;
+      aspect-ratio: 6 / 7;
+      overflow: hidden;
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .atelier-preview-card > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(1);
+    }
+
+    .atelier-preview-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.02), rgba(1, 28, 55, 0.28));
+    }
+
+    .atelier-preview-copy {
+      position: absolute;
+      z-index: 2;
+      left: 24px;
+      right: 24px;
+      top: 31%;
+      text-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    .atelier-preview-clinic {
+      margin: 0 0 4px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .atelier-preview-doctor {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .atelier-preview-promise {
+      margin: 22px 0 0;
+      padding-left: 0.42em;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.45;
+      text-indent: -0.42em;
+      white-space: pre-line;
+    }
+
+    .atelier-clinic-preview {
+      margin-top: 16px;
+    }
+
+    .atelier-clinic-preview .atelier-preview-card > img {
+      filter: none;
+    }
+
+    .atelier-clinic-preview .atelier-preview-card::after {
+      background: rgba(1, 28, 55, 0.52);
+    }
+
+    .atelier-preview-info {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 22px;
+      text-shadow: 0 8px 20px rgba(0, 0, 0, 0.42);
+    }
+
+    .atelier-preview-role {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .atelier-preview-heading {
+      margin: 0 0 12px;
+      font-size: 21px;
+      line-height: 1.35;
+    }
+
+    .atelier-preview-bio-label {
+      margin: 0 0 5px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+    }
+
+    .atelier-preview-bio {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      line-height: 1.62;
+      white-space: pre-line;
+    }
+
+    .atelier-format-note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
     .master-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
@@ -960,8 +1222,13 @@
 
       .stats,
       .page-admin-grid,
+      .atelier-admin-layout,
       .master-grid {
         grid-template-columns: 1fr;
+      }
+
+      .atelier-preview-wrap {
+        position: static;
       }
 
       .dashboard-grid {
@@ -1100,6 +1367,11 @@
       }
 
       .admin-form {
+        grid-template-columns: 1fr;
+      }
+
+      .atelier-editor-form,
+      .atelier-crop-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1250,7 +1522,7 @@
       </section>
 
       <section id="pageAdminView" hidden>
-        <div class="page-admin-grid">
+        <div class="page-admin-grid" id="pageAdminOverview">
           <section class="dashboard-panel">
             <h3 id="pageAdminTitle">Page Management</h3>
             <div class="page-admin-list" id="pageAdminDetails"></div>
@@ -1258,6 +1530,80 @@
           <section class="dashboard-panel">
             <h3>Page Signals</h3>
             <div class="chart-list" id="pageAdminSignals"></div>
+          </section>
+        </div>
+        <div class="atelier-admin-layout" id="atelierAdminPanel" hidden>
+          <section class="dashboard-panel">
+            <h3>원장 카드</h3>
+            <div class="atelier-card-list" id="atelierCardList"></div>
+            <div class="atelier-list-actions">
+              <button class="button" id="addAtelierCard" type="button">+ 원장 추가하기</button>
+              <button class="button ghost" id="toggleAtelierOrder" type="button" aria-pressed="false">순서 바꾸기</button>
+            </div>
+          </section>
+          <section class="dashboard-panel">
+            <h3>카드 편집</h3>
+            <form class="atelier-editor-form" id="atelierEditorForm">
+              <div class="field"><label for="atelierDoctor">원장 이름</label><input id="atelierDoctor" required placeholder="김도윤"></div>
+              <div class="field"><label for="atelierClinic">치과 이름</label><input id="atelierClinic" required placeholder="바른턱 치과"></div>
+              <div class="field"><label for="atelierRole">전문 분야</label><input id="atelierRole" placeholder="Occlusion Master"></div>
+              <div class="field"><label for="atelierStudio">연결 스튜디오</label><input id="atelierStudio" placeholder="Gangnam Signature Dental"></div>
+              <div class="field"><label for="atelierPhone">전화번호</label><input id="atelierPhone" placeholder="02-0000-0000"></div>
+              <div class="field"><label for="atelierAddress">주소</label><input id="atelierAddress" placeholder="서울 강남구..."></div>
+              <div class="field full"><label for="atelierBio">원장 약력</label><textarea id="atelierBio" maxlength="500" placeholder="학력, 경력, 전문 분야 등 원장 약력을 입력하세요."></textarea></div>
+              <div class="field full"><label for="atelierPromise">카드 약속 문구</label><textarea id="atelierPromise" maxlength="180" placeholder="인생을 바꾸는 0.01mm의 약속을 지켜드립니다."></textarea></div>
+              <div class="atelier-crop-grid">
+                <div class="atelier-cropper" data-cropper="portrait">
+                  <strong>원장 이미지</strong>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" data-crop-file="portrait">
+                  <div class="atelier-crop-stage"><img data-crop-image="portrait" alt="원장 이미지 크롭"></div>
+                  <div class="atelier-crop-controls">
+                    <label>확대 <input type="range" min="1" max="2.5" step="0.01" value="1" data-crop-control="zoom" data-crop-key="portrait"></label>
+                    <label>가로 <input type="range" min="-30" max="30" step="1" value="0" data-crop-control="x" data-crop-key="portrait"></label>
+                    <label>세로 <input type="range" min="-30" max="30" step="1" value="0" data-crop-control="y" data-crop-key="portrait"></label>
+                  </div>
+                </div>
+                <div class="atelier-cropper" data-cropper="clinic">
+                  <strong>치과 이미지</strong>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" data-crop-file="clinic">
+                  <div class="atelier-crop-stage"><img data-crop-image="clinic" alt="치과 이미지 크롭"></div>
+                  <div class="atelier-crop-controls">
+                    <label>확대 <input type="range" min="1" max="2.5" step="0.01" value="1" data-crop-control="zoom" data-crop-key="clinic"></label>
+                    <label>가로 <input type="range" min="-30" max="30" step="1" value="0" data-crop-control="x" data-crop-key="clinic"></label>
+                    <label>세로 <input type="range" min="-30" max="30" step="1" value="0" data-crop-control="y" data-crop-key="clinic"></label>
+                  </div>
+                </div>
+              </div>
+              <p class="atelier-format-note">이미지는 카드 비율(6:7)을 유지한 채 위치와 확대만 조절됩니다. 입력한 텍스트는 사이트의 정해진 글꼴·굵기·크기로 자동 적용됩니다.</p>
+              <div class="atelier-editor-actions">
+                <button class="button ghost" id="deleteAtelierCard" type="button">원장 삭제하기</button>
+                <button class="button" type="submit">저장</button>
+              </div>
+              <p class="notice" id="atelierEditorNotice" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+          <section class="dashboard-panel atelier-preview-wrap">
+            <h3>미리보기</h3>
+            <article class="atelier-preview-card">
+              <img id="atelierPreviewPortrait" alt="원장 카드 미리보기">
+              <div class="atelier-preview-copy">
+                <p class="atelier-preview-clinic" id="atelierPreviewClinic">치과 이름</p>
+                <p class="atelier-preview-doctor" id="atelierPreviewDoctor">원장 이름 원장</p>
+                <p class="atelier-preview-promise" id="atelierPreviewPromise">&quot;인생을 바꾸는 0.01mm의 약속을 지켜드립니다.&quot;</p>
+              </div>
+            </article>
+            <div class="atelier-clinic-preview">
+              <h3>치과 이미지 미리보기</h3>
+              <article class="atelier-preview-card">
+                <img id="atelierPreviewClinicImage" alt="치과 이미지와 약력 미리보기">
+                <div class="atelier-preview-info">
+                  <p class="atelier-preview-role" id="atelierPreviewRole">전문 분야</p>
+                  <h4 class="atelier-preview-heading" id="atelierPreviewHeading">원장 이름 원장 · 치과 이름</h4>
+                  <p class="atelier-preview-bio-label">약력</p>
+                  <p class="atelier-preview-bio" id="atelierPreviewBio">원장 약력이 이곳에 표시됩니다.</p>
+                </div>
+              </article>
+            </div>
           </section>
         </div>
       </section>
@@ -1451,6 +1797,32 @@
     const stagingGate = document.getElementById("stagingGate");
     const stagingGateForm = document.getElementById("stagingGateForm");
     const stagingGateStatus = document.getElementById("stagingGateStatus");
+    const pageAdminOverview = document.getElementById("pageAdminOverview");
+    const atelierAdminPanel = document.getElementById("atelierAdminPanel");
+    const atelierCardList = document.getElementById("atelierCardList");
+    const addAtelierCard = document.getElementById("addAtelierCard");
+    const toggleAtelierOrder = document.getElementById("toggleAtelierOrder");
+    const deleteAtelierCard = document.getElementById("deleteAtelierCard");
+    const atelierEditorForm = document.getElementById("atelierEditorForm");
+    const atelierEditorNotice = document.getElementById("atelierEditorNotice");
+    const atelierFields = {
+      doctor: document.getElementById("atelierDoctor"),
+      clinic: document.getElementById("atelierClinic"),
+      role: document.getElementById("atelierRole"),
+      studio: document.getElementById("atelierStudio"),
+      phone: document.getElementById("atelierPhone"),
+      address: document.getElementById("atelierAddress"),
+      bio: document.getElementById("atelierBio"),
+      promise: document.getElementById("atelierPromise")
+    };
+    const atelierPreviewPortrait = document.getElementById("atelierPreviewPortrait");
+    const atelierPreviewClinic = document.getElementById("atelierPreviewClinic");
+    const atelierPreviewDoctor = document.getElementById("atelierPreviewDoctor");
+    const atelierPreviewPromise = document.getElementById("atelierPreviewPromise");
+    const atelierPreviewClinicImage = document.getElementById("atelierPreviewClinicImage");
+    const atelierPreviewRole = document.getElementById("atelierPreviewRole");
+    const atelierPreviewHeading = document.getElementById("atelierPreviewHeading");
+    const atelierPreviewBio = document.getElementById("atelierPreviewBio");
 
     function initStagingAccessGate() {
       if (window.location.hostname !== "staging.wwmm.co") {
@@ -1512,6 +1884,22 @@
     };
     let currentView = "dashboard";
     let analyticsRange = "week";
+    const defaultAtelierCards = [
+      { id: "artisan_1", clinic: "바른턱 치과", doctor: "김도윤", role: "Occlusion Master", bio: "교합 안정성과 안모 균형을 동시에 설계하는 초정밀 분석을 이끕니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Gangnam Signature Dental", phone: "02-0000-0101", address: "서울 강남구 테헤란로 01", portrait: "assets/images/R01.png", clinicImage: "assets/images/S01.png" },
+      { id: "artisan_2", clinic: "미소라인 치과", doctor: "이준서", role: "Facial Designer", bio: "스마일 아크와 미드라인의 미세한 변화를 조율합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Aurora Dental Studio", phone: "02-0000-0202", address: "서울 강남구 언주로 02", portrait: "assets/images/R03.png", clinicImage: "assets/images/S02.png" },
+      { id: "artisan_3", clinic: "페이스밸런스 치과", doctor: "박현우", role: "Line Analyst", bio: "정면과 측면의 데이터를 결합해 개인별 조화 기준을 정교화합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Harmony Dental House", phone: "02-0000-0303", address: "서울 서초구 사평대로 03", portrait: "assets/images/R05.png", clinicImage: "assets/images/S03.png" },
+      { id: "artisan_4", clinic: "라인아트 치과", doctor: "정하윤", role: "Micro Technician", bio: "0.01mm 단위의 감각으로 표면과 경계를 완성합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Aegis Dental", phone: "02-0000-0404", address: "서울 강남구 도산대로 04", portrait: "assets/images/R02.png", clinicImage: "assets/images/S04.png" },
+      { id: "artisan_5", clinic: "베니어랩 치과", doctor: "서민재", role: "Veneer Specialist", bio: "자연치와 가장 가까운 볼륨, 투명도, 착용감을 설계합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Luxe Smile Clinic", phone: "02-0000-0505", address: "서울 강남구 선릉로 05", portrait: "assets/images/R04.png", clinicImage: "assets/images/S05.png" },
+      { id: "artisan_6", clinic: "하모니덴탈", doctor: "한지율", role: "Harmony Director", bio: "치아와 입술, 얼굴선이 이어지는 최종 균형을 검수합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Luxe Smile Botanical", phone: "02-0000-0606", address: "서울 서초구 반포대로 06", portrait: "assets/images/R06.png", clinicImage: "assets/images/S06.png" }
+    ];
+    let atelierCards = [];
+    let activeAtelierCardId = "";
+    let atelierEditorDirty = false;
+    let atelierOrderMode = false;
+    const cropStates = {
+      portrait: { src: "", zoom: 1, x: 0, y: 0, dirty: false },
+      clinic: { src: "", zoom: 1, x: 0, y: 0, dirty: false }
+    };
     const paginationState = {
       reservations: 1,
       requests: 1,
@@ -1695,6 +2083,206 @@
       document.getElementById("findLineCount").textContent = reservations.filter((item) => item.findLine).length;
     }
 
+    function activeAtelierCard() {
+      return atelierCards.find((card) => card.id === activeAtelierCardId) || null;
+    }
+
+    function applyCropState(key) {
+      const state = cropStates[key];
+      const image = document.querySelector(`[data-crop-image="${key}"]`);
+      if (!image) return;
+      image.src = state.src || "";
+      image.style.setProperty("--crop-zoom", state.zoom);
+      image.style.setProperty("--crop-x", `${state.x}%`);
+      image.style.setProperty("--crop-y", `${state.y}%`);
+      document.querySelector(`[data-crop-control="zoom"][data-crop-key="${key}"]`).value = state.zoom;
+      document.querySelector(`[data-crop-control="x"][data-crop-key="${key}"]`).value = state.x;
+      document.querySelector(`[data-crop-control="y"][data-crop-key="${key}"]`).value = state.y;
+    }
+
+    function updateAtelierPreview() {
+      const clinic = atelierFields.clinic.value.trim() || "치과 이름";
+      const doctor = atelierFields.doctor.value.trim() || "원장 이름";
+      atelierPreviewClinic.textContent = clinic;
+      atelierPreviewDoctor.textContent = `${doctor} 원장`;
+      const promise = atelierFields.promise.value.trim() || "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.";
+      atelierPreviewPromise.textContent = `“${promise}”`;
+      atelierPreviewPortrait.src = cropStates.portrait.src || "assets/images/R01.png";
+      atelierPreviewPortrait.style.objectPosition = `${50 + Number(cropStates.portrait.x)}% ${50 + Number(cropStates.portrait.y)}%`;
+      atelierPreviewPortrait.style.transform = `scale(${cropStates.portrait.zoom})`;
+      atelierPreviewClinicImage.src = cropStates.clinic.src || "assets/images/S01.png";
+      atelierPreviewClinicImage.style.objectPosition = `${50 + Number(cropStates.clinic.x)}% ${50 + Number(cropStates.clinic.y)}%`;
+      atelierPreviewClinicImage.style.transform = `scale(${cropStates.clinic.zoom})`;
+      atelierPreviewRole.textContent = atelierFields.role.value.trim() || "전문 분야";
+      atelierPreviewHeading.textContent = `${doctor} 원장 · ${clinic}`;
+      atelierPreviewBio.textContent = atelierFields.bio.value.trim() || "원장 약력이 이곳에 표시됩니다.";
+    }
+
+    function renderAtelierCardList() {
+      if (!atelierCards.length) {
+        atelierCardList.innerHTML = '<p class="muted">등록된 원장이 없습니다. 원장 추가하기를 눌러 새 카드를 만드세요.</p>';
+        return;
+      }
+      atelierCardList.innerHTML = atelierCards.map((card, index) => `
+        <div class="atelier-list-row">
+          <button class="atelier-card-item ${card.id === activeAtelierCardId ? "active" : ""}" type="button" data-atelier-card-id="${escapeHtml(card.id)}">
+            <strong>${index + 1}. ${escapeHtml(card.doctor || "새 원장")}</strong>
+            <small>${escapeHtml(card.clinic || "치과 미입력")}</small>
+          </button>
+          ${atelierOrderMode ? `
+            <span class="atelier-order-actions">
+              <button class="atelier-order-button" type="button" data-atelier-move="up" data-atelier-card-id="${escapeHtml(card.id)}" aria-label="${escapeHtml(card.doctor || "원장")} 위로 이동" ${index === 0 ? "disabled" : ""}>▲</button>
+              <button class="atelier-order-button" type="button" data-atelier-move="down" data-atelier-card-id="${escapeHtml(card.id)}" aria-label="${escapeHtml(card.doctor || "원장")} 아래로 이동" ${index === atelierCards.length - 1 ? "disabled" : ""}>▼</button>
+            </span>
+          ` : ""}
+        </div>
+      `).join("");
+    }
+
+    function clearAtelierEditor() {
+      activeAtelierCardId = "";
+      Object.values(atelierFields).forEach((input) => {
+        input.value = "";
+      });
+      cropStates.portrait = { src: "", zoom: 1, x: 0, y: 0, dirty: false };
+      cropStates.clinic = { src: "", zoom: 1, x: 0, y: 0, dirty: false };
+      applyCropState("portrait");
+      applyCropState("clinic");
+      deleteAtelierCard.disabled = true;
+      atelierEditorDirty = false;
+      renderAtelierCardList();
+      updateAtelierPreview();
+    }
+
+    async function persistAtelierOrder() {
+      const response = await fetch("/api/atelier-cards", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ cards: atelierCards })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "원장 순서를 저장하지 못했습니다.");
+      atelierCards = result.cards;
+      renderAtelierCardList();
+      atelierEditorNotice.classList.remove("error");
+      atelierEditorNotice.textContent = "원장 카드 순서를 저장했습니다. 프런트에도 같은 순서로 반영됩니다.";
+      recordAudit("reorder atelier cards", atelierCards.map((card) => card.doctor).join(" → "));
+    }
+
+    async function moveAtelierCard(id, direction) {
+      const index = atelierCards.findIndex((card) => card.id === id);
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (index < 0 || targetIndex < 0 || targetIndex >= atelierCards.length) return;
+      [atelierCards[index], atelierCards[targetIndex]] = [atelierCards[targetIndex], atelierCards[index]];
+      renderAtelierCardList();
+      try {
+        await persistAtelierOrder();
+      } catch (error) {
+        atelierEditorNotice.classList.add("error");
+        atelierEditorNotice.textContent = error.message;
+        await loadAtelierCards();
+      }
+    }
+
+    function selectAtelierCard(id) {
+      const card = atelierCards.find((item) => item.id === id);
+      if (!card) return;
+      activeAtelierCardId = id;
+      deleteAtelierCard.disabled = false;
+      Object.entries(atelierFields).forEach(([key, input]) => {
+        input.value = card[key] || "";
+      });
+      cropStates.portrait = { src: card.portrait || "", zoom: 1, x: 0, y: 0, dirty: false };
+      cropStates.clinic = { src: card.clinicImage || "", zoom: 1, x: 0, y: 0, dirty: false };
+      applyCropState("portrait");
+      applyCropState("clinic");
+      renderAtelierCardList();
+      updateAtelierPreview();
+      atelierEditorDirty = false;
+      atelierEditorNotice.textContent = "";
+    }
+
+    function loadCropFile(key, file) {
+      if (!file) return;
+      if (!file.type.startsWith("image/")) throw new Error("이미지 파일만 선택할 수 있습니다.");
+      if (file.size > 12 * 1024 * 1024) throw new Error("이미지는 12MB 이하로 선택해 주세요.");
+      const reader = new FileReader();
+      reader.onload = () => {
+        cropStates[key] = { src: reader.result, zoom: 1, x: 0, y: 0, dirty: true };
+        atelierEditorDirty = true;
+        applyCropState(key);
+        updateAtelierPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function cropImageToDataUrl(key) {
+      const state = cropStates[key];
+      if (!state.src || !state.dirty) return Promise.resolve(state.src);
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 900;
+          canvas.height = 1050;
+          const context = canvas.getContext("2d");
+          const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight) * state.zoom;
+          const drawWidth = image.naturalWidth * scale;
+          const drawHeight = image.naturalHeight * scale;
+          const maxX = Math.max(0, (drawWidth - canvas.width) / 2);
+          const maxY = Math.max(0, (drawHeight - canvas.height) / 2);
+          const drawX = (canvas.width - drawWidth) / 2 + (state.x / 30) * maxX;
+          const drawY = (canvas.height - drawHeight) / 2 + (state.y / 30) * maxY;
+          context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+          resolve(canvas.toDataURL("image/jpeg", 0.82));
+        };
+        image.onerror = () => reject(new Error("이미지를 처리하지 못했습니다."));
+        image.src = state.src;
+      });
+    }
+
+    async function loadAtelierCards() {
+      const response = await fetch("/api/atelier-cards");
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Atelier 카드를 불러오지 못했습니다.");
+      atelierCards = result.configured
+        ? (result.cards || [])
+        : defaultAtelierCards.map((card) => ({ ...card }));
+      if (atelierCards.length) {
+        selectAtelierCard(atelierCards[0].id);
+      } else {
+        clearAtelierEditor();
+      }
+    }
+
+    async function saveAtelierCard() {
+      const current = activeAtelierCard();
+      if (!current) throw new Error("저장할 원장 카드를 선택해 주세요.");
+      const values = Object.fromEntries(Object.entries(atelierFields).map(([key, input]) => [key, input.value.trim()]));
+      if (!values.doctor || !values.clinic) throw new Error("원장 이름과 치과 이름을 입력해 주세요.");
+      if (!cropStates.portrait.src || !cropStates.clinic.src) throw new Error("원장 이미지와 치과 이미지를 모두 선택해 주세요.");
+
+      atelierEditorNotice.classList.remove("error");
+      atelierEditorNotice.textContent = "이미지를 정리하고 카드를 저장하고 있습니다.";
+      const [portrait, clinicImage] = await Promise.all([cropImageToDataUrl("portrait"), cropImageToDataUrl("clinic")]);
+      atelierCards = atelierCards.map((card) => card.id === current.id
+        ? { ...card, ...values, portrait, clinicImage }
+        : card);
+
+      const response = await fetch("/api/atelier-cards", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ cards: atelierCards })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Atelier 카드를 저장하지 못했습니다.");
+      atelierCards = result.cards;
+      selectAtelierCard(current.id);
+      atelierEditorDirty = false;
+      atelierEditorNotice.textContent = "카드를 저장했습니다. 공개 Atelier 페이지에도 반영됩니다.";
+      recordAudit("save atelier card", `${values.doctor} · ${values.clinic}`);
+    }
+
     function showView(view) {
       currentView = view;
       const isPageAdmin = Boolean(pageSections[view]);
@@ -1717,6 +2305,8 @@
       navButtons.forEach((button) => {
         button.classList.toggle("active", button.dataset.viewTarget === view);
       });
+      pageAdminOverview.hidden = view === "atelier";
+      atelierAdminPanel.hidden = view !== "atelier";
       if (isPageAdmin) {
         renderPageAdmin(view);
       }
@@ -2206,11 +2796,31 @@ async function saveConsultationManager() {
   await loadSmsConnectionStatus();
 }
 
-async function refreshAll() {
-  await loadReservations();
-  await loadAnalytics();
-  await loadConsultationManager();
-  await loadSmsConnectionStatus();
+async function refreshAll(showFeedback = false) {
+  const jobs = [
+    ["예약", loadReservations],
+    ["분석", loadAnalytics],
+    ["Atelier", loadAtelierCards],
+    ["상담 담당자", loadConsultationManager],
+    ["문자 설정", loadSmsConnectionStatus]
+  ];
+  const results = await Promise.allSettled(jobs.map(([, job]) => job()));
+  const failed = results
+    .map((result, index) => result.status === "rejected" ? jobs[index][0] : "")
+    .filter(Boolean);
+
+  if (showFeedback && currentView === "atelier") {
+    atelierEditorNotice.classList.toggle("error", failed.includes("Atelier"));
+    atelierEditorNotice.textContent = failed.includes("Atelier")
+      ? "Atelier 최신 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+      : failed.length
+        ? `Atelier 카드를 새로 불러왔습니다. 일부 관리 정보(${failed.join(", ")})는 갱신하지 못했습니다.`
+        : "Atelier 카드와 관리 정보를 최신 상태로 새로 불러왔습니다.";
+  }
+
+  if (failed.length === jobs.length) {
+    throw new Error("관리 정보를 새로 불러오지 못했습니다.");
+  }
 }
 
     async function updateStatus(id, status) {
@@ -2439,10 +3049,22 @@ async function refreshAll() {
     });
 
     refreshButton.addEventListener("click", () => {
-      refreshAll().catch((error) => {
-        adminNotice.classList.add("error");
-        adminNotice.textContent = error.message;
-      });
+      const originalLabel = refreshButton.textContent;
+      refreshButton.disabled = true;
+      refreshButton.textContent = "Refreshing...";
+      refreshAll(true)
+        .catch((error) => {
+          adminNotice.classList.add("error");
+          adminNotice.textContent = error.message;
+          if (currentView === "atelier") {
+            atelierEditorNotice.classList.add("error");
+            atelierEditorNotice.textContent = error.message;
+          }
+        })
+        .finally(() => {
+          refreshButton.disabled = false;
+          refreshButton.textContent = originalLabel;
+        });
     });
 
     logoutButton.addEventListener("click", () => {
@@ -2475,6 +3097,108 @@ async function refreshAll() {
         adminNotice.classList.add("error");
         adminNotice.textContent = error.message;
       }
+    });
+    atelierCardList.addEventListener("click", (event) => {
+      const moveButton = event.target.closest("[data-atelier-move]");
+      if (moveButton) {
+        moveAtelierCard(moveButton.dataset.atelierCardId, moveButton.dataset.atelierMove);
+        return;
+      }
+      const button = event.target.closest(".atelier-card-item[data-atelier-card-id]");
+      if (button) selectAtelierCard(button.dataset.atelierCardId);
+    });
+    toggleAtelierOrder.addEventListener("click", () => {
+      atelierOrderMode = !atelierOrderMode;
+      toggleAtelierOrder.setAttribute("aria-pressed", String(atelierOrderMode));
+      toggleAtelierOrder.textContent = atelierOrderMode ? "순서 변경 완료" : "순서 바꾸기";
+      renderAtelierCardList();
+      atelierEditorNotice.classList.remove("error");
+      atelierEditorNotice.textContent = atelierOrderMode
+        ? "▲와 ▼ 버튼으로 원장 카드 순서를 변경하세요. 이동할 때마다 자동 저장됩니다."
+        : "원장 순서 변경을 마쳤습니다.";
+    });
+    addAtelierCard.addEventListener("click", () => {
+      const card = {
+        id: `artisan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        doctor: "",
+        clinic: "",
+        role: "",
+        bio: "",
+        promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.",
+        studio: "",
+        phone: "",
+        address: "",
+        portrait: "",
+        clinicImage: ""
+      };
+      atelierCards.push(card);
+      selectAtelierCard(card.id);
+      atelierEditorDirty = true;
+      atelierEditorNotice.textContent = "새 원장 카드입니다. 내용을 입력하고 저장해 주세요.";
+    });
+    deleteAtelierCard.addEventListener("click", async () => {
+      const removed = activeAtelierCard();
+      if (!removed) return;
+      atelierCards = atelierCards.filter((card) => card.id !== activeAtelierCardId);
+      try {
+        const response = await fetch("/api/atelier-cards", {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ cards: atelierCards })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || "카드를 삭제하지 못했습니다.");
+        atelierCards = result.cards;
+        if (atelierCards.length) {
+          selectAtelierCard(atelierCards[0].id);
+          atelierEditorNotice.textContent = "원장 카드를 삭제했습니다.";
+        } else {
+          clearAtelierEditor();
+          atelierEditorNotice.textContent = "모든 원장 카드를 삭제했습니다. 프런트의 원장 카드 영역도 비워졌습니다.";
+        }
+        recordAudit("delete atelier card", removed ? `${removed.doctor} · ${removed.clinic}` : "-");
+      } catch (error) {
+        atelierEditorNotice.classList.add("error");
+        atelierEditorNotice.textContent = error.message;
+        await loadAtelierCards();
+      }
+    });
+    atelierEditorForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        await saveAtelierCard();
+      } catch (error) {
+        atelierEditorNotice.classList.add("error");
+        atelierEditorNotice.textContent = error.message;
+      }
+    });
+    Object.values(atelierFields).forEach((input) => input.addEventListener("input", () => {
+      atelierEditorDirty = true;
+      atelierEditorNotice.classList.remove("error");
+      atelierEditorNotice.textContent = "저장되지 않은 변경 사항이 있습니다.";
+      updateAtelierPreview();
+    }));
+    document.querySelectorAll("[data-crop-file]").forEach((input) => {
+      input.addEventListener("change", () => {
+        try {
+          loadCropFile(input.dataset.cropFile, input.files && input.files[0]);
+        } catch (error) {
+          atelierEditorNotice.classList.add("error");
+          atelierEditorNotice.textContent = error.message;
+        }
+      });
+    });
+    document.querySelectorAll("[data-crop-control]").forEach((input) => {
+      input.addEventListener("input", () => {
+        const state = cropStates[input.dataset.cropKey];
+        state[input.dataset.cropControl] = Number(input.value);
+        state.dirty = true;
+        atelierEditorDirty = true;
+        atelierEditorNotice.classList.remove("error");
+        atelierEditorNotice.textContent = "저장되지 않은 이미지 변경 사항이 있습니다.";
+        applyCropState(input.dataset.cropKey);
+        updateAtelierPreview();
+      });
     });
 
     adminUserForm.addEventListener("submit", (event) => {
