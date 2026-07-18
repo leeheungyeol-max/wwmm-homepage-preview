@@ -733,21 +733,26 @@
       transform: scale(1);
     }
 
+    .research-card.is-active .research-clinic-image {
+      opacity: 0;
+    }
+
     .research-card::after {
       content: "";
       position: absolute;
       inset: 0;
       z-index: 1;
-      background: linear-gradient(180deg, rgba(1, 28, 55, 0.03), rgba(1, 28, 55, 0.36));
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.015), rgba(1, 28, 55, 0.18));
+      pointer-events: none;
       transition: background 280ms ease;
     }
 
     .research-card.is-active::after {
-      background: linear-gradient(180deg, rgba(1, 28, 55, 0.04), rgba(1, 28, 55, 0.24));
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.02), rgba(1, 28, 55, 0.12));
     }
 
     .research-card.is-info-panel::after {
-      background: rgba(1, 28, 55, 0.32);
+      background: rgba(1, 28, 55, 0.16);
     }
 
     .research-default-copy {
@@ -760,8 +765,15 @@
       color: #fff;
       text-align: left;
       transform: translateY(-18%);
-      text-shadow: 0 12px 28px rgba(0, 0, 0, 0.42);
+      text-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+      pointer-events: none;
       transition: opacity 240ms ease, transform 240ms ease;
+    }
+
+    .research-card.is-active .research-default-copy {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-18%);
     }
 
     .research-card.is-info-panel .research-default-copy {
@@ -801,6 +813,18 @@
       pointer-events: none;
     }
 
+    .research-location-link--default {
+      display: none;
+      position: relative;
+      z-index: 4;
+      margin-top: 18px;
+      pointer-events: auto;
+    }
+
+    .research-card.is-active .research-location-link--default {
+      display: inline-flex;
+    }
+
     .research-info {
       position: absolute;
       inset: 0;
@@ -810,14 +834,13 @@
       justify-content: flex-start;
       padding: 8px;
       color: #fff;
-      background: linear-gradient(180deg, rgba(1, 28, 55, 0.22), rgba(1, 28, 55, 0.36));
+      background: linear-gradient(180deg, rgba(1, 28, 55, 0.10), rgba(1, 28, 55, 0.18));
       opacity: 0;
       pointer-events: none;
       transform: translateY(8px);
       transition: opacity 240ms ease, transform 240ms ease;
     }
 
-    .research-card.is-active .research-info,
     .research-card.is-info-panel .research-info {
       opacity: 1;
       pointer-events: auto;
@@ -825,15 +848,9 @@
     }
 
     .research-card.is-active .research-info {
-      justify-content: flex-start;
-      padding: 216px 28px 28px;
-      background: transparent;
-    }
-
-    .research-card.is-active .research-info-kicker,
-    .research-card.is-active .research-info h3,
-    .research-card.is-active .research-info-copy {
-      display: none;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
     }
 
     .research-card.is-info-panel .research-location-link {
@@ -843,13 +860,13 @@
 
     .research-pair-outline {
       position: absolute;
-      left: calc(var(--pair-left, 0px) - 10px);
-      top: calc(var(--pair-top, 0px) - 10px);
-      width: calc(var(--pair-width, 0px) + 20px);
-      height: calc(var(--pair-height, 0px) + 20px);
+      left: calc(var(--pair-left, 0px) - 14px);
+      top: calc(var(--pair-top, 0px) - 14px);
+      width: calc(var(--pair-width, 0px) + 28px);
+      height: calc(var(--pair-height, 0px) + 28px);
       z-index: 0;
-      background: rgba(215, 176, 104, 0.72);
-      box-shadow: 0 18px 42px rgba(1, 28, 55, 0.14);
+      background: rgba(215, 176, 104, 0.42);
+      box-shadow: 0 22px 48px rgba(1, 28, 55, 0.12);
       opacity: 0;
       pointer-events: none;
       transition: opacity 180ms ease, left 180ms ease, top 180ms ease, width 180ms ease, height 180ms ease;
@@ -1607,9 +1624,10 @@
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="바른턱 치과" data-doctor="김도윤" data-role="Occlusion Master" data-bio="교합 안정성과 안모 균형을 동시에 설계하는 초정밀 분석을 이끕니다." data-studio="Gangnam Signature Dental" data-phone="02-0000-0101" data-address="서울 강남구 테헤란로 01" data-clinic-image="assets/images/S01.png">
             <img class="research-portrait" src="assets/images/R01.png" alt="김도윤 원장">
             <img class="research-clinic-image" src="assets/images/S01.png" alt="바른턱 치과 진료 공간" aria-hidden="true">
-            <div class="research-default-copy" aria-hidden="true">
+            <div class="research-default-copy">
               <p class="research-clinic">바른턱 치과</p>
               <p class="research-doctor">김도윤 원장</p>
+              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
@@ -1622,9 +1640,10 @@
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="미소라인 치과" data-doctor="이준서" data-role="Facial Designer" data-bio="스마일 아크와 미드라인의 미세한 변화를 조율합니다." data-studio="Aurora Dental Studio" data-phone="02-0000-0202" data-address="서울 강남구 언주로 02" data-clinic-image="assets/images/S02.png">
             <img class="research-portrait" src="assets/images/R03.png" alt="이준서 원장">
             <img class="research-clinic-image" src="assets/images/S02.png" alt="미소라인 치과 진료 공간" aria-hidden="true">
-            <div class="research-default-copy" aria-hidden="true">
+            <div class="research-default-copy">
               <p class="research-clinic">미소라인 치과</p>
               <p class="research-doctor">이준서 원장</p>
+              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
@@ -1637,9 +1656,10 @@
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="페이스밸런스 치과" data-doctor="박현우" data-role="Line Analyst" data-bio="정면과 측면의 데이터를 결합해 개인별 조화 기준을 정교화합니다." data-studio="Harmony Dental House" data-phone="02-0000-0303" data-address="서울 서초구 사평대로 03" data-clinic-image="assets/images/S03.png">
             <img class="research-portrait" src="assets/images/R05.png" alt="박현우 원장">
             <img class="research-clinic-image" src="assets/images/S03.png" alt="페이스밸런스 치과 진료 공간" aria-hidden="true">
-            <div class="research-default-copy" aria-hidden="true">
+            <div class="research-default-copy">
               <p class="research-clinic">페이스밸런스 치과</p>
               <p class="research-doctor">박현우 원장</p>
+              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
@@ -1652,9 +1672,10 @@
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="라인아트 치과" data-doctor="정하윤" data-role="Micro Technician" data-bio="0.01mm 단위의 감각으로 표면과 경계를 완성합니다." data-studio="Aegis Dental" data-phone="02-0000-0404" data-address="서울 강남구 도산대로 04" data-clinic-image="assets/images/S04.png">
             <img class="research-portrait" src="assets/images/R02.png" alt="정하윤 원장">
             <img class="research-clinic-image" src="assets/images/S04.png" alt="라인아트 치과 진료 공간" aria-hidden="true">
-            <div class="research-default-copy" aria-hidden="true">
+            <div class="research-default-copy">
               <p class="research-clinic">라인아트 치과</p>
               <p class="research-doctor">정하윤 원장</p>
+              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
@@ -1667,9 +1688,10 @@
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="베니어랩 치과" data-doctor="서민재" data-role="Veneer Specialist" data-bio="자연치와 가장 가까운 볼륨, 투명도, 착용감을 설계합니다." data-studio="Luxe Smile Clinic" data-phone="02-0000-0505" data-address="서울 강남구 선릉로 05" data-clinic-image="assets/images/S05.png">
             <img class="research-portrait" src="assets/images/R04.png" alt="서민재 원장">
             <img class="research-clinic-image" src="assets/images/S05.png" alt="베니어랩 치과 진료 공간" aria-hidden="true">
-            <div class="research-default-copy" aria-hidden="true">
+            <div class="research-default-copy">
               <p class="research-clinic">베니어랩 치과</p>
               <p class="research-doctor">서민재 원장</p>
+              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
@@ -1682,9 +1704,10 @@
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="하모니덴탈" data-doctor="한지율" data-role="Harmony Director" data-bio="치아와 입술, 얼굴선이 이어지는 최종 균형을 검수합니다." data-studio="Luxe Smile Botanical" data-phone="02-0000-0606" data-address="서울 서초구 반포대로 06" data-clinic-image="assets/images/S06.png">
             <img class="research-portrait" src="assets/images/R06.png" alt="한지율 원장">
             <img class="research-clinic-image" src="assets/images/S06.png" alt="하모니덴탈 진료 공간" aria-hidden="true">
-            <div class="research-default-copy" aria-hidden="true">
+            <div class="research-default-copy">
               <p class="research-clinic">하모니덴탈</p>
               <p class="research-doctor">한지율 원장</p>
+              <button class="research-location-link research-location-link--default" type="button">치과 찾아가기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
             </div>
             <div class="research-info">
