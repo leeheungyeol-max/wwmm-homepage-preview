@@ -2263,7 +2263,7 @@ window.addEventListener("resize", () => {
       }
     }
 
-    fetch("/api/studio-cards")
+    fetch("/api/atelier-cards?resource=studio")
       .then((response) => response.ok ? response.json() : null)
       .then((result) => {
         if (result && result.ok && result.configured) renderSavedStudioCards(result.cards);

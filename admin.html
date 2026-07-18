@@ -2535,7 +2535,7 @@
     }
 
     async function loadStudioCards() {
-      const response = await fetch("/api/studio-cards");
+      const response = await fetch("/api/atelier-cards?resource=studio");
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.error || "Studio 카드를 불러오지 못했습니다.");
       studioCards = result.configured ? (result.cards || []) : defaultStudioCards.map((card) => ({ ...card }));
@@ -2544,7 +2544,7 @@
     }
 
     async function persistStudioCards(message) {
-      const response = await fetch("/api/studio-cards", {
+      const response = await fetch("/api/atelier-cards?resource=studio", {
         method: "PUT",
         headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
         body: JSON.stringify({ cards: studioCards })

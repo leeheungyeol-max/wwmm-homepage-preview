@@ -1,6 +1,6 @@
 const { requireAdmin } = require("./_lib/auth");
 const { readJson, requireMethod, sendJson } = require("./_lib/http");
-const { getAtelierCards, updateAtelierCards } = require("./_lib/storage");
+const { getAtelierCards, getStudioCards, updateAtelierCards, updateStudioCards } = require("./_lib/storage");
 
 function clean(value, maxLength) {
   return String(value || "").trim().slice(0, maxLength);
@@ -31,12 +31,24 @@ function normalizeCard(card, index) {
   };
 }
 
+function normalizeStudioCard(card, index) {
+  return {
+    id: clean(card.id, 100) || `studio_${Date.now()}_${index}`,
+    name: clean(card.name, 120),
+    phone: clean(card.phone, 40),
+    address: clean(card.address, 200),
+    image: cleanImage(card.image)
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (!requireMethod(req, res, ["GET", "PUT", "POST"])) return;
 
   try {
+    const resource = req.query?.resource || new URL(req.url, "http://localhost").searchParams.get("resource");
+    const isStudio = resource === "studio";
     if (req.method === "GET") {
-      const storedCards = await getAtelierCards();
+      const storedCards = isStudio ? await getStudioCards() : await getAtelierCards();
       sendJson(res, 200, {
         ok: true,
         cards: storedCards || [],
@@ -51,13 +63,26 @@ module.exports = async function handler(req, res) {
     }
 
     const payload = await readJson(req);
-    const cards = Array.isArray(payload.cards) ? payload.cards.slice(0, 30).map(normalizeCard) : [];
-    if (cards.some((card) => !card.doctor || !card.clinic || !card.portrait || !card.clinicImage)) {
-      sendJson(res, 422, { ok: false, error: "Doctor, clinic, and both images are required" });
+    const cards = Array.isArray(payload.cards)
+      ? payload.cards.slice(0, isStudio ? 100 : 30).map(isStudio ? normalizeStudioCard : normalizeCard)
+      : [];
+    const invalid = isStudio
+      ? cards.some((card) => !card.name || !card.address || !card.image)
+      : cards.some((card) => !card.doctor || !card.clinic || !card.portrait || !card.clinicImage);
+    if (invalid) {
+      sendJson(res, 422, {
+        ok: false,
+        error: isStudio
+          ? "Studio name, address, and image are required"
+          : "Doctor, clinic, and both images are required"
+      });
       return;
     }
 
-    sendJson(res, 200, { ok: true, cards: await updateAtelierCards(cards) });
+    sendJson(res, 200, {
+      ok: true,
+      cards: isStudio ? await updateStudioCards(cards) : await updateAtelierCards(cards)
+    });
   } catch (error) {
     sendJson(res, 500, { ok: false, error: error.message });
   }
