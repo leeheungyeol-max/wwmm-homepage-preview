@@ -1,4 +1,4 @@
-const { requireAdmin } = require("./_lib/auth");
+const { requireAdmin, requireRole } = require("./_lib/auth");
 const { readJson, requireMethod, sendJson } = require("./_lib/http");
 const { getConsultationManager, updateConsultationManager } = require("./_lib/storage");
 
@@ -15,6 +15,11 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === "GET") {
       sendJson(res, 200, { ok: true, manager: await getConsultationManager() });
+      return;
+    }
+
+    if (!requireRole(req, ["master"])) {
+      sendJson(res, 403, { ok: false, error: "Master administrator access required" });
       return;
     }
 

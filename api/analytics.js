@@ -1,5 +1,5 @@
 const { createAnalyticsEvent, listAnalyticsEvents, summarize } = require("./_lib/analytics");
-const { requireAdmin } = require("./_lib/auth");
+const { requireRole } = require("./_lib/auth");
 const { readJson, requireMethod, sendJson } = require("./_lib/http");
 
 module.exports = async function handler(req, res) {
@@ -19,7 +19,14 @@ module.exports = async function handler(req, res) {
         userKey: payload.userKey
       });
 
-      sendJson(res, 201, { ok: true });
+      sendJson(res, 201, {
+        ok: true,
+        geo: {
+          country: payload.country || countryHeader || "",
+          region: payload.region || regionHeader || "",
+          city: payload.city || cityHeader || ""
+        }
+      });
       return;
     }
 
@@ -27,8 +34,8 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    if (!requireAdmin(req)) {
-      sendJson(res, 401, { ok: false, error: "Unauthorized" });
+    if (!requireRole(req, ["master", "admin"])) {
+      sendJson(res, 403, { ok: false, error: "Analytics access denied" });
       return;
     }
 

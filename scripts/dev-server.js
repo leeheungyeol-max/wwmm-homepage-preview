@@ -5,7 +5,7 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const port = Number(process.env.PORT || 3000);
 
-for (const filename of [".env.local", ".env"]) {
+for (const filename of [".env.admin.local", ".env.local", ".env"]) {
   const filePath = path.join(root, filename);
   if (!fs.existsSync(filePath)) continue;
   for (const line of fs.readFileSync(filePath, "utf8").split(/\r?\n/)) {

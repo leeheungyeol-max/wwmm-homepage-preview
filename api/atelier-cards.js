@@ -1,4 +1,4 @@
-const { requireAdmin } = require("./_lib/auth");
+const { requireRole } = require("./_lib/auth");
 const { readJson, requireMethod, sendJson } = require("./_lib/http");
 const { getAtelierCards, getStudioCards, updateAtelierCards, updateStudioCards } = require("./_lib/storage");
 
@@ -33,6 +33,7 @@ function normalizeCard(card, index) {
     studio: clean(card.studio, 120),
     phone: clean(card.phone, 40),
     address: clean(card.address, 200),
+    addressEn: clean(card.addressEn, 240),
     portrait: cleanImage(card.portrait),
     clinicImage: cleanImage(card.clinicImage)
   };
@@ -44,6 +45,7 @@ function normalizeStudioCard(card, index) {
     name: clean(card.name, 120),
     phone: clean(card.phone, 40),
     address: clean(card.address, 200),
+    addressEn: clean(card.addressEn, 240),
     detailAddress: clean(card.detailAddress, 120),
     lat: cleanCoordinate(card.lat, -90, 90),
     lng: cleanCoordinate(card.lng, -180, 180),
@@ -69,8 +71,8 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    if (!requireAdmin(req)) {
-      sendJson(res, 401, { ok: false, error: "Unauthorized" });
+    if (!requireRole(req, ["master", "admin"])) {
+      sendJson(res, 403, { ok: false, error: "Content administrator access required" });
       return;
     }
 

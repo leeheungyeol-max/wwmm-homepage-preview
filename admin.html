@@ -220,12 +220,52 @@
 
     .admin-header-tools {
       display: flex;
+      align-items: center;
       justify-content: flex-end;
+      gap: 18px;
+    }
+
+    .admin-language-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+    }
+
+    .admin-language-switcher button {
+      border: 0;
+      border-bottom: 1px solid transparent;
+      padding: 4px 0;
+      background: transparent;
+      color: inherit;
+      font-size: 12px;
+      letter-spacing: .08em;
+      opacity: .52;
+      cursor: pointer;
+    }
+
+    .admin-language-switcher button[aria-current="true"] {
+      border-bottom-color: var(--gold);
+      color: var(--gold);
+      opacity: 1;
+    }
+
+    .login-language-switcher {
+      justify-content: flex-end;
+      margin-bottom: 18px;
+      color: var(--navy);
     }
 
     .sidebar .button.ghost {
       border-color: rgba(255, 255, 255, 0.42);
       color: #fff;
+    }
+
+    #logoutButton {
+      border: 0;
+      padding-right: 0;
+      padding-left: 0;
+      font-weight: 700;
     }
 
     .main {
@@ -1036,6 +1076,14 @@
       justify-content: flex-end;
     }
 
+    .admin-user-actions input[type="password"] {
+      width: 180px;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      padding: 0 10px;
+      background: #fff;
+    }
+
     .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
@@ -1503,8 +1551,13 @@
 </head>
 <body>
   <section class="login-panel" id="loginPanel">
-    <h1>ww'mm Concierge</h1>
+    <div class="admin-language-switcher login-language-switcher" data-admin-language-switcher aria-label="관리자 화면 언어 선택"></div>
+    <h1>ww'mm Admin</h1>
     <form id="loginForm">
+      <div class="field">
+        <label for="adminUsername">ID</label>
+        <input id="adminUsername" type="text" autocomplete="username" required>
+      </div>
       <div class="field">
         <label for="adminPassword">Password</label>
         <input id="adminPassword" type="password" autocomplete="current-password" required>
@@ -1533,10 +1586,11 @@
           <button class="nav-button" type="button" data-view-target="gallery">Gallery</button>
           <button class="nav-button" type="button" data-view-target="studio">Studio</button>
           <button class="nav-button" type="button" data-view-target="concierge">Concierge</button>
-          <button class="nav-button" type="button" data-view-target="master">Master</button>
+          <button class="nav-button" type="button" data-view-target="master" id="masterNavButton">Master</button>
         </nav>
       </div>
       <div class="admin-header-tools">
+        <div class="admin-language-switcher" data-admin-language-switcher aria-label="관리자 화면 언어 선택"></div>
         <button class="button ghost" id="logoutButton" type="button">Sign Out</button>
       </div>
     </aside>
@@ -1699,6 +1753,7 @@
               <div class="field"><label for="studioName">치과 이름</label><input id="studioName" required placeholder="Gangnam Signature Dental"></div>
               <div class="field"><label for="studioPhone">전화번호</label><input id="studioPhone" placeholder="02-0000-0000"></div>
               <div class="field"><label for="studioAddress">전체 주소</label><input id="studioAddress" required placeholder="서울특별시 강남구 테헤란로 01"></div>
+              <div class="field"><label for="studioAddressEn">English Address</label><input id="studioAddressEn" required placeholder="01 Teheran-ro, Gangnam-gu, Seoul, Republic of Korea"></div>
               <div class="field"><label for="studioDetailAddress">상세 주소</label><input id="studioDetailAddress" placeholder="3층, 301호"></div>
               <div class="field"><label for="studioLatitude">위도</label><input id="studioLatitude" type="number" min="-90" max="90" step="any" placeholder="37.5001"></div>
               <div class="field"><label for="studioLongitude">경도</label><input id="studioLongitude" type="number" min="-180" max="180" step="any" placeholder="127.0364"></div>
@@ -1793,15 +1848,19 @@
                 <input id="adminUserName" type="text" placeholder="관리자 이름">
               </div>
               <div class="field">
-                <label for="adminUserEmail">Email</label>
-                <input id="adminUserEmail" type="email" placeholder="name@example.com">
+                <label for="adminUserUsername">ID</label>
+                <input id="adminUserUsername" type="text" autocomplete="off" placeholder="manager-id" required>
+              </div>
+              <div class="field">
+                <label for="adminUserPassword">Temporary Password</label>
+                <input id="adminUserPassword" type="password" autocomplete="new-password" minlength="8" placeholder="8 characters or more" required>
               </div>
               <div class="field">
                 <label for="adminUserRole">Role</label>
                 <select id="adminUserRole">
-                  <option value="manager">Manager</option>
-                  <option value="master">Master</option>
-                  <option value="viewer">Viewer</option>
+                  <option value="master">Master Admin</option>
+                  <option value="admin">General Admin</option>
+                  <option value="consultation">Consultation Manager</option>
                 </select>
               </div>
               <button class="button" type="submit">Grant Access</button>
@@ -1873,6 +1932,7 @@
     </form>
   </div>
 
+  <script src="assets/js/admin-i18n.js"></script>
   <script>
     const loginPanel = document.getElementById("loginPanel");
     const adminShell = document.getElementById("adminShell");
@@ -1904,9 +1964,11 @@
     const reservationPager = document.getElementById("reservationPager");
     const adminUserForm = document.getElementById("adminUserForm");
     const adminUserName = document.getElementById("adminUserName");
-    const adminUserEmail = document.getElementById("adminUserEmail");
+    const adminUserUsername = document.getElementById("adminUserUsername");
+    const adminUserPassword = document.getElementById("adminUserPassword");
     const adminUserRole = document.getElementById("adminUserRole");
     const adminUserList = document.getElementById("adminUserList");
+    const masterNavButton = document.getElementById("masterNavButton");
     const consultationManagerForm = document.getElementById("consultationManagerForm");
     const consultationManagerName = document.getElementById("consultationManagerName");
     const consultationManagerPhone = document.getElementById("consultationManagerPhone");
@@ -1971,6 +2033,7 @@
       name: document.getElementById("studioName"),
       phone: document.getElementById("studioPhone"),
       address: document.getElementById("studioAddress"),
+      addressEn: document.getElementById("studioAddressEn"),
       detailAddress: document.getElementById("studioDetailAddress"),
       lat: document.getElementById("studioLatitude"),
       lng: document.getElementById("studioLongitude")
@@ -2038,6 +2101,9 @@
 
     let reservations = [];
     let consultationManager = null;
+    let currentAdminUser = null;
+    let adminAccounts = [];
+    let currentAdminIsKeyMaster = false;
     let analytics = {
       totalVisitors: 0,
       totalHits: 0,
@@ -2057,12 +2123,12 @@
       { id: "artisan_6", clinic: "하모니덴탈", doctor: "한지율", role: "Harmony Director", bio: "치아와 입술, 얼굴선이 이어지는 최종 균형을 검수합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Luxe Smile Botanical", phone: "02-0000-0606", address: "서울 서초구 반포대로 06", portrait: "assets/images/R06.png", clinicImage: "assets/images/S06.png" }
     ];
     const defaultStudioCards = [
-      { id: "studio_1", name: "Gangnam Signature Dental", phone: "02-0000-0101", address: "서울특별시 강남구 테헤란로 01", image: "assets/images/S01.png" },
-      { id: "studio_2", name: "Aurora Dental Studio", phone: "02-0000-0202", address: "서울특별시 강남구 언주로 02", image: "assets/images/S02.png" },
-      { id: "studio_3", name: "Harmony Dental House", phone: "02-0000-0303", address: "서울특별시 서초구 사평대로 03", image: "assets/images/S03.png" },
-      { id: "studio_4", name: "Aegis Dental", phone: "02-0000-0404", address: "서울특별시 강남구 도산대로 04", image: "assets/images/S04.png" },
-      { id: "studio_5", name: "Luxe Smile Clinic", phone: "02-0000-0505", address: "서울특별시 강남구 선릉로 05", image: "assets/images/S05.png" },
-      { id: "studio_6", name: "Luxe Smile Botanical", phone: "02-0000-0606", address: "서울특별시 서초구 반포대로 06", image: "assets/images/S06.png" }
+      { id: "studio_1", name: "Gangnam Signature Dental", phone: "02-0000-0101", address: "서울특별시 강남구 테헤란로 01", addressEn: "01 Teheran-ro, Gangnam-gu, Seoul, Republic of Korea", image: "assets/images/S01.png" },
+      { id: "studio_2", name: "Aurora Dental Studio", phone: "02-0000-0202", address: "서울특별시 강남구 언주로 02", addressEn: "02 Eonju-ro, Gangnam-gu, Seoul, Republic of Korea", image: "assets/images/S02.png" },
+      { id: "studio_3", name: "Harmony Dental House", phone: "02-0000-0303", address: "서울특별시 서초구 사평대로 03", addressEn: "03 Sapyeong-daero, Seocho-gu, Seoul, Republic of Korea", image: "assets/images/S03.png" },
+      { id: "studio_4", name: "Aegis Dental", phone: "02-0000-0404", address: "서울특별시 강남구 도산대로 04", addressEn: "04 Dosan-daero, Gangnam-gu, Seoul, Republic of Korea", image: "assets/images/S04.png" },
+      { id: "studio_5", name: "Luxe Smile Clinic", phone: "02-0000-0505", address: "서울특별시 강남구 선릉로 05", addressEn: "05 Seolleung-ro, Gangnam-gu, Seoul, Republic of Korea", image: "assets/images/S05.png" },
+      { id: "studio_6", name: "Luxe Smile Botanical", phone: "02-0000-0606", address: "서울특별시 서초구 반포대로 06", addressEn: "06 Banpo-daero, Seocho-gu, Seoul, Republic of Korea", image: "assets/images/S06.png" }
     ];
     let atelierCards = [];
     let activeAtelierCardId = "";
@@ -2139,17 +2205,13 @@
       return localStorage.getItem("wwmmAdminToken") || "";
     }
 
-    function getAdminUsers() {
+    function tokenUser(token) {
       try {
-        const users = JSON.parse(localStorage.getItem("wwmmAdminUsers") || "[]");
-        return Array.isArray(users) ? users : [];
+        const payload = JSON.parse(atob(String(token || "").split(".")[0].replace(/-/g, "+").replace(/_/g, "/")));
+        return { username: payload.username || "", name: payload.name || "", role: payload.role || "" };
       } catch (error) {
-        return [];
+        return null;
       }
-    }
-
-    function setAdminUsers(users) {
-      localStorage.setItem("wwmmAdminUsers", JSON.stringify(users));
     }
 
     function getAuditLogs() {
@@ -2183,6 +2245,18 @@
     function setSignedIn(signedIn) {
       loginPanel.hidden = signedIn;
       adminShell.hidden = !signedIn;
+      if (signedIn) {
+        currentAdminUser = tokenUser(getToken());
+        masterNavButton.hidden = currentAdminUser?.role !== "master";
+        navButtons.forEach((button) => {
+          if (button.dataset.viewTarget === "master") return;
+          button.hidden = currentAdminUser?.role === "consultation" && button.dataset.viewTarget !== "concierge";
+        });
+        if (currentView === "master" && currentAdminUser?.role !== "master") showView("dashboard");
+        if (currentAdminUser?.role === "consultation") showView("concierge");
+      } else {
+        currentAdminUser = null;
+      }
     }
 
     function formatDate(value) {
@@ -2592,7 +2666,7 @@
     function updateStudioPreview() {
       studioPreviewName.textContent = studioFields.name.value.trim() || "치과 이름";
       studioPreviewRegion.textContent = formatStudioRegion(studioFields.address.value);
-      studioPreviewAddress.textContent = studioFields.address.value.trim() || "전체 주소가 이곳에 표시됩니다.";
+      studioPreviewAddress.textContent = studioFields.addressEn.value.trim() || "English address will appear here.";
       studioPreviewImage.src = studioCropState.src || "assets/images/S01.png";
       studioPreviewImage.style.objectPosition = `${50 + Number(studioCropState.x)}% ${50 + Number(studioCropState.y)}%`;
       studioPreviewImage.style.transform = `scale(${studioCropState.zoom})`;
@@ -2639,6 +2713,7 @@
       studioFields.name.value = card.name || "";
       studioFields.phone.value = card.phone || "";
       studioFields.address.value = card.address || "";
+      studioFields.addressEn.value = card.addressEn || "";
       studioFields.detailAddress.value = card.detailAddress || "";
       studioFields.lat.value = card.lat ?? "";
       studioFields.lng.value = card.lng ?? "";
@@ -2725,16 +2800,17 @@
       const name = studioFields.name.value.trim();
       const phone = studioFields.phone.value.trim();
       const address = studioFields.address.value.trim();
+      const addressEn = studioFields.addressEn.value.trim();
       const detailAddress = studioFields.detailAddress.value.trim();
       const lat = Number(studioFields.lat.value);
       const lng = Number(studioFields.lng.value);
-      if (!name || !address) throw new Error("치과 이름과 전체 주소를 입력해 주세요.");
+      if (!name || !address || !addressEn) throw new Error("치과 이름과 한국어·영문 주소를 모두 입력해 주세요.");
       if (!studioFields.lat.value.trim() || !studioFields.lng.value.trim() || !Number.isFinite(lat) || !Number.isFinite(lng)) throw new Error("주소로 위치를 찾거나 위도와 경도를 입력해 주세요.");
       if (!studioCropState.src) throw new Error("치과 이미지를 선택해 주세요.");
       const image = await cropStudioImage();
       const oldIndex = studioCards.findIndex((card) => card.id === current.id);
       const desiredIndex = Math.max(0, Math.min(studioCards.length - 1, Number(studioFields.order.value || oldIndex + 1) - 1));
-      const updated = { ...current, name, phone, address, detailAddress, lat, lng, isActive: true, image };
+      const updated = { ...current, name, phone, address, addressEn, detailAddress, lat, lng, isActive: true, image };
       placeStudioCardAtOrder(updated, desiredIndex);
       await persistStudioCards("스튜디오를 저장했습니다. 공개 Studio 페이지에도 반영됩니다.");
       selectStudioCard(current.id);
@@ -2743,6 +2819,14 @@
     }
 
     function showView(view) {
+      if (currentAdminUser?.role === "consultation" && view !== "concierge") {
+        view = "concierge";
+      }
+      if (view === "master" && currentAdminUser?.role !== "master") {
+        adminNotice.classList.add("error");
+        adminNotice.textContent = "Master administrator access required.";
+        return;
+      }
       currentView = view;
       const isPageAdmin = Boolean(pageSections[view]);
       const label = view === "dashboard" ? "Dashboard" : isPageAdmin ? pageSections[view].title : view === "master" ? "Master Admin" : "Concierge";
@@ -2771,7 +2855,10 @@
         renderPageAdmin(view);
       }
       if (view === "master") {
-        renderMaster();
+        loadAdminAccounts().then(renderMaster).catch((error) => {
+          adminNotice.classList.add("error");
+          adminNotice.textContent = error.message;
+        });
       }
       recordAudit("view", label);
     }
@@ -3050,20 +3137,13 @@
       renderPager(reservationPager, "reservations", page.pageCount);
     }
 
-    function seedMasterUser() {
-      const users = getAdminUsers();
-      if (users.length) {
-        return;
-      }
-
-      setAdminUsers([{
-        id: `admin_${Date.now()}`,
-        name: "Local Master",
-        email: "local@wwmm.admin",
-        role: "master",
-        active: true,
-        createdAt: new Date().toISOString()
-      }]);
+    async function loadAdminAccounts() {
+      if (currentAdminUser?.role !== "master") return;
+      const response = await fetch("/api/admin-users", { headers: { Authorization: `Bearer ${getToken()}` } });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Could not load administrator accounts.");
+      adminAccounts = result.users || [];
+      currentAdminIsKeyMaster = result.permissions?.isKeyMaster === true;
     }
 
     function setConsultationManagerNotice(message, isError = false) {
@@ -3093,19 +3173,23 @@
     }
 
     function renderMaster() {
-      seedMasterUser();
+      if (currentAdminUser?.role !== "master") return;
       renderConsultationManager();
-      const users = getAdminUsers();
-      adminUserList.innerHTML = users.length
-        ? users.map((user) => `
+      adminUserList.innerHTML = adminAccounts.length
+        ? adminAccounts.map((user) => `
           <div class="admin-user-card">
             <div>
-              <strong>${escapeHtml(user.name || "-")} <span class="status-pill">${escapeHtml(user.role || "manager")}</span></strong>
-              <small>${escapeHtml(user.email || "-")} · ${user.active ? "Active" : "Revoked"} · ${formatDate(user.createdAt)}</small>
+              <strong>${escapeHtml(user.name || "-")} <span class="status-pill">${escapeHtml(user.role || "manager")}</span>${user.isKeyMaster ? ' <span class="status-pill">Key Master</span>' : ""}</strong>
+              <small>${escapeHtml(user.username || "-")} · ${user.active ? "Active" : "Revoked"} · ${formatDate(user.createdAt)}</small>
             </div>
             <div class="admin-user-actions">
-              <button class="button ghost" type="button" data-admin-toggle="${escapeHtml(user.id)}">${user.active ? "Revoke" : "Restore"}</button>
-              <button class="button ghost" type="button" data-admin-remove="${escapeHtml(user.id)}">Remove</button>
+              <input type="password" minlength="8" autocomplete="new-password" placeholder="New password" data-admin-password-input="${escapeHtml(user.id)}">
+              <button class="button ghost" type="button" data-admin-password-save="${escapeHtml(user.id)}">Change Password</button>
+              ${currentAdminIsKeyMaster && user.role === "master" && !user.isKeyMaster ? `<button class="button ghost" type="button" data-key-master-transfer="${escapeHtml(user.id)}">Transfer Key Master</button>` : ""}
+              ${user.id === "environment-master" ? "" : `
+                <button class="button ghost" type="button" data-admin-toggle="${escapeHtml(user.id)}">${user.active ? "Revoke" : "Restore"}</button>
+                ${user.role !== "master" || currentAdminIsKeyMaster ? `<button class="button ghost" type="button" data-admin-remove="${escapeHtml(user.id)}">Remove</button>` : ""}
+              `}
             </div>
           </div>
         `).join("")
@@ -3266,6 +3350,9 @@ async function refreshAll(showFeedback = false) {
     ["문자 설정", loadSmsConnectionStatus]
   ];
   const results = await Promise.allSettled(jobs.map(([, job]) => job()));
+  if (currentAdminUser?.role === "master") {
+    try { await loadAdminAccounts(); } catch (error) { /* surfaced on Master view */ }
+  }
   const failed = results
     .map((result, index) => result.status === "rejected" ? jobs[index][0] : "")
     .filter(Boolean);
@@ -3464,6 +3551,7 @@ async function refreshAll(showFeedback = false) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
+            username: document.getElementById("adminUsername").value,
             password: document.getElementById("adminPassword").value
           })
         });
@@ -3474,8 +3562,9 @@ async function refreshAll(showFeedback = false) {
         }
 
         localStorage.setItem("wwmmAdminToken", result.token);
-        localStorage.setItem("wwmmAdminActor", "local master");
-        recordAudit("login", "admin password");
+        localStorage.setItem("wwmmAdminActor", result.user?.username || "admin");
+        currentAdminUser = result.user || tokenUser(result.token);
+        recordAudit("login", `${currentAdminUser?.username || "admin"} · ${currentAdminUser?.role || "admin"}`);
         setSignedIn(true);
         await refreshAll();
       } catch (error) {
@@ -3753,39 +3842,33 @@ async function refreshAll(showFeedback = false) {
       });
     });
 
-    adminUserForm.addEventListener("submit", (event) => {
+    adminUserForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const name = adminUserName.value.trim();
-      const email = adminUserEmail.value.trim();
+      const username = adminUserUsername.value.trim();
+      const password = adminUserPassword.value;
 
-      if (!name || !email) {
+      if (!name || !username || password.length < 8) {
         adminNotice.classList.add("error");
-        adminNotice.textContent = "관리자 이름과 이메일을 입력해 주세요.";
+        adminNotice.textContent = "Enter an ID, name, and a password of at least 8 characters.";
         return;
       }
-
-      const users = getAdminUsers();
-      const existing = users.find((user) => user.email.toLowerCase() === email.toLowerCase());
-      if (existing) {
-        existing.name = name;
-        existing.role = adminUserRole.value;
-        existing.active = true;
-        recordAudit("update admin authority", `${email} · ${adminUserRole.value}`);
-      } else {
-        users.unshift({
-          id: `admin_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-          name,
-          email,
-          role: adminUserRole.value,
-          active: true,
-          createdAt: new Date().toISOString()
+      try {
+        const response = await fetch("/api/admin-users", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ name, username, password, role: adminUserRole.value })
         });
-        recordAudit("grant admin authority", `${email} · ${adminUserRole.value}`);
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || "Could not create administrator account.");
+        adminAccounts = result.users || [];
+        recordAudit("grant admin authority", `${username} · ${adminUserRole.value}`);
+        adminUserForm.reset();
+        renderMaster();
+      } catch (error) {
+        adminNotice.classList.add("error");
+        adminNotice.textContent = error.message;
       }
-
-      setAdminUsers(users);
-      adminUserForm.reset();
-      renderMaster();
     });
     navButtons.forEach((button) => {
       button.addEventListener("click", () => showView(button.dataset.viewTarget));
@@ -3814,6 +3897,8 @@ async function refreshAll(showFeedback = false) {
       const pageButton = event.target.closest("[data-page-key]");
       const adminToggle = event.target.closest("[data-admin-toggle]");
       const adminRemove = event.target.closest("[data-admin-remove]");
+      const adminPasswordSave = event.target.closest("[data-admin-password-save]");
+      const keyMasterTransfer = event.target.closest("[data-key-master-transfer]");
 
       if (statusJump) {
         jumpToStatus(statusJump.dataset.statusJump);
@@ -3821,22 +3906,75 @@ async function refreshAll(showFeedback = false) {
       }
 
       if (adminToggle) {
-        const users = getAdminUsers().map((user) => user.id === adminToggle.dataset.adminToggle
-          ? { ...user, active: !user.active }
-          : user);
-        const changed = users.find((user) => user.id === adminToggle.dataset.adminToggle);
-        setAdminUsers(users);
-        recordAudit(changed && changed.active ? "restore admin authority" : "revoke admin authority", changed ? changed.email : adminToggle.dataset.adminToggle);
-        renderMaster();
+        const changed = adminAccounts.find((user) => user.id === adminToggle.dataset.adminToggle);
+        fetch("/api/admin-users", {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ id: adminToggle.dataset.adminToggle, active: !changed?.active })
+        }).then((response) => response.json().then((result) => ({ response, result }))).then(({ response, result }) => {
+          if (!response.ok || !result.ok) throw new Error(result.error);
+          adminAccounts = result.users || [];
+          recordAudit(changed && !changed.active ? "restore admin authority" : "revoke admin authority", changed?.username || adminToggle.dataset.adminToggle);
+          renderMaster();
+        }).catch((error) => { adminNotice.textContent = error.message; adminNotice.classList.add("error"); });
+        return;
+      }
+
+      if (adminPasswordSave) {
+        const id = adminPasswordSave.dataset.adminPasswordSave;
+        const input = adminUserList.querySelector(`[data-admin-password-input="${CSS.escape(id)}"]`);
+        const password = input?.value || "";
+        if (password.length < 8) {
+          adminNotice.classList.add("error");
+          adminNotice.textContent = "Enter a new password of at least 8 characters.";
+          return;
+        }
+        fetch("/api/admin-users", {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ id, password })
+        }).then((response) => response.json().then((result) => ({ response, result }))).then(({ response, result }) => {
+          if (!response.ok || !result.ok) throw new Error(result.error);
+          adminAccounts = result.users || [];
+          recordAudit("change admin password", id);
+          adminNotice.classList.remove("error");
+          adminNotice.textContent = "Administrator password changed.";
+          renderMaster();
+        }).catch((error) => { adminNotice.textContent = error.message; adminNotice.classList.add("error"); });
+        return;
+      }
+
+      if (keyMasterTransfer) {
+        const target = adminAccounts.find((user) => user.id === keyMasterTransfer.dataset.keyMasterTransfer);
+        if (!target || !window.confirm(`Transfer Key Master ownership to ${target.username}?`)) return;
+        fetch("/api/admin-users", {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ id: target.id, action: "transferKeyMaster" })
+        }).then((response) => response.json().then((result) => ({ response, result }))).then(({ response, result }) => {
+          if (!response.ok || !result.ok) throw new Error(result.error);
+          adminAccounts = result.users || [];
+          currentAdminIsKeyMaster = false;
+          recordAudit("transfer key master", target.username);
+          adminNotice.classList.remove("error");
+          adminNotice.textContent = `Key Master ownership transferred to ${target.username}.`;
+          renderMaster();
+        }).catch((error) => { adminNotice.textContent = error.message; adminNotice.classList.add("error"); });
         return;
       }
 
       if (adminRemove) {
-        const users = getAdminUsers();
-        const removed = users.find((user) => user.id === adminRemove.dataset.adminRemove);
-        setAdminUsers(users.filter((user) => user.id !== adminRemove.dataset.adminRemove));
-        recordAudit("remove admin account", removed ? removed.email : adminRemove.dataset.adminRemove);
-        renderMaster();
+        const removed = adminAccounts.find((user) => user.id === adminRemove.dataset.adminRemove);
+        fetch("/api/admin-users", {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ id: adminRemove.dataset.adminRemove })
+        }).then((response) => response.json().then((result) => ({ response, result }))).then(({ response, result }) => {
+          if (!response.ok || !result.ok) throw new Error(result.error);
+          adminAccounts = result.users || [];
+          recordAudit("remove admin account", removed?.username || adminRemove.dataset.adminRemove);
+          renderMaster();
+        }).catch((error) => { adminNotice.textContent = error.message; adminNotice.classList.add("error"); });
         return;
       }
 

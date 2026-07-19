@@ -10,6 +10,7 @@ const SUPABASE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "reservation-phot
 const CONSULTATION_MANAGER_KEY = "consultation_manager";
 const ATELIER_CARDS_KEY = "atelier_cards";
 const STUDIO_CARDS_KEY = "studio_cards";
+const ADMIN_ACCOUNTS_KEY = "admin_accounts";
 
 function hasSupabase() {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -165,6 +166,43 @@ async function updateConsultationManager(input) {
   settings[CONSULTATION_MANAGER_KEY] = manager;
   await writeLocalSettings(settings);
   return manager;
+}
+
+async function getAdminAccounts() {
+  if (hasSupabase()) {
+    const response = await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/${SUPABASE_SETTINGS_TABLE}?key=eq.${encodeURIComponent(ADMIN_ACCOUNTS_KEY)}&select=value&limit=1`,
+      { headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` } }
+    );
+    if (!response.ok) throw new Error(`Supabase admin accounts read failed: ${await response.text()}`);
+    const [row] = await response.json();
+    return row && Array.isArray(row.value) ? row.value : [];
+  }
+  const settings = await readLocalSettings();
+  return Array.isArray(settings[ADMIN_ACCOUNTS_KEY]) ? settings[ADMIN_ACCOUNTS_KEY] : [];
+}
+
+async function updateAdminAccounts(accounts) {
+  const value = Array.isArray(accounts) ? accounts : [];
+  const updatedAt = new Date().toISOString();
+  if (hasSupabase()) {
+    const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${SUPABASE_SETTINGS_TABLE}?on_conflict=key`, {
+      method: "POST",
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=representation"
+      },
+      body: JSON.stringify({ key: ADMIN_ACCOUNTS_KEY, value, updated_at: updatedAt })
+    });
+    if (!response.ok) throw new Error(`Supabase admin accounts upsert failed: ${await response.text()}`);
+  } else {
+    const settings = await readLocalSettings();
+    settings[ADMIN_ACCOUNTS_KEY] = value;
+    await writeLocalSettings(settings);
+  }
+  return value;
 }
 
 async function getAtelierCards() {
@@ -478,11 +516,13 @@ async function updateReservation(id, patch) {
 module.exports = {
   createReservation,
   createSignedPhotoUrl,
+  getAdminAccounts,
   getAtelierCards,
   getStudioCards,
   getConsultationManager,
   listReservations,
   updateAtelierCards,
+  updateAdminAccounts,
   updateStudioCards,
   updateReservation,
   updateConsultationManager,

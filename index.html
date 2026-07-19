@@ -195,9 +195,9 @@
     .nav-inner {
       width: min(100%, var(--max));
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: auto 1fr auto auto;
       align-items: center;
-      gap: 34px;
+      gap: clamp(16px, 2vw, 34px);
     }
 
     .brand {
@@ -1575,6 +1575,40 @@
         font-size: 20px;
       }
     }
+    .language-switcher {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .language-switcher button {
+      appearance: none;
+      border: 0;
+      border-bottom: 1px solid transparent;
+      padding: 3px 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: 11px;
+      letter-spacing: .08em;
+      opacity: .52;
+      cursor: pointer;
+    }
+
+    .language-switcher button[aria-current="true"] {
+      border-bottom-color: currentColor;
+      opacity: 1;
+    }
+
+    .mobile-language-switcher {
+      justify-content: center;
+      margin: 18px 0 4px;
+    }
+
+    @media (max-width: 900px) {
+      .nav-inner > .language-switcher { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -1590,6 +1624,7 @@
         <a href="#studio">Studio</a>
         <a href="#concierge">Concierge</a>
       </nav>
+      <div class="language-switcher" data-language-switcher aria-label="Language selection"></div>
       <a class="header-action" href="#consultation">Book a Consultation</a>
       <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
         <img src="assets/icons/icon_menu.svg" alt="">
@@ -1603,6 +1638,7 @@
     <a href="#gallery">Gallery</a>
     <a href="#studio">Studio</a>
     <a href="#concierge">Concierge</a>
+    <div class="language-switcher mobile-language-switcher" data-language-switcher aria-label="Language selection"></div>
   </div>
 
   <main>
@@ -1873,32 +1909,32 @@
           <a class="studio-card" href="#location" data-studio="Gangnam Signature Dental" data-phone="02-0000-0101" data-address="서울 강남구 테헤란로 01">
             <img src="assets/images/S01.png" alt="Gangnam Signature Dental">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Gangnam Signature Dental</h3><p>서울 강남구</p></div>
+            <div class="studio-info"><h3>Gangnam Signature Dental</h3><p>Gangnam-gu, Seoul</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Aurora Dental Studio" data-phone="02-0000-0202" data-address="서울 강남구 언주로 02">
             <img src="assets/images/S02.png" alt="Aurora Dental Studio">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Aurora Dental Studio</h3><p>서울 강남구</p></div>
+            <div class="studio-info"><h3>Aurora Dental Studio</h3><p>Gangnam-gu, Seoul</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Harmony Dental House" data-phone="02-0000-0303" data-address="서울 서초구 사평대로 03">
             <img src="assets/images/S03.png" alt="Harmony Dental House">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Harmony Dental House</h3><p>서울 서초구</p></div>
+            <div class="studio-info"><h3>Harmony Dental House</h3><p>Seocho-gu, Seoul</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Aegis Dental" data-phone="02-0000-0404" data-address="서울 강남구 도산대로 04">
             <img src="assets/images/S04.png" alt="Aegis Dental">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Aegis Dental</h3><p>서울 강남구</p></div>
+            <div class="studio-info"><h3>Aegis Dental</h3><p>Gangnam-gu, Seoul</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Luxe Smile Clinic" data-phone="02-0000-0505" data-address="서울 강남구 선릉로 05">
             <img src="assets/images/S05.png" alt="Luxe Smile Clinic">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Luxe Smile Clinic</h3><p>서울 강남구</p></div>
+            <div class="studio-info"><h3>Luxe Smile Clinic</h3><p>Gangnam-gu, Seoul</p></div>
           </a>
           <a class="studio-card" href="#location" data-studio="Luxe Smile Botanical" data-phone="02-0000-0606" data-address="서울 서초구 반포대로 06">
             <img src="assets/images/S06.png" alt="Luxe Smile Botanical">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Luxe Smile Botanical</h3><p>서울 서초구</p></div>
+            <div class="studio-info"><h3>Luxe Smile Botanical</h3><p>Seocho-gu, Seoul</p></div>
           </a>
         </div>
         <div class="studio-toolbar">
@@ -1912,11 +1948,11 @@
               <p class="section-kicker">Location</p>
               <h3 id="selectedStudio">Gangnam Signature Dental</h3>
               <p id="selectedPhone">02-0000-0101</p>
-              <p id="selectedAddress">서울 강남구 테헤란로 01</p>
+              <p id="selectedAddress">01 Teheran-ro, Gangnam-gu, Seoul, Republic of Korea</p>
               <p class="location-distance" id="selectedDistance"></p>
             </div>
             <div class="location-actions">
-              <a class="button ghost" href="#studio-list" id="locationReturn">← 이전 화면으로 돌아가기</a>
+              <a class="button ghost" href="#studio-list" id="locationReturn"><span aria-hidden="true">←</span> <span>이전 화면으로 돌아가기</span></a>
             </div>
           </aside>
           <div class="map-panel">
@@ -2043,7 +2079,13 @@
     </form>
   </div>
 
+  <script src="assets/js/i18n.js"></script>
   <script>
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.addEventListener("pageshow", () => {
+      if (!window.location.hash) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
+
     const header = document.getElementById("siteHeader");
     const menuToggle = document.getElementById("menuToggle");
     const mobilePanel = document.getElementById("mobilePanel");
@@ -2233,13 +2275,13 @@
       const studio = typeof studioOrName === "object"
         ? studioOrName
         : studioByReference(studioOrName) || { name: studioOrName, phone, address };
-      if (selectedStudio && studio.name) selectedStudio.textContent = studio.name;
+      if (selectedStudio && studio.name) selectedStudio.textContent = window.wwmmI18n?.t(studio.name) || studio.name;
       if (selectedPhone) selectedPhone.textContent = studio.phone || "전화번호 미입력";
-      if (selectedAddress) selectedAddress.textContent = [studio.address, studio.detailAddress].filter(Boolean).join(" ") || "주소 미입력";
+      if (selectedAddress) selectedAddress.textContent = studio.addressEn || formatEnglishAddress(studio.address, studio.detailAddress);
       if (selectedStudioInput && studio.name) selectedStudioInput.value = studio.name;
       selectedStudioId = studio.id || "";
       if (Number.isFinite(studio.distanceKm)) {
-        selectedDistance.textContent = `현재 위치에서 약 ${studio.distanceKm.toFixed(1)} km`;
+        selectedDistance.textContent = `${window.wwmmI18n?.t("현재 위치에서 약") || "현재 위치에서 약"} ${studio.distanceKm.toFixed(1)} km`;
         selectedDistance.classList.add("visible");
       } else {
         selectedDistance.textContent = "";
@@ -2315,7 +2357,10 @@ function renderArtisanInfo(sourceCard, infoCard) {
         clinicImage.alt = `${sourceCard.dataset.clinic || "치과"} 진료 공간`;
       }
       if (kicker) kicker.textContent = sourceCard.dataset.role || "";
-      if (heading) heading.textContent = `${sourceCard.dataset.doctor || ""} 원장 · ${sourceCard.dataset.clinic || ""}`;
+      if (heading) {
+        const sourceHeading = `${sourceCard.dataset.doctor || ""} 원장 · ${sourceCard.dataset.clinic || ""}`;
+        heading.textContent = window.wwmmI18n?.t(sourceHeading) || sourceHeading;
+      }
       if (copy) copy.textContent = sourceCard.dataset.bio || "";
       links.forEach((link) => {
         link.dataset.studioId = sourceCard.dataset.studioId || "";
@@ -2398,21 +2443,42 @@ window.addEventListener("resize", () => {
 
     function formatStudioRegion(address) {
       const parts = String(address || "").trim().split(/\s+/).filter(Boolean);
-      if (!parts.length) return "지역 미입력";
+      if (!parts.length) return "Address pending";
       const cityMap = {
-        "서울특별시": "서울", "부산광역시": "부산", "대구광역시": "대구", "인천광역시": "인천",
-        "광주광역시": "광주", "대전광역시": "대전", "울산광역시": "울산", "세종특별자치시": "세종"
+        "서울특별시": "Seoul", "서울": "Seoul", "부산광역시": "Busan", "대구광역시": "Daegu", "인천광역시": "Incheon",
+        "광주광역시": "Gwangju", "대전광역시": "Daejeon", "울산광역시": "Ulsan", "세종특별자치시": "Sejong"
       };
       const provinceMap = {
-        "경기도": "경기", "강원특별자치도": "강원", "강원도": "강원", "충청북도": "충북", "충청남도": "충남",
-        "전북특별자치도": "전북", "전라북도": "전북", "전라남도": "전남", "경상북도": "경북", "경상남도": "경남",
-        "제주특별자치도": "제주"
+        "경기도": "Gyeonggi-do", "강원특별자치도": "Gangwon-do", "강원도": "Gangwon-do", "충청북도": "Chungcheongbuk-do", "충청남도": "Chungcheongnam-do",
+        "전북특별자치도": "Jeonbuk-do", "전라북도": "Jeonbuk-do", "전라남도": "Jeollanam-do", "경상북도": "Gyeongsangbuk-do", "경상남도": "Gyeongsangnam-do",
+        "제주특별자치도": "Jeju-do"
       };
       const isProvince = Boolean(provinceMap[parts[0]]);
-      const region = cityMap[parts[0]] || provinceMap[parts[0]] || parts[0]
-        .replace(/특별자치시|특별시|광역시|특별자치도|도$/, "");
-      const district = isProvince ? String(parts[1] || "").replace(/시$/, "") : parts[1];
-      return [region, district].filter(Boolean).join(" ");
+      const region = cityMap[parts[0]] || provinceMap[parts[0]] || parts[0];
+      const districtMap = { "강남구": "Gangnam-gu", "서초구": "Seocho-gu", "분당구": "Bundang-gu" };
+      const districtSource = isProvince ? parts[2] || parts[1] : parts[1];
+      const district = districtMap[districtSource] || districtSource;
+      const localCityMap = { "성남시": "Seongnam-si", "천안시": "Cheonan-si" };
+      const localCity = isProvince ? localCityMap[parts[1]] || parts[1] : "";
+      return [district, localCity, region].filter(Boolean).join(", ");
+    }
+
+    function formatEnglishAddress(address, detailAddress) {
+      const source = String(address || "").trim();
+      if (!source) return "Address pending";
+      if (!/[가-힣]/.test(source)) return [source, detailAddress].filter(Boolean).join(", ");
+      const postalCode = source.match(/^\d{5}/)?.[0] || "";
+      const normalizedSource = source.replace(/^\d{5}\s+/, "").replaceAll(",", " ");
+      const parts = normalizedSource.split(/\s+/).filter(Boolean);
+      const number = parts.find((part) => /^\d+(?:-\d+)?$/.test(part)) || "";
+      const floor = parts.map((part) => part.match(/^(\d+)층$/)?.[1]).find(Boolean);
+      const roadMap = {
+        "테헤란로": "Teheran-ro", "언주로": "Eonju-ro", "사평대로": "Sapyeong-daero", "도산대로": "Dosan-daero",
+        "선릉로": "Seolleung-ro", "반포대로": "Banpo-daero", "정자로": "Jeongja-ro"
+      };
+      const road = parts.map((part) => roadMap[part]).find(Boolean) || "";
+      const region = formatStudioRegion(normalizedSource);
+      return [floor ? `${floor}F` : "", [number, road].filter(Boolean).join(" "), region, postalCode, "Republic of Korea"].filter(Boolean).join(", ");
     }
 
     function renderSavedStudioCards(cards) {
@@ -2421,7 +2487,7 @@ window.addEventListener("resize", () => {
       studioData = cards.filter((card) => card.isActive !== false).map((card, index) => ({ ...card, sortOrder: index }));
       defaultStudioOrder = studioData.map((card) => card.id);
       studioGrid.innerHTML = studioData.map((card) => `
-        <a class="studio-card" href="#location" data-studio-id="${escapeAtelier(card.id)}" data-studio="${escapeAtelier(card.name)}" data-phone="${escapeAtelier(card.phone)}" data-address="${escapeAtelier(card.address)}">
+        <a class="studio-card" href="#location" data-studio-id="${escapeAtelier(card.id)}" data-studio="${escapeAtelier(card.name)}" data-phone="${escapeAtelier(card.phone)}" data-address="${escapeAtelier(card.address)}" data-address-en="${escapeAtelier(card.addressEn || formatEnglishAddress(card.address, card.detailAddress))}">
           <img src="${escapeAtelier(card.image)}" alt="${escapeAtelier(card.name)}">
           <span class="more-mark">+</span>
           <div class="studio-info"><h3>${escapeAtelier(card.name)}</h3><p>${escapeAtelier(formatStudioRegion(card.address))}</p><p class="studio-distance"></p></div>
@@ -2489,7 +2555,7 @@ window.addEventListener("resize", () => {
         studioGrid.appendChild(card);
         const label = card.querySelector(".studio-distance");
         if (Number.isFinite(studio.distanceKm)) {
-          label.textContent = `현재 위치에서 약 ${studio.distanceKm.toFixed(1)} km`;
+          label.textContent = `${window.wwmmI18n?.t("현재 위치에서 약") || "현재 위치에서 약"} ${studio.distanceKm.toFixed(1)} km`;
           card.classList.add("has-distance");
         } else {
           label.textContent = "거리 계산을 위한 좌표가 없습니다.";
@@ -2519,29 +2585,29 @@ window.addEventListener("resize", () => {
       if (nearMeActive) {
         nearMeActive = false;
         restoreStudioOrder();
-        nearMeButton.textContent = "NEAR ME · 가까운 치과 보기";
-        locationStatus.textContent = "어드민에서 지정한 기본 순서로 돌아왔습니다.";
+        nearMeButton.textContent = window.wwmmI18n?.t("NEAR ME · 가까운 치과 보기") || "NEAR ME · 가까운 치과 보기";
+        locationStatus.textContent = window.wwmmI18n?.t("어드민에서 지정한 기본 순서로 돌아왔습니다.") || "어드민에서 지정한 기본 순서로 돌아왔습니다.";
         return;
       }
       if (!navigator.geolocation) {
-        locationStatus.textContent = "이 브라우저에서는 위치 기능을 사용할 수 없어 기본 순서로 표시합니다.";
+        locationStatus.textContent = window.wwmmI18n?.t("이 브라우저에서는 위치 기능을 사용할 수 없어 기본 순서로 표시합니다.") || "이 브라우저에서는 위치 기능을 사용할 수 없어 기본 순서로 표시합니다.";
         return;
       }
       nearMeButton.disabled = true;
-      nearMeButton.textContent = "위치 확인 중...";
-      locationStatus.textContent = "현재 위치를 확인하고 있습니다.";
+      nearMeButton.textContent = window.wwmmI18n?.t("위치 확인 중...") || "위치 확인 중...";
+      locationStatus.textContent = window.wwmmI18n?.t("현재 위치를 확인하고 있습니다.") || "현재 위치를 확인하고 있습니다.";
       navigator.geolocation.getCurrentPosition(
         (position) => {
           nearMeActive = true;
           renderStudioDistanceOrder({ lat: position.coords.latitude, lng: position.coords.longitude });
           nearMeButton.disabled = false;
-          nearMeButton.textContent = "기본 순서로 보기";
-          locationStatus.textContent = "현재 위치 기준으로 가까운 순서로 정렬되었습니다.";
+          nearMeButton.textContent = window.wwmmI18n?.t("기본 순서로 보기") || "기본 순서로 보기";
+          locationStatus.textContent = window.wwmmI18n?.t("현재 위치 기준으로 가까운 순서로 정렬되었습니다.") || "현재 위치 기준으로 가까운 순서로 정렬되었습니다.";
         },
         () => {
           nearMeButton.disabled = false;
-          nearMeButton.textContent = "NEAR ME · 가까운 치과 보기";
-          locationStatus.textContent = "위치 권한이 허용되지 않아 기본 순서로 표시합니다.";
+          nearMeButton.textContent = window.wwmmI18n?.t("NEAR ME · 가까운 치과 보기") || "NEAR ME · 가까운 치과 보기";
+          locationStatus.textContent = window.wwmmI18n?.t("위치 권한이 허용되지 않아 기본 순서로 표시합니다.") || "위치 권한이 허용되지 않아 기본 순서로 표시합니다.";
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
       );
@@ -2628,7 +2694,14 @@ window.addEventListener("resize", () => {
           path: `${window.location.pathname}${window.location.hash}`,
           userKey: getVisitorKey()
         })
-      }).catch(() => {});
+      })
+        .then((response) => response.ok ? response.json() : null)
+        .then((result) => {
+          if (result?.geo?.country && window.wwmmI18n) {
+            window.wwmmI18n.useDetectedCountry(result.geo.country);
+          }
+        })
+        .catch(() => {});
     }
 
     trackPageView();
@@ -2734,7 +2807,7 @@ window.addEventListener("resize", () => {
       event.preventDefault();
 
       formStatus.classList.remove("error");
-      formStatus.textContent = "상담 요청을 접수하고 있습니다.";
+      formStatus.textContent = window.wwmmI18n?.t("상담 요청을 접수하고 있습니다.") || "상담 요청을 접수하고 있습니다.";
       submitConsultation.disabled = true;
 
       const formData = new FormData(consultationForm);
@@ -2790,7 +2863,7 @@ window.addEventListener("resize", () => {
           input.closest(".upload-box").querySelector("[data-file-label]").textContent = "카메라 촬영 또는 앨범 선택";
         });
         selectedStudioInput.value = selectedStudio.textContent;
-        formStatus.textContent = "상담 요청이 접수되었습니다. 담당자가 확인 후 연락드리겠습니다.";
+        formStatus.textContent = window.wwmmI18n?.t("상담 요청이 접수되었습니다. 담당자가 확인 후 연락드리겠습니다.") || "상담 요청이 접수되었습니다. 담당자가 확인 후 연락드리겠습니다.";
       } catch (error) {
         formStatus.classList.add("error");
         formStatus.textContent = error.message;
