@@ -15,6 +15,12 @@ function cleanImage(value) {
   return image;
 }
 
+function cleanCoordinate(value, min, max) {
+  if (value === "" || value === null || value === undefined) return null;
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) && coordinate >= min && coordinate <= max ? coordinate : null;
+}
+
 function normalizeCard(card, index) {
   return {
     id: clean(card.id, 100) || `artisan_${Date.now()}_${index}`,
@@ -23,6 +29,7 @@ function normalizeCard(card, index) {
     role: clean(card.role, 80),
     bio: clean(card.bio, 500),
     promise: clean(card.promise, 180),
+    studioId: clean(card.studioId, 100),
     studio: clean(card.studio, 120),
     phone: clean(card.phone, 40),
     address: clean(card.address, 200),
@@ -37,6 +44,10 @@ function normalizeStudioCard(card, index) {
     name: clean(card.name, 120),
     phone: clean(card.phone, 40),
     address: clean(card.address, 200),
+    detailAddress: clean(card.detailAddress, 120),
+    lat: cleanCoordinate(card.lat, -90, 90),
+    lng: cleanCoordinate(card.lng, -180, 180),
+    isActive: card.isActive !== false,
     image: cleanImage(card.image)
   };
 }
@@ -52,7 +63,8 @@ module.exports = async function handler(req, res) {
       sendJson(res, 200, {
         ok: true,
         cards: storedCards || [],
-        configured: storedCards !== null
+        configured: storedCards !== null,
+        ...(isStudio ? { mapKey: process.env.KAKAO_MAP_JAVASCRIPT_KEY || "" } : {})
       });
       return;
     }

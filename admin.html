@@ -915,6 +915,40 @@
     .studio-preview-copy strong { font-size: 21px; }
     .studio-preview-copy span { margin-top: 6px; color: rgba(255, 255, 255, 0.82); }
 
+    .studio-coordinate-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .studio-coordinate-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .studio-map-preview {
+      min-height: 300px;
+      background: #e5ebef;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .studio-map-preview img:not([src*="map_pin.svg"]) {
+      filter: grayscale(1) contrast(0.88) brightness(1.08);
+    }
+
+    .studio-map-placeholder {
+      min-height: 300px;
+      padding: 28px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
     .master-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
@@ -1590,7 +1624,7 @@
               <div class="field"><label for="atelierDoctor">원장 이름</label><input id="atelierDoctor" required placeholder="김도윤"></div>
               <div class="field"><label for="atelierClinic">치과 이름</label><input id="atelierClinic" required placeholder="바른턱 치과"></div>
               <div class="field"><label for="atelierRole">전문 분야</label><input id="atelierRole" placeholder="Occlusion Master"></div>
-              <div class="field"><label for="atelierStudio">연결 스튜디오</label><input id="atelierStudio" placeholder="Gangnam Signature Dental"></div>
+              <div class="field"><label for="atelierStudio">연결 스튜디오</label><input id="atelierStudio" list="atelierStudioOptions" placeholder="Gangnam Signature Dental"><datalist id="atelierStudioOptions"></datalist></div>
               <div class="field"><label for="atelierPhone">전화번호</label><input id="atelierPhone" placeholder="02-0000-0000"></div>
               <div class="field"><label for="atelierAddress">주소</label><input id="atelierAddress" placeholder="서울 강남구..."></div>
               <div class="field full"><label for="atelierBio">원장 약력</label><textarea id="atelierBio" maxlength="500" placeholder="학력, 경력, 전문 분야 등 원장 약력을 입력하세요."></textarea></div>
@@ -1665,6 +1699,13 @@
               <div class="field"><label for="studioName">치과 이름</label><input id="studioName" required placeholder="Gangnam Signature Dental"></div>
               <div class="field"><label for="studioPhone">전화번호</label><input id="studioPhone" placeholder="02-0000-0000"></div>
               <div class="field"><label for="studioAddress">전체 주소</label><input id="studioAddress" required placeholder="서울특별시 강남구 테헤란로 01"></div>
+              <div class="field"><label for="studioDetailAddress">상세 주소</label><input id="studioDetailAddress" placeholder="3층, 301호"></div>
+              <div class="field"><label for="studioLatitude">위도</label><input id="studioLatitude" type="number" min="-90" max="90" step="any" placeholder="37.5001"></div>
+              <div class="field"><label for="studioLongitude">경도</label><input id="studioLongitude" type="number" min="-180" max="180" step="any" placeholder="127.0364"></div>
+              <div class="field full studio-coordinate-actions">
+                <button class="button ghost" id="studioGeocodeButton" type="button">주소로 위치 찾기</button>
+                <p class="studio-coordinate-status" id="studioCoordinateStatus" role="status" aria-live="polite">전체 주소를 입력한 뒤 위치를 확인하세요.</p>
+              </div>
               <div class="atelier-crop-grid">
                 <div class="atelier-cropper" data-studio-cropper>
                   <strong>치과 이미지</strong>
@@ -1695,6 +1736,9 @@
               </div>
             </article>
             <p class="atelier-format-note" id="studioPreviewAddress">전체 주소가 이곳에 표시됩니다.</p>
+            <div class="studio-map-preview" id="studioMapPreview" aria-label="선택한 치과 위치 지도 미리보기">
+              <div class="studio-map-placeholder">카카오 JavaScript 키와 좌표가 준비되면 이곳에서 위치를 미리 볼 수 있습니다.</div>
+            </div>
           </section>
         </div>
       </section>
@@ -1926,8 +1970,14 @@
       order: document.getElementById("studioOrder"),
       name: document.getElementById("studioName"),
       phone: document.getElementById("studioPhone"),
-      address: document.getElementById("studioAddress")
+      address: document.getElementById("studioAddress"),
+      detailAddress: document.getElementById("studioDetailAddress"),
+      lat: document.getElementById("studioLatitude"),
+      lng: document.getElementById("studioLongitude")
     };
+    const studioGeocodeButton = document.getElementById("studioGeocodeButton");
+    const studioCoordinateStatus = document.getElementById("studioCoordinateStatus");
+    const studioMapPreview = document.getElementById("studioMapPreview");
     const studioImageFile = document.getElementById("studioImageFile");
     const studioCropImage = document.getElementById("studioCropImage");
     const studioCropZoom = document.getElementById("studioCropZoom");
@@ -2021,6 +2071,10 @@
     let studioCards = [];
     let activeStudioCardId = "";
     let studioEditorDirty = false;
+    let kakaoMapKey = "";
+    let kakaoSdkPromise = null;
+    let studioPreviewMap = null;
+    let studioPreviewMarker = null;
     let studioCropState = { src: "", zoom: 1, x: 0, y: 0, dirty: false };
     const cropStates = {
       portrait: { src: "", zoom: 1, x: 0, y: 0, dirty: false },
@@ -2403,8 +2457,9 @@
       atelierEditorNotice.classList.remove("error");
       atelierEditorNotice.textContent = "이미지를 정리하고 카드를 저장하고 있습니다.";
       const [portrait, clinicImage] = await Promise.all([cropImageToDataUrl("portrait"), cropImageToDataUrl("clinic")]);
+      const linkedStudio = studioCards.find((studio) => studio.name === values.studio);
       atelierCards = atelierCards.map((card) => card.id === current.id
-        ? { ...card, ...values, portrait, clinicImage }
+        ? { ...card, ...values, studioId: linkedStudio?.id || "", portrait, clinicImage }
         : card);
 
       const response = await fetch("/api/atelier-cards", {
@@ -2444,6 +2499,86 @@
       return studioCards.find((card) => card.id === activeStudioCardId) || null;
     }
 
+    function loadKakaoMaps() {
+      if (window.kakao?.maps?.services) return Promise.resolve(window.kakao);
+      if (!kakaoMapKey) return Promise.reject(new Error("카카오 JavaScript 키가 설정되지 않았습니다."));
+      if (kakaoSdkPromise) return kakaoSdkPromise;
+      kakaoSdkPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(kakaoMapKey)}&autoload=false&libraries=services`;
+        script.onload = () => window.kakao.maps.load(() => resolve(window.kakao));
+        script.onerror = () => reject(new Error("카카오 지도를 불러오지 못했습니다."));
+        document.head.appendChild(script);
+      });
+      return kakaoSdkPromise;
+    }
+
+    async function updateStudioMapPreview() {
+      if (!studioFields.lat.value.trim() || !studioFields.lng.value.trim()) {
+        studioMapPreview.innerHTML = '<div class="studio-map-placeholder">주소로 위치를 찾거나 위도와 경도를 직접 입력하면 지도 미리보기가 표시됩니다.</div>';
+        studioPreviewMap = null;
+        studioPreviewMarker = null;
+        return;
+      }
+      const lat = Number(studioFields.lat.value);
+      const lng = Number(studioFields.lng.value);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        studioMapPreview.innerHTML = '<div class="studio-map-placeholder">주소로 위치를 찾거나 위도와 경도를 직접 입력하면 지도 미리보기가 표시됩니다.</div>';
+        studioPreviewMap = null;
+        studioPreviewMarker = null;
+        return;
+      }
+      try {
+        const kakao = await loadKakaoMaps();
+        if (!studioPreviewMap) {
+          studioMapPreview.innerHTML = "";
+          studioPreviewMap = new kakao.maps.Map(studioMapPreview, {
+            center: new kakao.maps.LatLng(lat, lng),
+            level: 4
+          });
+          studioPreviewMarker = new kakao.maps.Marker({
+            map: studioPreviewMap,
+            image: new kakao.maps.MarkerImage(
+              "assets/icons/map_pin.svg",
+              new kakao.maps.Size(52, 47),
+              { offset: new kakao.maps.Point(26, 47) }
+            )
+          });
+        }
+        const position = new kakao.maps.LatLng(lat, lng);
+        studioPreviewMarker.setPosition(position);
+        studioPreviewMap.setCenter(position);
+        studioPreviewMap.relayout();
+      } catch (error) {
+        studioMapPreview.innerHTML = `<div class="studio-map-placeholder">${escapeHtml(error.message)}</div>`;
+        studioPreviewMap = null;
+        studioPreviewMarker = null;
+      }
+    }
+
+    async function geocodeStudioAddress() {
+      const address = studioFields.address.value.trim();
+      if (!address) throw new Error("먼저 전체 주소를 입력해 주세요.");
+      studioGeocodeButton.disabled = true;
+      studioCoordinateStatus.textContent = "주소에서 위치를 확인하고 있습니다.";
+      try {
+        const kakao = await loadKakaoMaps();
+        const result = await new Promise((resolve, reject) => {
+          new kakao.maps.services.Geocoder().addressSearch(address, (rows, status) => {
+            if (status === kakao.maps.services.Status.OK && rows[0]) resolve(rows[0]);
+            else reject(new Error("주소를 찾지 못했습니다. 도로명 주소를 확인하거나 좌표를 직접 입력해 주세요."));
+          });
+        });
+        studioFields.lat.value = Number(result.y).toFixed(7);
+        studioFields.lng.value = Number(result.x).toFixed(7);
+        studioEditorDirty = true;
+        studioCoordinateStatus.textContent = "위치를 확인했습니다. 핀 위치를 검토한 뒤 저장하세요.";
+        await updateStudioMapPreview();
+      } finally {
+        studioGeocodeButton.disabled = false;
+      }
+    }
+
     function applyStudioCropState() {
       studioCropImage.src = studioCropState.src || "";
       studioCropImage.style.setProperty("--crop-zoom", studioCropState.zoom);
@@ -2461,6 +2596,7 @@
       studioPreviewImage.src = studioCropState.src || "assets/images/S01.png";
       studioPreviewImage.style.objectPosition = `${50 + Number(studioCropState.x)}% ${50 + Number(studioCropState.y)}%`;
       studioPreviewImage.style.transform = `scale(${studioCropState.zoom})`;
+      updateStudioMapPreview();
     }
 
     function renderStudioCardList() {
@@ -2503,11 +2639,17 @@
       studioFields.name.value = card.name || "";
       studioFields.phone.value = card.phone || "";
       studioFields.address.value = card.address || "";
+      studioFields.detailAddress.value = card.detailAddress || "";
+      studioFields.lat.value = card.lat ?? "";
+      studioFields.lng.value = card.lng ?? "";
       studioCropState = { src: card.image || "", zoom: 1, x: 0, y: 0, dirty: false };
       applyStudioCropState();
       deleteStudioCard.disabled = false;
       renderStudioCardList();
       updateStudioPreview();
+      studioCoordinateStatus.textContent = card.lat != null && card.lng != null
+        ? "저장된 좌표를 지도에 표시했습니다."
+        : "이 치과에는 아직 좌표가 없습니다.";
       studioEditorDirty = false;
       studioEditorNotice.textContent = "";
     }
@@ -2538,7 +2680,11 @@
       const response = await fetch("/api/atelier-cards?resource=studio");
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.error || "Studio 카드를 불러오지 못했습니다.");
+      kakaoMapKey = result.mapKey || "";
       studioCards = result.configured ? (result.cards || []) : defaultStudioCards.map((card) => ({ ...card }));
+      document.getElementById("atelierStudioOptions").innerHTML = studioCards
+        .map((card) => `<option value="${escapeHtml(card.name)}"></option>`)
+        .join("");
       if (studioCards.length) selectStudioCard(studioCards[0].id);
       else clearStudioEditor();
     }
@@ -2579,12 +2725,16 @@
       const name = studioFields.name.value.trim();
       const phone = studioFields.phone.value.trim();
       const address = studioFields.address.value.trim();
+      const detailAddress = studioFields.detailAddress.value.trim();
+      const lat = Number(studioFields.lat.value);
+      const lng = Number(studioFields.lng.value);
       if (!name || !address) throw new Error("치과 이름과 전체 주소를 입력해 주세요.");
+      if (!studioFields.lat.value.trim() || !studioFields.lng.value.trim() || !Number.isFinite(lat) || !Number.isFinite(lng)) throw new Error("주소로 위치를 찾거나 위도와 경도를 입력해 주세요.");
       if (!studioCropState.src) throw new Error("치과 이미지를 선택해 주세요.");
       const image = await cropStudioImage();
       const oldIndex = studioCards.findIndex((card) => card.id === current.id);
       const desiredIndex = Math.max(0, Math.min(studioCards.length - 1, Number(studioFields.order.value || oldIndex + 1) - 1));
-      const updated = { ...current, name, phone, address, image };
+      const updated = { ...current, name, phone, address, detailAddress, lat, lng, isActive: true, image };
       placeStudioCardAtOrder(updated, desiredIndex);
       await persistStudioCards("스튜디오를 저장했습니다. 공개 Studio 페이지에도 반영됩니다.");
       selectStudioCard(current.id);
@@ -3499,7 +3649,7 @@ async function refreshAll(showFeedback = false) {
       if (button) selectStudioCard(button.dataset.studioCardId);
     });
     addStudioCard.addEventListener("click", () => {
-      const card = { id: `studio_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: "", phone: "", address: "", image: "" };
+      const card = { id: `studio_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: "", phone: "", address: "", detailAddress: "", lat: null, lng: null, isActive: true, image: "" };
       studioCards.push(card);
       paginationState.studioCards = Math.ceil(studioCards.length / pageSizes.studioCards);
       selectStudioCard(card.id);
@@ -3529,6 +3679,16 @@ async function refreshAll(showFeedback = false) {
       event.preventDefault();
       try { await saveStudioCard(); }
       catch (error) {
+        studioEditorNotice.classList.add("error");
+        studioEditorNotice.textContent = error.message;
+      }
+    });
+    studioGeocodeButton.addEventListener("click", async () => {
+      studioEditorNotice.classList.remove("error");
+      try {
+        await geocodeStudioAddress();
+      } catch (error) {
+        studioCoordinateStatus.textContent = error.message;
         studioEditorNotice.classList.add("error");
         studioEditorNotice.textContent = error.message;
       }

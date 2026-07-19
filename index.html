@@ -1036,6 +1036,43 @@
       line-height: 1.5;
     }
 
+    .studio-distance {
+      display: none;
+      margin-top: 8px;
+      color: var(--gold) !important;
+      font-size: 13px !important;
+      letter-spacing: 0.02em;
+    }
+
+    .studio-card.has-distance .studio-distance {
+      display: block;
+    }
+
+    .studio-toolbar {
+      margin: 28px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .location-status {
+      margin: 0;
+      color: var(--slate);
+      font-size: 14px;
+    }
+
+    .location-distance {
+      display: none;
+      margin-top: 18px;
+      color: var(--gold) !important;
+      font-weight: 700;
+    }
+
+    .location-distance.visible {
+      display: block;
+    }
+
     .more-mark {
       position: absolute;
       z-index: 2;
@@ -1077,12 +1114,36 @@
       min-height: 420px;
       overflow: hidden;
       background: var(--mist);
+      position: relative;
     }
 
-    .map-panel img {
+    .map-panel > img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    .kakao-map {
+      width: 100%;
+      min-height: 420px;
+      height: 100%;
+    }
+
+    .kakao-map img:not([src*="map_pin.svg"]) {
+      filter: grayscale(1) contrast(0.9) brightness(1.08);
+    }
+
+    .map-message {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+      text-align: center;
+      background: rgba(231, 238, 242, 0.92);
+      color: var(--navy);
+      line-height: 1.7;
     }
 
     .consultation {
@@ -1840,6 +1901,10 @@
             <div class="studio-info"><h3>Luxe Smile Botanical</h3><p>서울 서초구</p></div>
           </a>
         </div>
+        <div class="studio-toolbar">
+          <button class="button ghost" id="nearMeButton" type="button">NEAR ME · 가까운 치과 보기</button>
+          <p class="location-status" id="locationStatus" role="status" aria-live="polite">현재는 어드민에서 지정한 순서입니다.</p>
+        </div>
 
         <div class="location-layout" id="location">
           <aside class="info-panel">
@@ -1848,13 +1913,15 @@
               <h3 id="selectedStudio">Gangnam Signature Dental</h3>
               <p id="selectedPhone">02-0000-0101</p>
               <p id="selectedAddress">서울 강남구 테헤란로 01</p>
+              <p class="location-distance" id="selectedDistance"></p>
             </div>
             <div class="location-actions">
               <a class="button ghost" href="#studio-list" id="locationReturn">← 이전 화면으로 돌아가기</a>
             </div>
           </aside>
           <div class="map-panel">
-            <img src="assets/images/S_map.png" alt="ww'mm certified studio location map">
+            <div class="kakao-map" id="kakaoMap" aria-label="선택한 WWMM 치과 위치 지도"></div>
+            <div class="map-message" id="mapMessage">지도 설정을 확인하고 있습니다.</div>
           </div>
         </div>
       </div>
@@ -1989,6 +2056,11 @@
     const selectedAddress = document.getElementById("selectedAddress");
     const selectedStudioInput = document.getElementById("selectedStudioInput");
     const locationReturn = document.getElementById("locationReturn");
+    const nearMeButton = document.getElementById("nearMeButton");
+    const locationStatus = document.getElementById("locationStatus");
+    const selectedDistance = document.getElementById("selectedDistance");
+    const kakaoMapElement = document.getElementById("kakaoMap");
+    const mapMessage = document.getElementById("mapMessage");
     const consultationForm = document.getElementById("consultationForm");
     const formStatus = document.getElementById("formStatus");
     const submitConsultation = document.getElementById("submitConsultation");
@@ -1996,6 +2068,14 @@
     const stagingGate = document.getElementById("stagingGate");
     const stagingGateForm = document.getElementById("stagingGateForm");
     const stagingGateStatus = document.getElementById("stagingGateStatus");
+    let studioData = [];
+    let defaultStudioOrder = [];
+    let kakaoMapKey = "";
+    let kakaoSdkPromise = null;
+    let kakaoMap = null;
+    let kakaoMarkers = [];
+    let selectedStudioId = "";
+    let nearMeActive = false;
 
     function initStagingAccessGate() {
       if (window.location.hostname !== "staging.wwmm.co") {
@@ -2078,17 +2158,105 @@
       });
     });
 
-    function selectStudioDetails(studio, phone, address) {
-      if (selectedStudio && studio) selectedStudio.textContent = studio;
-      if (selectedPhone && phone) selectedPhone.textContent = phone;
-      if (selectedAddress && address) selectedAddress.textContent = address;
-      if (selectedStudioInput && studio) selectedStudioInput.value = studio;
+    function hasCoordinates(item) {
+      return item
+        && item.lat !== "" && item.lat !== null && item.lat !== undefined
+        && item.lng !== "" && item.lng !== null && item.lng !== undefined
+        && Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng));
+    }
+
+    function studioByReference(reference) {
+      const value = String(reference || "").trim();
+      return studioData.find((item) => item.id === value || item.name === value) || null;
+    }
+
+    function loadKakaoMaps() {
+      if (window.kakao?.maps) return Promise.resolve(window.kakao);
+      if (!kakaoMapKey) return Promise.reject(new Error("카카오 지도 키가 아직 설정되지 않았습니다."));
+      if (kakaoSdkPromise) return kakaoSdkPromise;
+      kakaoSdkPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(kakaoMapKey)}&autoload=false`;
+        script.onload = () => window.kakao.maps.load(() => resolve(window.kakao));
+        script.onerror = () => reject(new Error("카카오 지도를 불러오지 못했습니다."));
+        document.head.appendChild(script);
+      });
+      return kakaoSdkPromise;
+    }
+
+    async function renderKakaoMap() {
+      const locatedStudios = studioData.filter(hasCoordinates);
+      if (!locatedStudios.length) {
+        mapMessage.hidden = false;
+        mapMessage.textContent = "등록된 치과의 정확한 좌표를 어드민에서 확인해 주세요.";
+        return;
+      }
+      try {
+        const kakao = await loadKakaoMaps();
+        const selected = studioData.find((item) => item.id === selectedStudioId && hasCoordinates(item)) || locatedStudios[0];
+        if (!kakaoMap) {
+          kakaoMap = new kakao.maps.Map(kakaoMapElement, {
+            center: new kakao.maps.LatLng(selected.lat, selected.lng),
+            level: 5
+          });
+        }
+        kakaoMarkers.forEach((entry) => entry.marker.setMap(null));
+        kakaoMarkers = [];
+        const bounds = new kakao.maps.LatLngBounds();
+        locatedStudios.forEach((studio) => {
+          const position = new kakao.maps.LatLng(studio.lat, studio.lng);
+          const marker = new kakao.maps.Marker({
+            map: kakaoMap,
+            position,
+            title: studio.name,
+            image: new kakao.maps.MarkerImage(
+              "assets/icons/map_pin.svg",
+              new kakao.maps.Size(52, 47),
+              { offset: new kakao.maps.Point(26, 47) }
+            )
+          });
+          kakao.maps.event.addListener(marker, "click", () => selectStudioDetails(studio));
+          kakaoMarkers.push({ id: studio.id, marker });
+          bounds.extend(position);
+        });
+        if (!selectedStudioId && locatedStudios.length > 1) kakaoMap.setBounds(bounds);
+        else kakaoMap.panTo(new kakao.maps.LatLng(selected.lat, selected.lng));
+        mapMessage.hidden = true;
+        requestAnimationFrame(() => kakaoMap.relayout());
+      } catch (error) {
+        mapMessage.hidden = false;
+        mapMessage.textContent = error.message;
+      }
+    }
+
+    function selectStudioDetails(studioOrName, phone, address) {
+      const studio = typeof studioOrName === "object"
+        ? studioOrName
+        : studioByReference(studioOrName) || { name: studioOrName, phone, address };
+      if (selectedStudio && studio.name) selectedStudio.textContent = studio.name;
+      if (selectedPhone) selectedPhone.textContent = studio.phone || "전화번호 미입력";
+      if (selectedAddress) selectedAddress.textContent = [studio.address, studio.detailAddress].filter(Boolean).join(" ") || "주소 미입력";
+      if (selectedStudioInput && studio.name) selectedStudioInput.value = studio.name;
+      selectedStudioId = studio.id || "";
+      if (Number.isFinite(studio.distanceKm)) {
+        selectedDistance.textContent = `현재 위치에서 약 ${studio.distanceKm.toFixed(1)} km`;
+        selectedDistance.classList.add("visible");
+      } else {
+        selectedDistance.textContent = "";
+        selectedDistance.classList.remove("visible");
+      }
+      if (hasCoordinates(studio) && kakaoMap) {
+        kakaoMap.panTo(new window.kakao.maps.LatLng(studio.lat, studio.lng));
+        kakaoMap.setLevel(4);
+      } else if (studioData.length) {
+        renderKakaoMap();
+      }
     }
 
     function bindStudioCard(card) {
       card.addEventListener("click", () => {
         locationReturnSource = { type: "studio", element: card };
-        selectStudioDetails(card.dataset.studio, card.dataset.phone, card.dataset.address);
+        selectStudioDetails(studioByReference(card.dataset.studioId || card.dataset.studio) || card.dataset.studio, card.dataset.phone, card.dataset.address);
       });
     }
 
@@ -2150,6 +2318,7 @@ function renderArtisanInfo(sourceCard, infoCard) {
       if (heading) heading.textContent = `${sourceCard.dataset.doctor || ""} 원장 · ${sourceCard.dataset.clinic || ""}`;
       if (copy) copy.textContent = sourceCard.dataset.bio || "";
       links.forEach((link) => {
+        link.dataset.studioId = sourceCard.dataset.studioId || "";
         link.dataset.studio = sourceCard.dataset.studio || sourceCard.dataset.clinic || "";
         link.dataset.phone = sourceCard.dataset.phone || "";
         link.dataset.address = sourceCard.dataset.address || "";
@@ -2190,7 +2359,7 @@ function renderArtisanInfo(sourceCard, infoCard) {
             type: "artisan",
             element: activeArtisanSource || target.closest(".research-card")
           };
-          selectStudioDetails(target.dataset.studio, target.dataset.phone, target.dataset.address);
+          selectStudioDetails(studioByReference(target.dataset.studioId || target.dataset.studio) || target.dataset.studio, target.dataset.phone, target.dataset.address);
           document.getElementById("location")?.scrollIntoView({ behavior: "smooth", block: "start" });
         });
       });
@@ -2249,26 +2418,134 @@ window.addEventListener("resize", () => {
     function renderSavedStudioCards(cards) {
       if (!studioGrid || !Array.isArray(cards)) return;
       locationReturnSource = null;
-      studioGrid.innerHTML = cards.map((card) => `
-        <a class="studio-card" href="#location" data-studio="${escapeAtelier(card.name)}" data-phone="${escapeAtelier(card.phone)}" data-address="${escapeAtelier(card.address)}">
+      studioData = cards.filter((card) => card.isActive !== false).map((card, index) => ({ ...card, sortOrder: index }));
+      defaultStudioOrder = studioData.map((card) => card.id);
+      studioGrid.innerHTML = studioData.map((card) => `
+        <a class="studio-card" href="#location" data-studio-id="${escapeAtelier(card.id)}" data-studio="${escapeAtelier(card.name)}" data-phone="${escapeAtelier(card.phone)}" data-address="${escapeAtelier(card.address)}">
           <img src="${escapeAtelier(card.image)}" alt="${escapeAtelier(card.name)}">
           <span class="more-mark">+</span>
-          <div class="studio-info"><h3>${escapeAtelier(card.name)}</h3><p>${escapeAtelier(formatStudioRegion(card.address))}</p></div>
+          <div class="studio-info"><h3>${escapeAtelier(card.name)}</h3><p>${escapeAtelier(formatStudioRegion(card.address))}</p><p class="studio-distance"></p></div>
         </a>
       `).join("");
       studioCards = Array.from(studioGrid.querySelectorAll(".studio-card"));
       studioCards.forEach(bindStudioCard);
       if (studioCards[0]) {
-        selectStudioDetails(studioCards[0].dataset.studio, studioCards[0].dataset.phone, studioCards[0].dataset.address);
+        selectStudioDetails(studioData[0]);
       }
+      renderKakaoMap();
     }
 
     fetch("/api/atelier-cards?resource=studio")
       .then((response) => response.ok ? response.json() : null)
       .then((result) => {
-        if (result && result.ok && result.configured) renderSavedStudioCards(result.cards);
+        if (result && result.ok) {
+          kakaoMapKey = result.mapKey || "";
+          if (result.configured) renderSavedStudioCards(result.cards);
+          else {
+            studioData = studioCards.map((card, index) => ({
+              id: card.dataset.studioId || `studio_${index + 1}`,
+              name: card.dataset.studio,
+              phone: card.dataset.phone,
+              address: card.dataset.address,
+              lat: null,
+              lng: null,
+              sortOrder: index
+            }));
+            studioCards.forEach((card, index) => {
+              card.dataset.studioId = studioData[index].id;
+              const info = card.querySelector(".studio-info");
+              if (info && !info.querySelector(".studio-distance")) info.insertAdjacentHTML("beforeend", '<p class="studio-distance"></p>');
+            });
+            defaultStudioOrder = studioData.map((card) => card.id);
+            renderKakaoMap();
+          }
+        }
       })
       .catch(() => {});
+
+    function distanceKm(lat1, lng1, lat2, lng2) {
+      const toRadians = (value) => value * Math.PI / 180;
+      const earthRadiusKm = 6371;
+      const latitudeDelta = toRadians(lat2 - lat1);
+      const longitudeDelta = toRadians(lng2 - lng1);
+      const a = Math.sin(latitudeDelta / 2) ** 2
+        + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(longitudeDelta / 2) ** 2;
+      return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function renderStudioDistanceOrder(userPosition) {
+      studioData = studioData.map((studio) => hasCoordinates(studio)
+        ? { ...studio, distanceKm: distanceKm(userPosition.lat, userPosition.lng, Number(studio.lat), Number(studio.lng)) }
+        : { ...studio, distanceKm: null });
+      const sorted = [...studioData].sort((a, b) => {
+        if (Number.isFinite(a.distanceKm) && Number.isFinite(b.distanceKm)) return a.distanceKm - b.distanceKm;
+        if (Number.isFinite(a.distanceKm)) return -1;
+        if (Number.isFinite(b.distanceKm)) return 1;
+        return a.sortOrder - b.sortOrder;
+      });
+      sorted.forEach((studio) => {
+        const card = studioGrid.querySelector(`[data-studio-id="${CSS.escape(studio.id)}"]`);
+        if (!card) return;
+        studioGrid.appendChild(card);
+        const label = card.querySelector(".studio-distance");
+        if (Number.isFinite(studio.distanceKm)) {
+          label.textContent = `현재 위치에서 약 ${studio.distanceKm.toFixed(1)} km`;
+          card.classList.add("has-distance");
+        } else {
+          label.textContent = "거리 계산을 위한 좌표가 없습니다.";
+          card.classList.remove("has-distance");
+        }
+      });
+      const selected = studioData.find((studio) => studio.id === selectedStudioId);
+      if (selected) selectStudioDetails(selected);
+    }
+
+    function restoreStudioOrder() {
+      defaultStudioOrder.forEach((id) => {
+        const card = studioGrid.querySelector(`[data-studio-id="${CSS.escape(id)}"]`);
+        if (card) studioGrid.appendChild(card);
+      });
+      studioCards.forEach((card) => {
+        card.classList.remove("has-distance");
+        const label = card.querySelector(".studio-distance");
+        if (label) label.textContent = "";
+      });
+      studioData = studioData.map(({ distanceKm: unused, ...studio }) => studio);
+      selectedDistance.textContent = "";
+      selectedDistance.classList.remove("visible");
+    }
+
+    nearMeButton?.addEventListener("click", () => {
+      if (nearMeActive) {
+        nearMeActive = false;
+        restoreStudioOrder();
+        nearMeButton.textContent = "NEAR ME · 가까운 치과 보기";
+        locationStatus.textContent = "어드민에서 지정한 기본 순서로 돌아왔습니다.";
+        return;
+      }
+      if (!navigator.geolocation) {
+        locationStatus.textContent = "이 브라우저에서는 위치 기능을 사용할 수 없어 기본 순서로 표시합니다.";
+        return;
+      }
+      nearMeButton.disabled = true;
+      nearMeButton.textContent = "위치 확인 중...";
+      locationStatus.textContent = "현재 위치를 확인하고 있습니다.";
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          nearMeActive = true;
+          renderStudioDistanceOrder({ lat: position.coords.latitude, lng: position.coords.longitude });
+          nearMeButton.disabled = false;
+          nearMeButton.textContent = "기본 순서로 보기";
+          locationStatus.textContent = "현재 위치 기준으로 가까운 순서로 정렬되었습니다.";
+        },
+        () => {
+          nearMeButton.disabled = false;
+          nearMeButton.textContent = "NEAR ME · 가까운 치과 보기";
+          locationStatus.textContent = "위치 권한이 허용되지 않아 기본 순서로 표시합니다.";
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+      );
+    });
 
     function renderSavedAtelierCards(cards) {
       if (!researchGrid || !Array.isArray(cards)) return;
@@ -2282,7 +2559,7 @@ window.addEventListener("resize", () => {
       researchGrid.innerHTML = `
         <div class="research-pair-outline" aria-hidden="true"></div>
         ${cards.map((card) => `
-          <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="${escapeAtelier(card.clinic)}" data-doctor="${escapeAtelier(card.doctor)}" data-role="${escapeAtelier(card.role)}" data-bio="${escapeAtelier(card.bio)}" data-studio="${escapeAtelier(card.studio)}" data-phone="${escapeAtelier(card.phone)}" data-address="${escapeAtelier(card.address)}" data-clinic-image="${escapeAtelier(card.clinicImage)}">
+          <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="${escapeAtelier(card.clinic)}" data-doctor="${escapeAtelier(card.doctor)}" data-role="${escapeAtelier(card.role)}" data-bio="${escapeAtelier(card.bio)}" data-studio-id="${escapeAtelier(card.studioId)}" data-studio="${escapeAtelier(card.studio)}" data-phone="${escapeAtelier(card.phone)}" data-address="${escapeAtelier(card.address)}" data-clinic-image="${escapeAtelier(card.clinicImage)}">
             <img class="research-portrait" src="${escapeAtelier(card.portrait)}" alt="${escapeAtelier(card.doctor)} 원장">
             <img class="research-clinic-image" src="${escapeAtelier(card.clinicImage)}" alt="${escapeAtelier(card.clinic)} 진료 공간" aria-hidden="true">
             <div class="research-default-copy">
