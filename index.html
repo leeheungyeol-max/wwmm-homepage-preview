@@ -2389,13 +2389,17 @@
       menuToggle.setAttribute("aria-expanded", String(open));
     });
 
+    function closeMobileMenu() {
+      mobilePanel.classList.remove("open");
+      header.classList.remove("menu-open");
+      menuToggle.setAttribute("aria-expanded", "false");
+    }
+
     mobilePanel.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => {
-        mobilePanel.classList.remove("open");
-        header.classList.remove("menu-open");
-        menuToggle.setAttribute("aria-expanded", "false");
-      });
+      link.addEventListener("click", closeMobileMenu);
     });
+
+    window.addEventListener("wwmm:languagechange", closeMobileMenu);
 
     findLine.addEventListener("change", () => {
       uploadArea.hidden = !findLine.checked;
@@ -2680,6 +2684,16 @@ function renderArtisanInfo(sourceCard, infoCard) {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           activateArtisanCard(card);
+        }
+      });
+      card.querySelector(".research-info")?.addEventListener("click", (event) => {
+        if (
+          window.matchMedia("(max-width: 680px)").matches &&
+          card.classList.contains("is-info-panel") &&
+          !event.target.closest(".research-location-link")
+        ) {
+          event.stopPropagation();
+          resetArtisanCards();
         }
       });
       card.querySelectorAll(".research-location-link").forEach((button) => {
