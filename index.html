@@ -2082,9 +2082,16 @@
   <script src="assets/js/i18n.js"></script>
   <script>
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-    window.addEventListener("pageshow", () => {
-      if (!window.location.hash) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    });
+    const initialPageUrl = `${window.location.pathname}${window.location.search}`;
+    if (window.location.hash) window.history.replaceState(null, "", initialPageUrl);
+
+    function showLandingPage() {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+
+    showLandingPage();
+    window.addEventListener("pageshow", showLandingPage);
+    window.addEventListener("load", () => window.requestAnimationFrame(showLandingPage), { once: true });
 
     const header = document.getElementById("siteHeader");
     const menuToggle = document.getElementById("menuToggle");
