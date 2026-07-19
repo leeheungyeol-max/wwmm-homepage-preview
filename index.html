@@ -1625,7 +1625,23 @@
     }
 
     @media (max-width: 680px) {
+      html {
+        max-width: 100%;
+        overflow-x: hidden;
+        scrollbar-width: none;
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+
       body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
         padding-bottom: 66px;
       }
 
@@ -2646,9 +2662,20 @@ function renderArtisanInfo(sourceCard, infoCard) {
     }
 
     function bindArtisanCard(card) {
-      card.addEventListener("mouseenter", () => activateArtisanCard(card));
-      card.addEventListener("focus", () => activateArtisanCard(card));
-      card.addEventListener("click", () => activateArtisanCard(card));
+      card.addEventListener("mouseenter", () => {
+        if (!window.matchMedia("(max-width: 680px)").matches) activateArtisanCard(card);
+      });
+      card.addEventListener("focus", () => {
+        if (!window.matchMedia("(max-width: 680px)").matches) activateArtisanCard(card);
+      });
+      card.addEventListener("click", () => {
+        const isMobile = window.matchMedia("(max-width: 680px)").matches;
+        if (isMobile && (card.classList.contains("is-active") || card.classList.contains("is-info-panel"))) {
+          resetArtisanCards();
+          return;
+        }
+        activateArtisanCard(card);
+      });
       card.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
