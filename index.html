@@ -696,6 +696,10 @@
       z-index: 2;
     }
 
+    .research-card:focus {
+      outline: none;
+    }
+
     .research-card img {
       filter: grayscale(1);
     }
@@ -863,20 +867,157 @@
 
     .research-pair-outline {
       position: absolute;
-      left: calc(var(--pair-left, 0px) - 14px);
-      top: calc(var(--pair-top, 0px) - 14px);
-      width: calc(var(--pair-width, 0px) + 28px);
-      height: calc(var(--pair-height, 0px) + 28px);
-      z-index: 0;
-      background: rgba(215, 176, 104, 0.42);
-      box-shadow: 0 22px 48px rgba(1, 28, 55, 0.12);
+      left: var(--pair-left, 0px);
+      top: var(--pair-top, 0px);
+      width: var(--pair-width, 0px);
+      height: var(--pair-height, 0px);
+      z-index: 6;
+      overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 180ms ease, left 180ms ease, top 180ms ease, width 180ms ease, height 180ms ease;
+      transition: opacity 220ms ease, left 220ms ease, top 220ms ease, width 220ms ease, height 220ms ease;
     }
 
     .research-grid.has-active-pair .research-pair-outline {
       opacity: 1;
+      pointer-events: none;
+    }
+
+    .research-pair-visual {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      overflow: hidden;
+      background-image: var(--pair-clinic-image);
+      background-position: center;
+      background-size: cover;
+      transform: scaleX(0.04);
+      transition: transform 620ms cubic-bezier(0.22, 0.74, 0.2, 1);
+      will-change: transform;
+      pointer-events: auto;
+    }
+
+    .research-pair-visual::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .research-pair-outline.opens-right .research-pair-visual {
+      left: calc(50% - 12px);
+      right: 7%;
+      transform-origin: left center;
+      box-shadow: -18px 0 34px rgba(1, 28, 55, 0.42);
+    }
+
+    .research-pair-outline.opens-right .research-pair-visual::after {
+      background: linear-gradient(90deg, rgba(1, 28, 55, 0.24), rgba(1, 28, 55, 0.72));
+    }
+
+    .research-pair-outline.opens-left .research-pair-visual {
+      left: 7%;
+      right: calc(50% - 12px);
+      transform-origin: right center;
+      box-shadow: 18px 0 34px rgba(1, 28, 55, 0.42);
+    }
+
+    .research-pair-outline.opens-left .research-pair-visual::after {
+      background: linear-gradient(270deg, rgba(1, 28, 55, 0.24), rgba(1, 28, 55, 0.72));
+    }
+
+    .research-grid.has-active-pair .research-pair-visual {
+      transform: scaleX(1);
+    }
+
+    .research-pair-copy {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      width: 43%;
+      padding: clamp(26px, 3vw, 44px);
+      color: #fff;
+      opacity: 0;
+      transform: translateX(-18px);
+      transition: opacity 260ms ease 260ms, transform 420ms ease 220ms;
+      text-shadow: 0 8px 26px rgba(0, 0, 0, 0.34);
+      pointer-events: none;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+    }
+
+    .research-pair-outline.opens-right .research-pair-copy {
+      right: 7%;
+    }
+
+    .research-pair-outline.opens-left .research-pair-copy {
+      left: 7%;
+      transform: translateX(18px);
+    }
+
+    .research-grid.has-active-pair .research-pair-copy {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .research-pair-copy .research-location-link {
+      margin-top: auto;
+      pointer-events: auto;
+    }
+
+    .research-pair-copy .research-info-copy {
+      white-space: pre-line;
+    }
+
+    .research-pair-next-hit {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      z-index: 3;
+      width: 7%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .research-pair-next-hit:focus {
+      outline: none;
+    }
+
+    .research-pair-outline.opens-right .research-pair-next-hit {
+      right: 0;
+    }
+
+    .research-pair-outline.opens-left .research-pair-next-hit {
+      left: 0;
+    }
+
+    .research-pair-copy h3 {
+      margin-bottom: 8px;
+      font-size: clamp(22px, 2.2vw, 30px);
+      line-height: 1.28;
+    }
+
+    .research-pair-copy p {
+      margin-bottom: 14px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 14px;
+      line-height: 1.68;
+    }
+
+    .research-pair-copy .research-bio-label {
+      margin: 12px 0 4px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
     .research-info-kicker {
@@ -1460,6 +1601,29 @@
       }
     }
 
+    @media (min-width: 681px) {
+      .research-grid.has-active-pair .research-card:not(.is-active):not(.is-info-panel) img {
+        filter: grayscale(1) !important;
+      }
+
+      .research-card.is-active .research-location-link--default {
+        display: none;
+      }
+
+      .research-card.is-info-panel .research-portrait {
+        opacity: 1;
+      }
+
+      .research-card.is-info-panel .research-clinic-image {
+        opacity: 0;
+      }
+
+      .research-card.is-info-panel .research-info {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+
     @media (max-width: 680px) {
       body {
         padding-bottom: 66px;
@@ -1520,6 +1684,28 @@
         left: 22px;
         top: 34%;
         width: calc(100% - 44px);
+      }
+
+      .research-pair-outline {
+        display: none;
+      }
+
+      .research-grid.has-active-pair.pair-opens-right .research-card.is-info-panel,
+      .research-grid.has-active-pair.pair-opens-left .research-card.is-active {
+        margin-top: -24px;
+      }
+
+      .research-grid.has-active-pair .research-card:not(.is-active):not(.is-info-panel) img {
+        filter: grayscale(1) !important;
+      }
+
+      .research-card.is-active .research-location-link--default {
+        display: none;
+      }
+
+      .research-card.is-info-panel .research-info .research-location-link {
+        display: inline-flex;
+        margin-top: auto;
       }
 
       .matrix-card {
@@ -2318,6 +2504,46 @@
     let activeArtisanInfo = null;
     let locationReturnSource = null;
 
+    function prepareArtisanPairStage() {
+      if (!researchPairOutline || researchPairOutline.dataset.ready === "true") return;
+      researchPairOutline.dataset.ready = "true";
+      researchPairOutline.removeAttribute("aria-hidden");
+      researchPairOutline.innerHTML = `
+        <div class="research-pair-visual" aria-hidden="true"></div>
+        <div class="research-pair-copy">
+          <p class="research-info-kicker"></p>
+          <h3></h3>
+          <p class="research-bio-label">약력</p>
+          <p class="research-info-copy"></p>
+          <button class="research-location-link" type="button">치과 위치 보기</button>
+        </div>
+        <button class="research-pair-next-hit" type="button" aria-label="다음 원장 보기"></button>
+      `;
+
+      const activateAdjacentArtisan = () => {
+        if (activeArtisanInfo) activateArtisanCard(activeArtisanInfo);
+      };
+      const nextHit = researchPairOutline.querySelector(".research-pair-next-hit");
+      nextHit?.addEventListener("mouseenter", activateAdjacentArtisan);
+      nextHit?.addEventListener("click", (event) => {
+        if (event.detail === 0) activateAdjacentArtisan();
+      });
+
+      researchPairOutline.querySelector(".research-location-link")?.addEventListener("click", () => {
+        const source = activeArtisanSource;
+        if (!source) return;
+        locationReturnSource = { type: "artisan", element: source };
+        selectStudioDetails(
+          studioByReference(source.dataset.studioId || source.dataset.studio) || source.dataset.studio,
+          source.dataset.phone,
+          source.dataset.address
+        );
+        document.getElementById("location")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+
+    prepareArtisanPairStage();
+
     function getArtisanInfoIndex(index) {
       const column = index % 3;
       if ((column === 2 || index === researchCards.length - 1) && index > 0) return index - 1;
@@ -2327,7 +2553,7 @@
 
     function resetArtisanCards() {
       researchCards.forEach((card) => card.classList.remove("is-active", "is-info-panel"));
-      researchGrid?.classList.remove("has-active-pair");
+      researchGrid?.classList.remove("has-active-pair", "pair-opens-right", "pair-opens-left");
       activeArtisanSource = null;
       activeArtisanInfo = null;
     }
@@ -2346,6 +2572,15 @@
   researchPairOutline.style.setProperty("--pair-top", `${top}px`);
   researchPairOutline.style.setProperty("--pair-width", `${right - left}px`);
   researchPairOutline.style.setProperty("--pair-height", `${bottom - top}px`);
+  const activeIndex = researchCards.indexOf(activeCard);
+  const infoIndex = researchCards.indexOf(infoCard);
+  const opensRight = window.matchMedia("(max-width: 680px)").matches
+    ? activeIndex < infoIndex
+    : activeRect.left <= infoRect.left;
+  researchPairOutline.classList.toggle("opens-right", opensRight);
+  researchPairOutline.classList.toggle("opens-left", !opensRight);
+  researchGrid.classList.toggle("pair-opens-right", opensRight);
+  researchGrid.classList.toggle("pair-opens-left", !opensRight);
   researchGrid.classList.add("has-active-pair");
 }
 
@@ -2355,6 +2590,10 @@ function renderArtisanInfo(sourceCard, infoCard) {
       const kicker = infoCard.querySelector(".research-info-kicker");
       const heading = infoCard.querySelector(".research-info h3");
       const copy = infoCard.querySelector(".research-info-copy");
+      const pairVisual = researchPairOutline?.querySelector(".research-pair-visual");
+      const pairKicker = researchPairOutline?.querySelector(".research-info-kicker");
+      const pairHeading = researchPairOutline?.querySelector(".research-pair-copy h3");
+      const pairCopy = researchPairOutline?.querySelector(".research-info-copy");
       const links = [sourceCard, infoCard]
         .map((card) => card.querySelector(".research-location-link"))
         .filter(Boolean);
@@ -2369,6 +2608,15 @@ function renderArtisanInfo(sourceCard, infoCard) {
         heading.textContent = window.wwmmI18n?.t(sourceHeading) || sourceHeading;
       }
       if (copy) copy.textContent = sourceCard.dataset.bio || "";
+      if (pairVisual && sourceCard.dataset.clinicImage) {
+        pairVisual.style.backgroundImage = `url(${JSON.stringify(sourceCard.dataset.clinicImage)})`;
+      }
+      if (pairKicker) pairKicker.textContent = sourceCard.dataset.role || "";
+      if (pairHeading) {
+        const sourceHeading = `${sourceCard.dataset.doctor || ""} 원장 · ${sourceCard.dataset.clinic || ""}`;
+        pairHeading.textContent = window.wwmmI18n?.t(sourceHeading) || sourceHeading;
+      }
+      if (pairCopy) pairCopy.textContent = sourceCard.dataset.bio || "";
       links.forEach((link) => {
         link.dataset.studioId = sourceCard.dataset.studioId || "";
         link.dataset.studio = sourceCard.dataset.studio || sourceCard.dataset.clinic || "";
@@ -2378,7 +2626,11 @@ function renderArtisanInfo(sourceCard, infoCard) {
     }
 
     function activateArtisanCard(card) {
-      if (card.classList.contains("is-info-panel") && activeArtisanSource) return;
+      if (
+        card.classList.contains("is-info-panel") &&
+        activeArtisanSource &&
+        window.matchMedia("(max-width: 680px)").matches
+      ) return;
       const index = researchCards.indexOf(card);
       if (index < 0) return;
       const infoCard = researchCards[getArtisanInfoIndex(index)];
@@ -2627,6 +2879,7 @@ window.addEventListener("resize", () => {
         researchGrid.innerHTML = '<div class="research-pair-outline" aria-hidden="true"></div>';
         researchCards = [];
         researchPairOutline = researchGrid.querySelector(".research-pair-outline");
+        prepareArtisanPairStage();
         return;
       }
       researchGrid.innerHTML = `
@@ -2653,6 +2906,7 @@ window.addEventListener("resize", () => {
       `;
       researchCards = Array.from(researchGrid.querySelectorAll(".research-card"));
       researchPairOutline = researchGrid.querySelector(".research-pair-outline");
+      prepareArtisanPairStage();
       researchCards.forEach(bindArtisanCard);
     }
 
