@@ -1,6 +1,6 @@
 const { readJson, requireMethod, sendJson } = require("./_lib/http");
 
-const ACCESS_TTL_MS = 12 * 60 * 60 * 1000;
+const ACCESS_TTL_MS = 4 * 60 * 60 * 1000;
 
 module.exports = async function handler(req, res) {
   if (!requireMethod(req, res, ["POST"])) {
