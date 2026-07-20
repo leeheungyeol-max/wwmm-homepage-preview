@@ -11,6 +11,7 @@ const CONSULTATION_MANAGER_KEY = "consultation_manager";
 const ATELIER_CARDS_KEY = "atelier_cards";
 const STUDIO_CARDS_KEY = "studio_cards";
 const ADMIN_ACCOUNTS_KEY = "admin_accounts";
+let storageBucketReadyPromise = null;
 
 function hasSupabase() {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -18,6 +19,55 @@ function hasSupabase() {
 
 function hasSupabaseStorage() {
   return hasSupabase() && Boolean(SUPABASE_BUCKET);
+}
+
+function supabaseStorageHeaders(extra = {}) {
+  return {
+    apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+    ...extra
+  };
+}
+
+async function ensureSupabaseStorageBucket() {
+  if (!hasSupabaseStorage()) return false;
+  if (storageBucketReadyPromise) return storageBucketReadyPromise;
+
+  storageBucketReadyPromise = (async () => {
+    const bucketUrl = `${process.env.SUPABASE_URL}/storage/v1/bucket/${encodeURIComponent(SUPABASE_BUCKET)}`;
+    const lookup = await fetch(bucketUrl, { headers: supabaseStorageHeaders() });
+    if (lookup.ok) return true;
+
+    const lookupDetail = await lookup.text();
+    const isMissing = lookup.status === 404 || /not\s*found|does not exist/i.test(lookupDetail);
+    if (!isMissing) {
+      throw new Error(`Supabase storage bucket lookup failed: ${lookupDetail}`);
+    }
+
+    const create = await fetch(`${process.env.SUPABASE_URL}/storage/v1/bucket`, {
+      method: "POST",
+      headers: supabaseStorageHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        id: SUPABASE_BUCKET,
+        name: SUPABASE_BUCKET,
+        public: false,
+        file_size_limit: 5 * 1024 * 1024,
+        allowed_mime_types: ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]
+      })
+    });
+
+    if (create.ok) return true;
+    const createDetail = await create.text();
+    if (/already exists|duplicate/i.test(createDetail)) return true;
+    throw new Error(`Supabase storage bucket creation failed: ${createDetail}`);
+  })();
+
+  try {
+    return await storageBucketReadyPromise;
+  } catch (error) {
+    storageBucketReadyPromise = null;
+    throw error;
+  }
 }
 
 function normalizeReservation(row) {
@@ -380,6 +430,8 @@ async function uploadReservationFiles(reservationId, files) {
     }));
   }
 
+  await ensureSupabaseStorageBucket();
+
   const uploads = [];
 
   for (const [index, file] of list.entries()) {
@@ -392,8 +444,7 @@ async function uploadReservationFiles(reservationId, files) {
     const response = await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/${SUPABASE_BUCKET}/${objectPath}`, {
       method: "POST",
       headers: {
-        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        ...supabaseStorageHeaders(),
         "Content-Type": file.type || parsed.type || "application/octet-stream",
         "x-upsert": "false"
       },

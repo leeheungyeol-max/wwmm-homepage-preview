@@ -44,7 +44,21 @@ module.exports = async function handler(req, res) {
     }
 
     const reservationId = `wwmm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const uploads = await uploadReservationFiles(reservationId, Array.isArray(payload.uploads) ? payload.uploads : []);
+    const requestedUploads = Array.isArray(payload.uploads) ? payload.uploads : [];
+    let uploads = [];
+    let uploadWarning = "";
+
+    try {
+      uploads = await uploadReservationFiles(reservationId, requestedUploads);
+    } catch (error) {
+      uploadWarning = error.message;
+      uploads = requestedUploads.slice(0, 4).map((file) => ({
+        name: cleanText(file.name, 160) || "photo",
+        size: Number(file.size) || 0,
+        type: cleanText(file.type, 80),
+        stored: false
+      }));
+    }
 
     const reservation = await createReservation({
       id: reservationId,
@@ -71,7 +85,8 @@ module.exports = async function handler(req, res) {
         createdAt: reservation.createdAt,
         status: reservation.status
       },
-      notifications
+      notifications,
+      warnings: uploadWarning ? { uploads: uploadWarning } : {}
     });
   } catch (error) {
     sendJson(res, 500, { ok: false, error: error.message });

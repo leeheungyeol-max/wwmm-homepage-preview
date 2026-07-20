@@ -1004,6 +1004,11 @@
       line-height: 1.28;
     }
 
+    .research-artisan-heading > span {
+      display: block;
+      white-space: nowrap;
+    }
+
     .research-pair-copy p {
       margin-bottom: 14px;
       color: rgba(255, 255, 255, 0.86);
@@ -2604,6 +2609,19 @@
   researchGrid.classList.add("has-active-pair");
 }
 
+function renderArtisanHeading(target, sourceCard) {
+  if (!target || !sourceCard) return;
+
+  const translate = (value) => window.wwmmI18n?.t(value) || value;
+  const doctor = document.createElement("span");
+  const clinic = document.createElement("span");
+
+  doctor.textContent = translate(`${sourceCard.dataset.doctor || ""} 원장`);
+  clinic.textContent = translate(sourceCard.dataset.clinic || "");
+  target.classList.add("research-artisan-heading");
+  target.replaceChildren(doctor, clinic);
+}
+
 function renderArtisanInfo(sourceCard, infoCard) {
       if (!sourceCard || !infoCard) return;
       const clinicImage = infoCard.querySelector(".research-clinic-image");
@@ -2623,19 +2641,13 @@ function renderArtisanInfo(sourceCard, infoCard) {
         clinicImage.alt = `${sourceCard.dataset.clinic || "치과"} 진료 공간`;
       }
       if (kicker) kicker.textContent = sourceCard.dataset.role || "";
-      if (heading) {
-        const sourceHeading = `${sourceCard.dataset.doctor || ""} 원장 · ${sourceCard.dataset.clinic || ""}`;
-        heading.textContent = window.wwmmI18n?.t(sourceHeading) || sourceHeading;
-      }
+      renderArtisanHeading(heading, sourceCard);
       if (copy) copy.textContent = sourceCard.dataset.bio || "";
       if (pairVisual && sourceCard.dataset.clinicImage) {
         pairVisual.style.backgroundImage = `url(${JSON.stringify(sourceCard.dataset.clinicImage)})`;
       }
       if (pairKicker) pairKicker.textContent = sourceCard.dataset.role || "";
-      if (pairHeading) {
-        const sourceHeading = `${sourceCard.dataset.doctor || ""} 원장 · ${sourceCard.dataset.clinic || ""}`;
-        pairHeading.textContent = window.wwmmI18n?.t(sourceHeading) || sourceHeading;
-      }
+      renderArtisanHeading(pairHeading, sourceCard);
       if (pairCopy) pairCopy.textContent = sourceCard.dataset.bio || "";
       links.forEach((link) => {
         link.dataset.studioId = sourceCard.dataset.studioId || "";
