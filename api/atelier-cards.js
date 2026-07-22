@@ -35,7 +35,9 @@ function normalizeCard(card, index) {
     address: clean(card.address, 200),
     addressEn: clean(card.addressEn, 240),
     portrait: cleanImage(card.portrait),
-    clinicImage: cleanImage(card.clinicImage)
+    clinicImage: cleanImage(card.clinicImage),
+    version: Math.max(0, Number.parseInt(card.version, 10) || 0),
+    updatedAt: clean(card.updatedAt, 40)
   };
 }
 
@@ -55,7 +57,7 @@ function normalizeStudioCard(card, index) {
 }
 
 module.exports = async function handler(req, res) {
-  if (!requireMethod(req, res, ["GET", "PUT", "POST"])) return;
+  if (!requireMethod(req, res, ["GET", "PUT", "POST", "PATCH"])) return;
 
   try {
     const resource = req.query?.resource || new URL(req.url, "http://localhost").searchParams.get("resource");
@@ -77,6 +79,39 @@ module.exports = async function handler(req, res) {
     }
 
     const payload = await readJson(req);
+    if (!isStudio && req.method === "PATCH") {
+      const currentCards = await getAtelierCards() || [];
+      const incoming = normalizeCard(payload.card || {}, 0);
+      const index = currentCards.findIndex((card) => card.id === incoming.id);
+      const currentVersion = index >= 0 ? Math.max(0, Number.parseInt(currentCards[index].version, 10) || 0) : 0;
+      const expectedVersion = Math.max(0, Number.parseInt(payload.expectedVersion, 10) || 0);
+
+      if (!incoming.doctor || !incoming.clinic || !incoming.portrait || !incoming.clinicImage) {
+        sendJson(res, 422, { ok: false, error: "Doctor, clinic, and both images are required" });
+        return;
+      }
+      if (index >= 0 && currentVersion !== expectedVersion) {
+        sendJson(res, 409, {
+          ok: false,
+          error: "This Atelier card was updated in another session. Your draft has been preserved.",
+          currentCard: currentCards[index]
+        });
+        return;
+      }
+
+      const savedCard = {
+        ...incoming,
+        version: currentVersion + 1,
+        updatedAt: new Date().toISOString()
+      };
+      const nextCards = index >= 0
+        ? currentCards.map((card, cardIndex) => cardIndex === index ? savedCard : card)
+        : [...currentCards, savedCard];
+      await updateAtelierCards(nextCards);
+      sendJson(res, 200, { ok: true, card: savedCard });
+      return;
+    }
+
     const cards = Array.isArray(payload.cards)
       ? payload.cards.slice(0, isStudio ? 100 : 30).map(isStudio ? normalizeStudioCard : normalizeCard)
       : [];
@@ -91,6 +126,23 @@ module.exports = async function handler(req, res) {
           : "Doctor, clinic, and both images are required"
       });
       return;
+    }
+
+    if (!isStudio && payload.baseVersions && typeof payload.baseVersions === "object") {
+      const currentCards = await getAtelierCards() || [];
+      const hasConflict = currentCards.some((card) => {
+        if (!Object.prototype.hasOwnProperty.call(payload.baseVersions, card.id)) return false;
+        const expected = Math.max(0, Number.parseInt(payload.baseVersions[card.id], 10) || 0);
+        const current = Math.max(0, Number.parseInt(card.version, 10) || 0);
+        return expected !== current;
+      });
+      if (hasConflict) {
+        sendJson(res, 409, {
+          ok: false,
+          error: "Atelier data changed in another session. Refresh before changing the order or deleting a card."
+        });
+        return;
+      }
     }
 
     sendJson(res, 200, {

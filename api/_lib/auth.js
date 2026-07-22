@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 
-const TOKEN_TTL_MS = 1000 * 60 * 60 * 12;
+const TOKEN_TTL_MS = 1000 * 60 * 60 * 4;
 
 function getSecret() {
   return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "wwmm-local-admin-secret";

@@ -268,6 +268,18 @@
       font-weight: 700;
     }
 
+    .session-remaining {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .session-remaining.is-expiring {
+      color: #ff6b6b;
+      font-weight: 800;
+    }
+
     .main {
       padding: 34px clamp(20px, 4vw, 56px) 56px;
     }
@@ -1591,6 +1603,7 @@
       </div>
       <div class="admin-header-tools">
         <div class="admin-language-switcher" data-admin-language-switcher aria-label="관리자 화면 언어 선택"></div>
+        <span class="session-remaining" id="sessionRemaining" aria-live="polite"></span>
         <button class="button ghost" id="logoutButton" type="button">Sign Out</button>
       </div>
     </aside>
@@ -1945,6 +1958,7 @@
     const statusFilter = document.getElementById("statusFilter");
     const refreshButton = document.getElementById("refreshButton");
     const logoutButton = document.getElementById("logoutButton");
+    const sessionRemaining = document.getElementById("sessionRemaining");
     const exportButton = document.getElementById("exportButton");
     const currentSectionLabel = document.getElementById("currentSectionLabel");
     const sectionHeaderCopy = document.getElementById("sectionHeaderCopy");
@@ -2132,8 +2146,10 @@
     ];
     let atelierCards = [];
     let activeAtelierCardId = "";
+    let activeAtelierExpectedVersion = 0;
     let atelierEditorDirty = false;
     let atelierOrderMode = false;
+    let atelierDraftTimer = null;
     let studioCards = [];
     let activeStudioCardId = "";
     let studioEditorDirty = false;
@@ -2162,6 +2178,8 @@
       atelierCards: 6,
       studioCards: 6
     };
+    const ATELIER_DRAFT_PREFIX = "wwmmAtelierDraft:";
+    let sessionTimerId = null;
     const pageSections = {
       home: {
         title: "Home",
@@ -2202,16 +2220,56 @@
     };
 
     function getToken() {
-      return localStorage.getItem("wwmmAdminToken") || "";
+      return sessionStorage.getItem("wwmmAdminToken") || "";
     }
 
     function tokenUser(token) {
       try {
         const payload = JSON.parse(atob(String(token || "").split(".")[0].replace(/-/g, "+").replace(/_/g, "/")));
-        return { username: payload.username || "", name: payload.name || "", role: payload.role || "" };
+        return { username: payload.username || "", name: payload.name || "", role: payload.role || "", exp: Number(payload.exp) || 0 };
       } catch (error) {
         return null;
       }
+    }
+
+    function formatSessionRemaining(milliseconds) {
+      const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const remainingSeconds = seconds % 60;
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+    }
+
+    function endAdminSession(message = "") {
+      if (activeAtelierCardId && atelierEditorDirty) persistAtelierDraft();
+      sessionStorage.removeItem("wwmmAdminToken");
+      if (sessionTimerId) clearInterval(sessionTimerId);
+      sessionTimerId = null;
+      sessionRemaining.textContent = "";
+      sessionRemaining.classList.remove("is-expiring");
+      setSignedIn(false);
+      if (message) {
+        loginNotice.classList.add("error");
+        loginNotice.textContent = message;
+      }
+    }
+
+    function updateSessionRemaining() {
+      const user = tokenUser(getToken());
+      const remaining = (user?.exp || 0) - Date.now();
+      if (remaining <= 0) {
+        endAdminSession("관리자 세션이 만료되었습니다. 작성 중인 Atelier 초안은 보존되었습니다. 다시 로그인해 주세요.");
+        return;
+      }
+      sessionRemaining.textContent = `SESSION ${formatSessionRemaining(remaining)}`;
+      sessionRemaining.classList.toggle("is-expiring", remaining < 10 * 60 * 1000);
+    }
+
+    function startSessionTimer() {
+      if (sessionTimerId) clearInterval(sessionTimerId);
+      updateSessionRemaining();
+      if (!getToken()) return;
+      sessionTimerId = setInterval(updateSessionRemaining, 1000);
     }
 
     function getAuditLogs() {
@@ -2254,8 +2312,13 @@
         });
         if (currentView === "master" && currentAdminUser?.role !== "master") showView("dashboard");
         if (currentAdminUser?.role === "consultation") showView("concierge");
+        startSessionTimer();
       } else {
         currentAdminUser = null;
+        if (sessionTimerId) clearInterval(sessionTimerId);
+        sessionTimerId = null;
+        sessionRemaining.textContent = "";
+        sessionRemaining.classList.remove("is-expiring");
       }
     }
 
@@ -2345,6 +2408,67 @@
       return atelierCards.find((card) => card.id === activeAtelierCardId) || null;
     }
 
+    function atelierVersionSnapshot() {
+      return Object.fromEntries(atelierCards.map((card) => [card.id, Math.max(0, Number(card.version) || 0)]));
+    }
+
+    function atelierDraftKey(id) {
+      return `${ATELIER_DRAFT_PREFIX}${id}`;
+    }
+
+    function persistAtelierDraft() {
+      const card = activeAtelierCard();
+      if (!card || !atelierEditorDirty) return;
+      const draft = {
+        id: card.id,
+        baseVersion: Math.max(0, Number(card.version) || 0),
+        savedAt: new Date().toISOString(),
+        fields: Object.fromEntries(Object.entries(atelierFields).map(([key, input]) => [key, input.value])),
+        cropStates: {
+          portrait: { ...cropStates.portrait },
+          clinic: { ...cropStates.clinic }
+        }
+      };
+      try {
+        localStorage.setItem(atelierDraftKey(card.id), JSON.stringify(draft));
+      } catch (error) {
+        atelierEditorNotice.classList.add("error");
+        atelierEditorNotice.textContent = "브라우저 저장 공간이 부족해 초안을 보관하지 못했습니다. 이미지 용량을 줄여 주세요.";
+      }
+    }
+
+    function scheduleAtelierDraft() {
+      if (atelierDraftTimer) clearTimeout(atelierDraftTimer);
+      atelierDraftTimer = setTimeout(() => {
+        atelierDraftTimer = null;
+        persistAtelierDraft();
+      }, 250);
+    }
+
+    function readAtelierDraft(id) {
+      try {
+        const draft = JSON.parse(localStorage.getItem(atelierDraftKey(id)) || "null");
+        return draft && draft.id === id ? draft : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function clearAtelierDraft(id) {
+      if (id) localStorage.removeItem(atelierDraftKey(id));
+    }
+
+    function restoreAtelierDraft(card) {
+      const draft = readAtelierDraft(card.id);
+      if (!draft) return null;
+      Object.entries(atelierFields).forEach(([key, input]) => {
+        input.value = draft.fields?.[key] ?? card[key] ?? "";
+      });
+      cropStates.portrait = { src: card.portrait || "", zoom: 1, x: 0, y: 0, dirty: false, ...(draft.cropStates?.portrait || {}) };
+      cropStates.clinic = { src: card.clinicImage || "", zoom: 1, x: 0, y: 0, dirty: false, ...(draft.cropStates?.clinic || {}) };
+      return draft;
+    }
+
     function applyCropState(key) {
       const state = cropStates[key];
       const image = document.querySelector(`[data-crop-image="${key}"]`);
@@ -2405,6 +2529,7 @@
 
     function clearAtelierEditor() {
       activeAtelierCardId = "";
+      activeAtelierExpectedVersion = 0;
       Object.values(atelierFields).forEach((input) => {
         input.value = "";
       });
@@ -2422,7 +2547,7 @@
       const response = await fetch("/api/atelier-cards", {
         method: "PUT",
         headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ cards: atelierCards })
+        body: JSON.stringify({ cards: atelierCards, baseVersions: atelierVersionSnapshot() })
       });
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.error || "원장 순서를 저장하지 못했습니다.");
@@ -2449,23 +2574,33 @@
     }
 
     function selectAtelierCard(id) {
+      if (activeAtelierCardId && activeAtelierCardId !== id && atelierEditorDirty) persistAtelierDraft();
       const card = atelierCards.find((item) => item.id === id);
       if (!card) return;
       activeAtelierCardId = id;
       const selectedIndex = atelierCards.findIndex((item) => item.id === id);
       paginationState.atelierCards = Math.floor(selectedIndex / pageSizes.atelierCards) + 1;
       deleteAtelierCard.disabled = false;
-      Object.entries(atelierFields).forEach(([key, input]) => {
-        input.value = card[key] || "";
-      });
-      cropStates.portrait = { src: card.portrait || "", zoom: 1, x: 0, y: 0, dirty: false };
-      cropStates.clinic = { src: card.clinicImage || "", zoom: 1, x: 0, y: 0, dirty: false };
+      const restoredDraft = restoreAtelierDraft(card);
+      activeAtelierExpectedVersion = restoredDraft
+        ? Math.max(0, Number(restoredDraft.baseVersion) || 0)
+        : Math.max(0, Number(card.version) || 0);
+      if (!restoredDraft) {
+        Object.entries(atelierFields).forEach(([key, input]) => {
+          input.value = card[key] || "";
+        });
+        cropStates.portrait = { src: card.portrait || "", zoom: 1, x: 0, y: 0, dirty: false };
+        cropStates.clinic = { src: card.clinicImage || "", zoom: 1, x: 0, y: 0, dirty: false };
+      }
       applyCropState("portrait");
       applyCropState("clinic");
       renderAtelierCardList();
       updateAtelierPreview();
-      atelierEditorDirty = false;
-      atelierEditorNotice.textContent = "";
+      atelierEditorDirty = restoredDraft;
+      atelierEditorNotice.classList.remove("error");
+      atelierEditorNotice.textContent = restoredDraft
+        ? "이 브라우저에 보존된 작성 중 초안을 복원했습니다. 검토 후 저장해 주세요."
+        : "";
     }
 
     function loadCropFile(key, file) {
@@ -2478,6 +2613,7 @@
         atelierEditorDirty = true;
         applyCropState(key);
         updateAtelierPreview();
+        scheduleAtelierDraft();
       };
       reader.readAsDataURL(file);
     }
@@ -2532,18 +2668,28 @@
       atelierEditorNotice.textContent = "이미지를 정리하고 카드를 저장하고 있습니다.";
       const [portrait, clinicImage] = await Promise.all([cropImageToDataUrl("portrait"), cropImageToDataUrl("clinic")]);
       const linkedStudio = studioCards.find((studio) => studio.name === values.studio);
-      atelierCards = atelierCards.map((card) => card.id === current.id
-        ? { ...card, ...values, studioId: linkedStudio?.id || "", portrait, clinicImage }
-        : card);
+      const nextCard = { ...current, ...values, studioId: linkedStudio?.id || "", portrait, clinicImage };
 
       const response = await fetch("/api/atelier-cards", {
-        method: "PUT",
+        method: "PATCH",
         headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ cards: atelierCards })
+        body: JSON.stringify({ card: nextCard, expectedVersion: activeAtelierExpectedVersion })
       });
       const result = await response.json();
-      if (!response.ok || !result.ok) throw new Error(result.error || "Atelier 카드를 저장하지 못했습니다.");
-      atelierCards = result.cards;
+      if (!response.ok || !result.ok) {
+        persistAtelierDraft();
+        if (response.status === 409) {
+          throw new Error("다른 관리자 화면에서 이 카드가 변경되었습니다. 현재 입력 내용은 초안으로 보존했습니다. 새로고침 후 다시 확인해 주세요.");
+        }
+        if ((response.status === 401 || response.status === 403) && (tokenUser(getToken())?.exp || 0) <= Date.now()) {
+          endAdminSession("관리자 세션이 만료되었습니다. 작성 중인 Atelier 초안은 보존되었습니다. 다시 로그인해 주세요.");
+          throw new Error("관리자 세션이 만료되었습니다.");
+        }
+        throw new Error(result.error || "Atelier 카드를 저장하지 못했습니다.");
+      }
+      atelierCards = atelierCards.map((card) => card.id === current.id ? result.card : card);
+      if (!atelierCards.some((card) => card.id === result.card.id)) atelierCards.push(result.card);
+      clearAtelierDraft(current.id);
       selectAtelierCard(current.id);
       atelierEditorDirty = false;
       atelierEditorNotice.textContent = "카드를 저장했습니다. 공개 Atelier 페이지에도 반영됩니다.";
@@ -3561,7 +3707,8 @@ async function refreshAll(showFeedback = false) {
           throw new Error(result.error || "로그인에 실패했습니다.");
         }
 
-        localStorage.setItem("wwmmAdminToken", result.token);
+        sessionStorage.setItem("wwmmAdminToken", result.token);
+        localStorage.removeItem("wwmmAdminToken");
         localStorage.setItem("wwmmAdminActor", result.user?.username || "admin");
         currentAdminUser = result.user || tokenUser(result.token);
         recordAudit("login", `${currentAdminUser?.username || "admin"} · ${currentAdminUser?.role || "admin"}`);
@@ -3630,8 +3777,7 @@ async function refreshAll(showFeedback = false) {
 
     logoutButton.addEventListener("click", () => {
       recordAudit("logout", "admin session ended");
-      localStorage.removeItem("wwmmAdminToken");
-      setSignedIn(false);
+      endAdminSession();
     });
 
     searchInput.addEventListener("input", () => {
@@ -3700,16 +3846,18 @@ async function refreshAll(showFeedback = false) {
     deleteAtelierCard.addEventListener("click", async () => {
       const removed = activeAtelierCard();
       if (!removed) return;
+      const baseVersions = atelierVersionSnapshot();
       atelierCards = atelierCards.filter((card) => card.id !== activeAtelierCardId);
       try {
         const response = await fetch("/api/atelier-cards", {
           method: "PUT",
           headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ cards: atelierCards })
+          body: JSON.stringify({ cards: atelierCards, baseVersions })
         });
         const result = await response.json();
         if (!response.ok || !result.ok) throw new Error(result.error || "카드를 삭제하지 못했습니다.");
         atelierCards = result.cards;
+        clearAtelierDraft(removed.id);
         if (atelierCards.length) {
           selectAtelierCard(atelierCards[0].id);
           atelierEditorNotice.textContent = "원장 카드를 삭제했습니다.";
@@ -3818,6 +3966,7 @@ async function refreshAll(showFeedback = false) {
       atelierEditorNotice.classList.remove("error");
       atelierEditorNotice.textContent = "저장되지 않은 변경 사항이 있습니다.";
       updateAtelierPreview();
+      scheduleAtelierDraft();
     }));
     document.querySelectorAll("[data-crop-file]").forEach((input) => {
       input.addEventListener("change", () => {
@@ -3839,7 +3988,12 @@ async function refreshAll(showFeedback = false) {
         atelierEditorNotice.textContent = "저장되지 않은 이미지 변경 사항이 있습니다.";
         applyCropState(input.dataset.cropKey);
         updateAtelierPreview();
+        scheduleAtelierDraft();
       });
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (activeAtelierCardId && atelierEditorDirty) persistAtelierDraft();
     });
 
     adminUserForm.addEventListener("submit", async (event) => {
@@ -3995,10 +4149,11 @@ async function refreshAll(showFeedback = false) {
       }
     });
 
+    localStorage.removeItem("wwmmAdminToken");
     if (getToken()) {
       setSignedIn(true);
       refreshAll().catch(() => {
-        localStorage.removeItem("wwmmAdminToken");
+        sessionStorage.removeItem("wwmmAdminToken");
         setSignedIn(false);
       });
     }
