@@ -35,7 +35,13 @@ module.exports = async function handler(req, res) {
     sendJson(res, 200, {
       ok: true,
       token: createAdminToken(account),
-      user: { username: account.username, name: account.name, role: account.role }
+      user: {
+        id: account.id || "environment-master",
+        username: account.username,
+        name: account.name,
+        role: account.role,
+        mustChangePassword: account.mustChangePassword === true
+      }
     });
   } catch (error) {
     sendJson(res, 500, { ok: false, error: error.message });

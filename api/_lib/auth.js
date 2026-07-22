@@ -58,9 +58,12 @@ function verifyToken(token) {
 
 function createAdminToken(account = {}) {
   return sign({
+    id: account.id || "environment-master",
     role: account.role || "master",
     username: account.username || process.env.ADMIN_USERNAME || "admin",
     name: account.name || "Master Admin",
+    mustChangePassword: account.mustChangePassword === true,
+    sessionVersion: Number.isInteger(account.sessionVersion) ? account.sessionVersion : 0,
     exp: Date.now() + TOKEN_TTL_MS
   });
 }
@@ -70,21 +73,34 @@ function getBearerToken(req) {
   return header.startsWith("Bearer ") ? header.slice(7) : "";
 }
 
-function requireAdmin(req) {
+async function requireAdmin(req) {
   const payload = verifyToken(getBearerToken(req));
-  return payload && ["master", "admin", "consultation"].includes(payload.role) ? payload : null;
+  if (!payload || payload.mustChangePassword === true || !["master", "admin", "consultation"].includes(payload.role)) return null;
+
+  const { getAdminAccounts } = require("./storage");
+  const accounts = await getAdminAccounts();
+  const account = accounts.find((item) => String(item.username || "").toLowerCase() === String(payload.username || "").toLowerCase());
+  if (account) {
+    if (account.active === false || (Number(account.sessionVersion) || 0) !== (Number(payload.sessionVersion) || 0)) return null;
+    return payload;
+  }
+
+  const configuredUsername = process.env.ADMIN_USERNAME || "admin";
+  return payload.id === "environment-master" && timingSafeEqual(payload.username || "", configuredUsername) ? payload : null;
 }
 
-function requireRole(req, roles) {
-  const payload = requireAdmin(req);
+async function requireRole(req, roles) {
+  const payload = await requireAdmin(req);
   return payload && roles.includes(payload.role) ? payload : null;
 }
 
 module.exports = {
   createAdminToken,
+  getBearerToken,
   requireAdmin,
   requireRole,
   timingSafeEqual,
+  verifyToken,
   verifyMasterCredentials,
   verifyPassword
 };

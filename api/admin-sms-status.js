@@ -6,7 +6,7 @@ const { getConsultationManager } = require("./_lib/storage");
 module.exports = async function handler(req, res) {
   if (!requireMethod(req, res, ["GET"])) return;
 
-  if (!requireAdmin(req)) {
+  if (!await requireAdmin(req)) {
     sendJson(res, 401, { ok: false, error: "Unauthorized" });
     return;
   }

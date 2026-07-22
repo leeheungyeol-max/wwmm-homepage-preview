@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!requireAdmin(req)) {
+  if (!await requireAdmin(req)) {
     sendJson(res, 401, { ok: false, error: "Unauthorized" });
     return;
   }

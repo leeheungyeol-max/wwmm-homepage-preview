@@ -7,7 +7,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!requireAdmin(req)) {
+  if (!await requireAdmin(req)) {
     sendJson(res, 401, { ok: false, error: "Unauthorized" });
     return;
   }
@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    if (!requireRole(req, ["master"])) {
+    if (!await requireRole(req, ["master"])) {
       sendJson(res, 403, { ok: false, error: "Master administrator access required" });
       return;
     }

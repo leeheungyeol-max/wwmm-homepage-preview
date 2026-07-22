@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    if (!requireRole(req, ["master", "admin"])) {
+    if (!await requireRole(req, ["master", "admin"])) {
       sendJson(res, 403, { ok: false, error: "Content administrator access required" });
       return;
     }

@@ -1579,6 +1579,30 @@
     </form>
   </section>
 
+  <section class="login-panel" id="passwordChangePanel" hidden>
+    <h1 id="passwordChangeTitle">Change Password</h1>
+    <p class="muted" id="passwordChangeCopy">Enter your current password and choose a new password.</p>
+    <form id="passwordChangeForm">
+      <div class="field">
+        <label for="currentAdminPassword">Current Password</label>
+        <input id="currentAdminPassword" type="password" autocomplete="current-password" required>
+      </div>
+      <div class="field">
+        <label for="newAdminPassword">New Password</label>
+        <input id="newAdminPassword" type="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <div class="field">
+        <label for="confirmAdminPassword">Confirm New Password</label>
+        <input id="confirmAdminPassword" type="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <div class="atelier-list-actions">
+        <button class="button" type="submit">Save New Password</button>
+        <button class="button ghost" id="cancelPasswordChange" type="button">Cancel</button>
+      </div>
+      <p class="notice" id="passwordChangeNotice" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
   <section class="admin-shell" id="adminShell" hidden>
     <aside class="sidebar">
       <div>
@@ -1604,6 +1628,7 @@
       <div class="admin-header-tools">
         <div class="admin-language-switcher" data-admin-language-switcher aria-label="관리자 화면 언어 선택"></div>
         <span class="session-remaining" id="sessionRemaining" aria-live="polite"></span>
+        <button class="button ghost" id="changeMyPassword" type="button">Change Password</button>
         <button class="button ghost" id="logoutButton" type="button">Sign Out</button>
       </div>
     </aside>
@@ -1948,9 +1973,19 @@
   <script src="assets/js/admin-i18n.js"></script>
   <script>
     const loginPanel = document.getElementById("loginPanel");
+    const passwordChangePanel = document.getElementById("passwordChangePanel");
     const adminShell = document.getElementById("adminShell");
     const loginForm = document.getElementById("loginForm");
     const loginNotice = document.getElementById("loginNotice");
+    const passwordChangeForm = document.getElementById("passwordChangeForm");
+    const passwordChangeTitle = document.getElementById("passwordChangeTitle");
+    const passwordChangeCopy = document.getElementById("passwordChangeCopy");
+    const passwordChangeNotice = document.getElementById("passwordChangeNotice");
+    const currentAdminPassword = document.getElementById("currentAdminPassword");
+    const newAdminPassword = document.getElementById("newAdminPassword");
+    const confirmAdminPassword = document.getElementById("confirmAdminPassword");
+    const cancelPasswordChange = document.getElementById("cancelPasswordChange");
+    const changeMyPassword = document.getElementById("changeMyPassword");
     const adminNotice = document.getElementById("adminNotice");
     const smsConnectionStatus = document.getElementById("smsConnectionStatus");
     const reservationRows = document.getElementById("reservationRows");
@@ -2118,6 +2153,7 @@
     let currentAdminUser = null;
     let adminAccounts = [];
     let currentAdminIsKeyMaster = false;
+    let passwordChangeForced = false;
     let analytics = {
       totalVisitors: 0,
       totalHits: 0,
@@ -2226,7 +2262,14 @@
     function tokenUser(token) {
       try {
         const payload = JSON.parse(atob(String(token || "").split(".")[0].replace(/-/g, "+").replace(/_/g, "/")));
-        return { username: payload.username || "", name: payload.name || "", role: payload.role || "", exp: Number(payload.exp) || 0 };
+        return {
+          id: payload.id || "",
+          username: payload.username || "",
+          name: payload.name || "",
+          role: payload.role || "",
+          mustChangePassword: payload.mustChangePassword === true,
+          exp: Number(payload.exp) || 0
+        };
       } catch (error) {
         return null;
       }
@@ -2302,6 +2345,7 @@
 
     function setSignedIn(signedIn) {
       loginPanel.hidden = signedIn;
+      passwordChangePanel.hidden = true;
       adminShell.hidden = !signedIn;
       if (signedIn) {
         currentAdminUser = tokenUser(getToken());
@@ -2320,6 +2364,22 @@
         sessionRemaining.textContent = "";
         sessionRemaining.classList.remove("is-expiring");
       }
+    }
+
+    function showPasswordChange(required = false) {
+      passwordChangeForced = required;
+      loginPanel.hidden = true;
+      adminShell.hidden = true;
+      passwordChangePanel.hidden = false;
+      passwordChangeTitle.textContent = required ? "Create Your Password" : "Change My Password";
+      passwordChangeCopy.textContent = required
+        ? "This account is using a temporary password. Set a new password before continuing."
+        : "Confirm your current password, then choose a new password.";
+      cancelPasswordChange.hidden = required;
+      passwordChangeNotice.textContent = "";
+      passwordChangeNotice.classList.remove("error");
+      passwordChangeForm.reset();
+      currentAdminPassword.focus();
     }
 
     function formatDate(value) {
@@ -3326,11 +3386,13 @@
           <div class="admin-user-card">
             <div>
               <strong>${escapeHtml(user.name || "-")} <span class="status-pill">${escapeHtml(user.role || "manager")}</span>${user.isKeyMaster ? ' <span class="status-pill">Key Master</span>' : ""}</strong>
-              <small>${escapeHtml(user.username || "-")} · ${user.active ? "Active" : "Revoked"} · ${formatDate(user.createdAt)}</small>
+              <small>${escapeHtml(user.username || "-")} · ${user.active ? "Active" : "Revoked"} · ${user.mustChangePassword ? "Temporary password — change required" : "Password set"} · ${formatDate(user.createdAt)}</small>
             </div>
             <div class="admin-user-actions">
-              <input type="password" minlength="8" autocomplete="new-password" placeholder="New password" data-admin-password-input="${escapeHtml(user.id)}">
-              <button class="button ghost" type="button" data-admin-password-save="${escapeHtml(user.id)}">Change Password</button>
+              ${user.username === currentAdminUser?.username ? "" : `
+                <input type="password" minlength="8" autocomplete="new-password" placeholder="Temporary password" data-admin-password-input="${escapeHtml(user.id)}">
+                <button class="button ghost" type="button" data-admin-password-save="${escapeHtml(user.id)}">Reset Password</button>
+              `}
               ${currentAdminIsKeyMaster && user.role === "master" && !user.isKeyMaster ? `<button class="button ghost" type="button" data-key-master-transfer="${escapeHtml(user.id)}">Transfer Key Master</button>` : ""}
               ${user.id === "environment-master" ? "" : `
                 <button class="button ghost" type="button" data-admin-toggle="${escapeHtml(user.id)}">${user.active ? "Revoke" : "Restore"}</button>
@@ -3712,8 +3774,12 @@ async function refreshAll(showFeedback = false) {
         localStorage.setItem("wwmmAdminActor", result.user?.username || "admin");
         currentAdminUser = result.user || tokenUser(result.token);
         recordAudit("login", `${currentAdminUser?.username || "admin"} · ${currentAdminUser?.role || "admin"}`);
-        setSignedIn(true);
-        await refreshAll();
+        if (currentAdminUser?.mustChangePassword) {
+          showPasswordChange(true);
+        } else {
+          setSignedIn(true);
+          await refreshAll();
+        }
       } catch (error) {
         loginNotice.classList.add("error");
         loginNotice.textContent = error.message;
@@ -3778,6 +3844,45 @@ async function refreshAll(showFeedback = false) {
     logoutButton.addEventListener("click", () => {
       recordAudit("logout", "admin session ended");
       endAdminSession();
+    });
+
+    changeMyPassword.addEventListener("click", () => showPasswordChange(false));
+    cancelPasswordChange.addEventListener("click", () => setSignedIn(true));
+    passwordChangeForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      passwordChangeNotice.classList.remove("error");
+      const currentPassword = currentAdminPassword.value;
+      const newPassword = newAdminPassword.value;
+      if (newPassword.length < 8) {
+        passwordChangeNotice.classList.add("error");
+        passwordChangeNotice.textContent = "Use at least 8 characters for the new password.";
+        return;
+      }
+      if (newPassword !== confirmAdminPassword.value) {
+        passwordChangeNotice.classList.add("error");
+        passwordChangeNotice.textContent = "The new passwords do not match.";
+        return;
+      }
+      try {
+        const response = await fetch("/api/admin-password", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || "Could not change password.");
+        sessionStorage.setItem("wwmmAdminToken", result.token);
+        currentAdminUser = result.user || tokenUser(result.token);
+        recordAudit(passwordChangeForced ? "set initial password" : "change own password", currentAdminUser.username);
+        passwordChangeForced = false;
+        setSignedIn(true);
+        await refreshAll();
+        adminNotice.classList.remove("error");
+        adminNotice.textContent = "Your password has been changed.";
+      } catch (error) {
+        passwordChangeNotice.classList.add("error");
+        passwordChangeNotice.textContent = error.message;
+      }
     });
 
     searchInput.addEventListener("input", () => {
@@ -4086,13 +4191,13 @@ async function refreshAll(showFeedback = false) {
         fetch("/api/admin-users", {
           method: "PATCH",
           headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ id, password })
+          body: JSON.stringify({ id, action: "resetPassword", password })
         }).then((response) => response.json().then((result) => ({ response, result }))).then(({ response, result }) => {
           if (!response.ok || !result.ok) throw new Error(result.error);
           adminAccounts = result.users || [];
-          recordAudit("change admin password", id);
+          recordAudit("reset admin password", id);
           adminNotice.classList.remove("error");
-          adminNotice.textContent = "Administrator password changed.";
+          adminNotice.textContent = "Temporary password issued. The administrator must change it at the next sign-in.";
           renderMaster();
         }).catch((error) => { adminNotice.textContent = error.message; adminNotice.classList.add("error"); });
         return;
@@ -4151,11 +4256,16 @@ async function refreshAll(showFeedback = false) {
 
     localStorage.removeItem("wwmmAdminToken");
     if (getToken()) {
-      setSignedIn(true);
-      refreshAll().catch(() => {
-        sessionStorage.removeItem("wwmmAdminToken");
-        setSignedIn(false);
-      });
+      currentAdminUser = tokenUser(getToken());
+      if (currentAdminUser?.mustChangePassword) {
+        showPasswordChange(true);
+      } else {
+        setSignedIn(true);
+        refreshAll().catch(() => {
+          sessionStorage.removeItem("wwmmAdminToken");
+          setSignedIn(false);
+        });
+      }
     }
   </script>
 </body>

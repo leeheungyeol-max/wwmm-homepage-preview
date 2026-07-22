@@ -12,6 +12,7 @@ function publicAccount(account, keyMasterUsername) {
     active: account.active !== false,
     createdAt: account.createdAt,
     updatedAt: account.updatedAt || null,
+    mustChangePassword: account.mustChangePassword === true,
     isKeyMaster: account.username.toLowerCase() === String(keyMasterUsername || "").toLowerCase()
   };
 }
@@ -42,7 +43,7 @@ function publicAccounts(accounts) {
 
 module.exports = async function handler(req, res) {
   if (!requireMethod(req, res, ["GET", "POST", "PATCH", "DELETE"])) return;
-  const actor = requireRole(req, ["master"]);
+  const actor = await requireRole(req, ["master"]);
   if (!actor) {
     sendJson(res, 403, { ok: false, error: "Master administrator access required" });
     return;
@@ -81,6 +82,8 @@ module.exports = async function handler(req, res) {
         active: true,
         passwordSalt: salt,
         passwordHash: crypto.scryptSync(password, salt, 64).toString("hex"),
+        mustChangePassword: true,
+        sessionVersion: 0,
         createdAt: new Date().toISOString()
       });
     } else {
@@ -145,10 +148,23 @@ module.exports = async function handler(req, res) {
         }
         if (payload.active !== undefined) account.active = Boolean(payload.active);
         if (["master", "admin", "consultation"].includes(payload.role)) account.role = payload.role;
-        if (payload.password) {
-          if (String(payload.password).length < 8) throw new Error("Password must be at least 8 characters");
+        if (payload.action === "resetPassword") {
+          if (account.username.toLowerCase() === String(actor.username || "").toLowerCase()) {
+            sendJson(res, 409, { ok: false, error: "Use Change My Password for your own account" });
+            return;
+          }
+          if (!payload.password || String(payload.password).length < 8) {
+            sendJson(res, 400, { ok: false, error: "Temporary password must be at least 8 characters" });
+            return;
+          }
           account.passwordSalt = crypto.randomBytes(16).toString("hex");
           account.passwordHash = crypto.scryptSync(String(payload.password), account.passwordSalt, 64).toString("hex");
+          account.mustChangePassword = true;
+          account.sessionVersion = (Number(account.sessionVersion) || 0) + 1;
+        } else if (payload.password) {
+          if (String(payload.password).length < 8) throw new Error("Password must be at least 8 characters");
+          sendJson(res, 400, { ok: false, error: "Use the password reset action for administrator accounts" });
+          return;
         }
         account.updatedAt = new Date().toISOString();
       }
