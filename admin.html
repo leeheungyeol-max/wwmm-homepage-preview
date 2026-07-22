@@ -1064,8 +1064,46 @@
     }
 
     .admin-user-card {
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 10px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .admin-user-heading {
+      display: flex;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .admin-user-heading strong {
+      margin-right: 2px;
+      font-size: 16px;
+    }
+
+    .admin-user-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .admin-user-meta span + span::before {
+      content: "·";
+      margin-right: 7px;
+      color: var(--gold);
+    }
+
+    .admin-user-meta .password-required {
+      color: #b33a32;
+      font-weight: 700;
     }
 
     .admin-user-card strong,
@@ -1084,12 +1122,23 @@
     .admin-user-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .admin-password-reset,
+    .admin-authority-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
     }
 
     .admin-user-actions input[type="password"] {
-      width: 180px;
+      width: min(220px, 100%);
       min-height: 38px;
       border: 1px solid var(--line);
       padding: 0 10px;
@@ -1516,7 +1565,18 @@
       }
 
       .admin-user-actions {
+        align-items: stretch;
+        flex-direction: column;
         justify-content: flex-start;
+      }
+
+      .admin-password-reset,
+      .admin-authority-actions {
+        width: 100%;
+      }
+
+      .admin-password-reset input[type="password"] {
+        flex: 1 1 180px;
       }
     }
 
@@ -3384,20 +3444,33 @@
       adminUserList.innerHTML = adminAccounts.length
         ? adminAccounts.map((user) => `
           <div class="admin-user-card">
-            <div>
-              <strong>${escapeHtml(user.name || "-")} <span class="status-pill">${escapeHtml(user.role || "manager")}</span>${user.isKeyMaster ? ' <span class="status-pill">Key Master</span>' : ""}</strong>
-              <small>${escapeHtml(user.username || "-")} · ${user.active ? "Active" : "Revoked"} · ${user.mustChangePassword ? "Temporary password — change required" : "Password set"} · ${formatDate(user.createdAt)}</small>
+            <div class="admin-user-summary">
+              <div class="admin-user-heading">
+                <strong>${escapeHtml(user.name || "-")}</strong>
+                <span class="status-pill">${escapeHtml(user.role || "manager")}</span>
+                ${user.isKeyMaster ? '<span class="status-pill">Key Master</span>' : ""}
+              </div>
+              <div class="admin-user-meta">
+                <span>${escapeHtml(user.username || "-")}</span>
+                <span>${user.active ? "Active" : "Revoked"}</span>
+                <span class="${user.mustChangePassword ? "password-required" : ""}">${user.mustChangePassword ? "Password change required" : "Password set"}</span>
+                <span>${formatDate(user.createdAt)}</span>
+              </div>
             </div>
             <div class="admin-user-actions">
-              ${user.username === currentAdminUser?.username ? "" : `
-                <input type="password" minlength="8" autocomplete="new-password" placeholder="Temporary password" data-admin-password-input="${escapeHtml(user.id)}">
-                <button class="button ghost" type="button" data-admin-password-save="${escapeHtml(user.id)}">Reset Password</button>
-              `}
-              ${currentAdminIsKeyMaster && user.role === "master" && !user.isKeyMaster ? `<button class="button ghost" type="button" data-key-master-transfer="${escapeHtml(user.id)}">Transfer Key Master</button>` : ""}
-              ${user.id === "environment-master" ? "" : `
-                <button class="button ghost" type="button" data-admin-toggle="${escapeHtml(user.id)}">${user.active ? "Revoke" : "Restore"}</button>
-                ${user.role !== "master" || currentAdminIsKeyMaster ? `<button class="button ghost" type="button" data-admin-remove="${escapeHtml(user.id)}">Remove</button>` : ""}
-              `}
+              <div class="admin-password-reset">
+                ${user.username === currentAdminUser?.username ? '<span class="muted">Current account</span>' : `
+                  <input type="password" minlength="8" autocomplete="new-password" placeholder="Temporary password" data-admin-password-input="${escapeHtml(user.id)}">
+                  <button class="button ghost" type="button" data-admin-password-save="${escapeHtml(user.id)}">Reset Password</button>
+                `}
+              </div>
+              <div class="admin-authority-actions">
+                ${currentAdminIsKeyMaster && user.role === "master" && !user.isKeyMaster ? `<button class="button ghost" type="button" data-key-master-transfer="${escapeHtml(user.id)}">Transfer Key Master</button>` : ""}
+                ${user.id === "environment-master" ? "" : `
+                  <button class="button ghost" type="button" data-admin-toggle="${escapeHtml(user.id)}">${user.active ? "Revoke" : "Restore"}</button>
+                  ${user.role !== "master" || currentAdminIsKeyMaster ? `<button class="button ghost" type="button" data-admin-remove="${escapeHtml(user.id)}">Remove</button>` : ""}
+                `}
+              </div>
             </div>
           </div>
         `).join("")
