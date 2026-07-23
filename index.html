@@ -1275,7 +1275,7 @@
       height: 100%;
     }
 
-    .kakao-map img:not([src*="map_pin.svg"]) {
+    .kakao-map img[src*="/tile/"] {
       filter: grayscale(1) contrast(0.9) brightness(1.08);
     }
 
@@ -2339,6 +2339,8 @@
     let kakaoSdkPromise = null;
     let kakaoMap = null;
     let kakaoMarkers = [];
+    const kakaoMapLevel = 5;
+    const kakaoMarkerSize = { width: 36, height: 55 };
     let selectedStudioId = "";
     let nearMeActive = false;
 
@@ -2494,32 +2496,35 @@
         if (!kakaoMap) {
           kakaoMap = new kakao.maps.Map(kakaoMapElement, {
             center: new kakao.maps.LatLng(selected.lat, selected.lng),
-            level: 5
+            level: kakaoMapLevel
           });
+          kakaoMap.setZoomable(false);
         }
         kakaoMarkers.forEach((entry) => entry.marker.setMap(null));
         kakaoMarkers = [];
-        const bounds = new kakao.maps.LatLngBounds();
+        const markerImage = new kakao.maps.MarkerImage(
+          "assets/icons/wwmm_pin.svg?v=1",
+          new kakao.maps.Size(kakaoMarkerSize.width, kakaoMarkerSize.height),
+          { offset: new kakao.maps.Point(kakaoMarkerSize.width / 2, kakaoMarkerSize.height) }
+        );
         locatedStudios.forEach((studio) => {
           const position = new kakao.maps.LatLng(studio.lat, studio.lng);
           const marker = new kakao.maps.Marker({
             map: kakaoMap,
             position,
             title: studio.name,
-            image: new kakao.maps.MarkerImage(
-              "assets/icons/map_pin.svg",
-              new kakao.maps.Size(52, 47),
-              { offset: new kakao.maps.Point(26, 47) }
-            )
+            image: markerImage
           });
           kakao.maps.event.addListener(marker, "click", () => selectStudioDetails(studio));
           kakaoMarkers.push({ id: studio.id, marker });
-          bounds.extend(position);
         });
-        if (!selectedStudioId && locatedStudios.length > 1) kakaoMap.setBounds(bounds);
-        else kakaoMap.panTo(new kakao.maps.LatLng(selected.lat, selected.lng));
         mapMessage.hidden = true;
-        requestAnimationFrame(() => kakaoMap.relayout());
+        requestAnimationFrame(() => {
+          kakaoMap.relayout();
+          kakaoMap.setLevel(kakaoMapLevel);
+          kakaoMap.setCenter(new kakao.maps.LatLng(selected.lat, selected.lng));
+          requestAnimationFrame(() => kakaoMap.relayout());
+        });
       } catch (error) {
         mapMessage.hidden = false;
         mapMessage.textContent = error.message;
@@ -2544,7 +2549,7 @@
       }
       if (hasCoordinates(studio) && kakaoMap) {
         kakaoMap.panTo(new window.kakao.maps.LatLng(studio.lat, studio.lng));
-        kakaoMap.setLevel(4);
+        kakaoMap.setLevel(kakaoMapLevel);
       } else if (studioData.length) {
         renderKakaoMap();
       }
