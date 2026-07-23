@@ -1270,13 +1270,21 @@
     }
 
     .kakao-map {
+      position: relative;
       width: 100%;
       min-height: 420px;
       height: 100%;
     }
 
-    .kakao-map img[src*="/tile/"] {
-      filter: grayscale(1) contrast(0.9) brightness(1.08);
+    .kakao-map::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.01);
+      -webkit-backdrop-filter: grayscale(1) contrast(0.9) brightness(1.08);
+      backdrop-filter: grayscale(1) contrast(0.9) brightness(1.08);
     }
 
     .map-message {
@@ -2520,6 +2528,10 @@
         });
         mapMessage.hidden = true;
         requestAnimationFrame(() => {
+          kakaoMapElement.querySelectorAll('img[src*="wwmm_pin.svg"]').forEach((image) => {
+            const markerLayer = image.parentElement?.parentElement;
+            if (markerLayer) markerLayer.style.zIndex = "3";
+          });
           kakaoMap.relayout();
           kakaoMap.setLevel(kakaoMapLevel);
           kakaoMap.setCenter(new kakao.maps.LatLng(selected.lat, selected.lng));
