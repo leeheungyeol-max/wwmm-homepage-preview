@@ -63,11 +63,18 @@ module.exports = async function handler(req, res) {
     const resource = req.query?.resource || new URL(req.url, "http://localhost").searchParams.get("resource");
     const isStudio = resource === "studio";
     if (req.method === "GET") {
-      const storedCards = isStudio ? await getStudioCards() : await getAtelierCards();
+      let storedCards = null;
+      let storageWarning = "";
+      try {
+        storedCards = isStudio ? await getStudioCards() : await getAtelierCards();
+      } catch (error) {
+        storageWarning = error.message;
+      }
       sendJson(res, 200, {
         ok: true,
         cards: storedCards || [],
         configured: storedCards !== null,
+        ...(storageWarning ? { storageWarning } : {}),
         ...(isStudio ? { mapKey: process.env.KAKAO_MAP_JAVASCRIPT_KEY || "" } : {})
       });
       return;

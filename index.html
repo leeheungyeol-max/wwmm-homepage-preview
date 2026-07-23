@@ -1292,6 +1292,10 @@
       line-height: 1.7;
     }
 
+    .map-message[hidden] {
+      display: none;
+    }
+
     .consultation {
       display: grid;
       grid-template-columns: 0.82fr 1.18fr;
@@ -2117,35 +2121,35 @@
           <p class="section-copy">선택한 스튜디오의 상세 정보와 위치는 아래 Location 영역에서 바로 확인할 수 있습니다.</p>
         </div>
         <div class="studio-grid">
-          <a class="studio-card" href="#location" data-studio="Gangnam Signature Dental" data-phone="02-0000-0101" data-address="서울 강남구 테헤란로 01">
+          <a class="studio-card" href="#location" data-studio="Gangnam Signature Dental" data-phone="02-0000-0101" data-address="서울특별시 강남구 테헤란로 152" data-address-en="152 Teheran-ro, Gangnam-gu, Seoul, Republic of Korea" data-lat="37.5007" data-lng="127.0365">
             <img src="assets/images/S01.png" alt="Gangnam Signature Dental">
             <span class="more-mark">+</span>
             <div class="studio-info"><h3>Gangnam Signature Dental</h3><p>Gangnam-gu, Seoul</p></div>
           </a>
-          <a class="studio-card" href="#location" data-studio="Aurora Dental Studio" data-phone="02-0000-0202" data-address="서울 강남구 언주로 02">
+          <a class="studio-card" href="#location" data-studio="Aurora Dental Studio" data-phone="02-0000-0202" data-address="서울특별시 강남구 언주로 508" data-address-en="508 Eonju-ro, Gangnam-gu, Seoul, Republic of Korea" data-lat="37.5055" data-lng="127.0373">
             <img src="assets/images/S02.png" alt="Aurora Dental Studio">
             <span class="more-mark">+</span>
             <div class="studio-info"><h3>Aurora Dental Studio</h3><p>Gangnam-gu, Seoul</p></div>
           </a>
-          <a class="studio-card" href="#location" data-studio="Harmony Dental House" data-phone="02-0000-0303" data-address="서울 서초구 사평대로 03">
+          <a class="studio-card" href="#location" data-studio="Harmony Dental House" data-phone="02-0000-0303" data-address="서울특별시 서초구 사평대로 205" data-address-en="205 Sapyeong-daero, Seocho-gu, Seoul, Republic of Korea" data-lat="37.5048" data-lng="127.0123">
             <img src="assets/images/S03.png" alt="Harmony Dental House">
             <span class="more-mark">+</span>
             <div class="studio-info"><h3>Harmony Dental House</h3><p>Seocho-gu, Seoul</p></div>
           </a>
-          <a class="studio-card" href="#location" data-studio="Aegis Dental" data-phone="02-0000-0404" data-address="서울 강남구 도산대로 04">
+          <a class="studio-card" href="#location" data-studio="Aegis Dental" data-phone="02-0000-0404" data-address="경기도 성남시 분당구 판교역로 166" data-address-en="166 Pangyoyeok-ro, Bundang-gu, Seongnam-si, Gyeonggi-do, Republic of Korea" data-lat="37.3947" data-lng="127.1112">
             <img src="assets/images/S04.png" alt="Aegis Dental">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Aegis Dental</h3><p>Gangnam-gu, Seoul</p></div>
+            <div class="studio-info"><h3>Aegis Dental</h3><p>Bundang-gu, Seongnam</p></div>
           </a>
-          <a class="studio-card" href="#location" data-studio="Luxe Smile Clinic" data-phone="02-0000-0505" data-address="서울 강남구 선릉로 05">
+          <a class="studio-card" href="#location" data-studio="Luxe Smile Clinic" data-phone="02-0000-0505" data-address="경기도 성남시 분당구 정자일로 95" data-address-en="95 Jeongjail-ro, Bundang-gu, Seongnam-si, Gyeonggi-do, Republic of Korea" data-lat="37.3676" data-lng="127.1078">
             <img src="assets/images/S05.png" alt="Luxe Smile Clinic">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Luxe Smile Clinic</h3><p>Gangnam-gu, Seoul</p></div>
+            <div class="studio-info"><h3>Luxe Smile Clinic</h3><p>Bundang-gu, Seongnam</p></div>
           </a>
-          <a class="studio-card" href="#location" data-studio="Luxe Smile Botanical" data-phone="02-0000-0606" data-address="서울 서초구 반포대로 06">
+          <a class="studio-card" href="#location" data-studio="Luxe Smile Botanical" data-phone="02-0000-0606" data-address="경기도 성남시 분당구 정자로 2 1층" data-address-en="1F, 2 Jeongja-ro, Bundang-gu, Seongnam-si, Gyeonggi-do, 13560, Republic of Korea" data-lat="37.3651" data-lng="127.1069">
             <img src="assets/images/S06.png" alt="Luxe Smile Botanical">
             <span class="more-mark">+</span>
-            <div class="studio-info"><h3>Luxe Smile Botanical</h3><p>Seocho-gu, Seoul</p></div>
+            <div class="studio-info"><h3>Luxe Smile Botanical</h3><p>Bundang-gu, Seongnam</p></div>
           </a>
         </div>
         <div class="studio-toolbar">
@@ -2435,13 +2439,22 @@
       return studioData.find((item) => item.id === value || item.name === value) || null;
     }
 
+    const defaultStudioCoordinates = {
+      "Gangnam Signature Dental": { lat: 37.5007, lng: 127.0365 },
+      "Aurora Dental Studio": { lat: 37.5055, lng: 127.0373 },
+      "Harmony Dental House": { lat: 37.5048, lng: 127.0123 },
+      "Aegis Dental": { lat: 37.3947, lng: 127.1112 },
+      "Luxe Smile Clinic": { lat: 37.3676, lng: 127.1078 },
+      "Luxe Smile Botanical": { lat: 37.3651, lng: 127.1069 }
+    };
+
     function loadKakaoMaps() {
-      if (window.kakao?.maps) return Promise.resolve(window.kakao);
+      if (window.kakao?.maps?.services) return Promise.resolve(window.kakao);
       if (!kakaoMapKey) return Promise.reject(new Error("카카오 지도 키가 아직 설정되지 않았습니다."));
       if (kakaoSdkPromise) return kakaoSdkPromise;
       kakaoSdkPromise = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(kakaoMapKey)}&autoload=false`;
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(kakaoMapKey)}&autoload=false&libraries=services`;
         script.onload = () => window.kakao.maps.load(() => resolve(window.kakao));
         script.onerror = () => reject(new Error("카카오 지도를 불러오지 못했습니다."));
         document.head.appendChild(script);
@@ -2449,15 +2462,34 @@
       return kakaoSdkPromise;
     }
 
+    async function resolveMissingStudioCoordinates(kakao) {
+      if (!kakao?.maps?.services?.Geocoder) return;
+      const geocoder = new kakao.maps.services.Geocoder();
+      studioData = await Promise.all(studioData.map((studio) => {
+        if (hasCoordinates(studio) || !studio.address) return Promise.resolve(studio);
+        return new Promise((resolve) => {
+          geocoder.addressSearch(studio.address, (rows, status) => {
+            if (status !== kakao.maps.services.Status.OK || !rows[0]) {
+              const fallback = defaultStudioCoordinates[studio.name];
+              resolve(fallback ? { ...studio, ...fallback } : studio);
+              return;
+            }
+            resolve({ ...studio, lat: Number(rows[0].y), lng: Number(rows[0].x) });
+          });
+        });
+      }));
+    }
+
     async function renderKakaoMap() {
-      const locatedStudios = studioData.filter(hasCoordinates);
-      if (!locatedStudios.length) {
-        mapMessage.hidden = false;
-        mapMessage.textContent = "등록된 치과의 정확한 좌표를 어드민에서 확인해 주세요.";
-        return;
-      }
       try {
         const kakao = await loadKakaoMaps();
+        await resolveMissingStudioCoordinates(kakao);
+        const locatedStudios = studioData.filter(hasCoordinates);
+        if (!locatedStudios.length) {
+          mapMessage.hidden = false;
+          mapMessage.textContent = "등록된 치과의 정확한 좌표를 어드민에서 확인해 주세요.";
+          return;
+        }
         const selected = studioData.find((item) => item.id === selectedStudioId && hasCoordinates(item)) || locatedStudios[0];
         if (!kakaoMap) {
           kakaoMap = new kakao.maps.Map(kakaoMapElement, {
@@ -2830,8 +2862,9 @@ window.addEventListener("resize", () => {
               name: card.dataset.studio,
               phone: card.dataset.phone,
               address: card.dataset.address,
-              lat: null,
-              lng: null,
+              addressEn: card.dataset.addressEn,
+              lat: Number(card.dataset.lat) || null,
+              lng: Number(card.dataset.lng) || null,
               sortOrder: index
             }));
             studioCards.forEach((card, index) => {
