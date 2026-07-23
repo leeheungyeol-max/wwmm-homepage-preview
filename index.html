@@ -814,6 +814,19 @@
       transition: opacity 240ms ease, transform 240ms ease;
     }
 
+    .research-distance {
+      display: none;
+      margin: 14px 0 0;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .research-card.has-distance .research-distance {
+      display: block;
+    }
+
     .research-card.is-active .research-promise {
       opacity: 0;
       transform: translateY(8px);
@@ -1200,6 +1213,10 @@
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
+    }
+
+    .atelier-toolbar {
+      margin: 0 0 28px;
     }
 
     .location-status {
@@ -1967,6 +1984,10 @@
             <h2 class="section-title title-long"><span class="title-line">0.01mm의 심미적 차이를 만드는</span><span class="title-line">마스터 아티잔.</span></h2>
           </div>
         </div>
+        <div class="studio-toolbar atelier-toolbar">
+          <button class="button ghost" id="atelierNearMeButton" type="button">NEAR ME · 가까운 원장 보기</button>
+          <p class="location-status" id="atelierLocationStatus" role="status" aria-live="polite">현재는 어드민에서 지정한 순서입니다.</p>
+        </div>
         <div class="research-grid">
           <div class="research-pair-outline" aria-hidden="true"></div>
           <article class="research-card" tabindex="0" data-char-limit="17" data-clinic="바른턱 치과" data-doctor="김도윤" data-role="Occlusion Master" data-bio="교합 안정성과 안모 균형을 동시에 설계하는 초정밀 분석을 이끕니다." data-studio="Gangnam Signature Dental" data-phone="02-0000-0101" data-address="서울 강남구 테헤란로 01" data-clinic-image="assets/images/S01.png">
@@ -1977,6 +1998,7 @@
               <p class="research-doctor">김도윤 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-distance"></p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Occlusion Master</p>
@@ -1994,6 +2016,7 @@
               <p class="research-doctor">이준서 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-distance"></p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Facial Designer</p>
@@ -2011,6 +2034,7 @@
               <p class="research-doctor">박현우 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-distance"></p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Line Analyst</p>
@@ -2028,6 +2052,7 @@
               <p class="research-doctor">정하윤 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-distance"></p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Micro Technician</p>
@@ -2045,6 +2070,7 @@
               <p class="research-doctor">서민재 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-distance"></p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Veneer Specialist</p>
@@ -2062,6 +2088,7 @@
               <p class="research-doctor">한지율 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-distance"></p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">Harmony Director</p>
@@ -2331,6 +2358,8 @@
     const locationReturn = document.getElementById("locationReturn");
     const nearMeButton = document.getElementById("nearMeButton");
     const locationStatus = document.getElementById("locationStatus");
+    const atelierNearMeButton = document.getElementById("atelierNearMeButton");
+    const atelierLocationStatus = document.getElementById("atelierLocationStatus");
     const selectedDistance = document.getElementById("selectedDistance");
     const kakaoMapElement = document.getElementById("kakaoMap");
     const mapMessage = document.getElementById("mapMessage");
@@ -2351,6 +2380,8 @@
     const kakaoMarkerSize = { width: 36, height: 55 };
     let selectedStudioId = "";
     let nearMeActive = false;
+    let defaultAtelierOrder = [];
+    let atelierNearMeActive = false;
 
     function initStagingAccessGate() {
       if (window.location.hostname !== "staging.wwmm.co") {
@@ -2777,6 +2808,7 @@ function renderArtisanInfo(sourceCard, infoCard) {
     }
 
     researchCards.forEach(bindArtisanCard);
+    defaultAtelierOrder = [...researchCards];
 
     locationReturn?.addEventListener("click", (event) => {
       const source = locationReturnSource?.element;
@@ -2980,12 +3012,95 @@ window.addEventListener("resize", () => {
       );
     });
 
+    function studioForArtisanCard(card) {
+      return studioByReference(card?.dataset.studioId || card?.dataset.studio);
+    }
+
+    function renderAtelierDistanceOrder(userPosition) {
+      resetArtisanCards();
+      const sorted = researchCards.map((card, index) => {
+        const studio = studioForArtisanCard(card);
+        return {
+          card,
+          index,
+          distanceKm: hasCoordinates(studio)
+            ? distanceKm(userPosition.lat, userPosition.lng, Number(studio.lat), Number(studio.lng))
+            : null
+        };
+      }).sort((a, b) => {
+        if (Number.isFinite(a.distanceKm) && Number.isFinite(b.distanceKm)) return a.distanceKm - b.distanceKm;
+        if (Number.isFinite(a.distanceKm)) return -1;
+        if (Number.isFinite(b.distanceKm)) return 1;
+        return a.index - b.index;
+      });
+
+      sorted.forEach(({ card, distanceKm: cardDistance }) => {
+        researchGrid.appendChild(card);
+        const label = card.querySelector(".research-distance");
+        if (Number.isFinite(cardDistance)) {
+          label.textContent = `${window.wwmmI18n?.t("현재 위치에서 약") || "현재 위치에서 약"} ${cardDistance.toFixed(1)} km`;
+          card.classList.add("has-distance");
+        } else {
+          label.textContent = window.wwmmI18n?.t("거리 계산을 위한 좌표가 없습니다.") || "거리 계산을 위한 좌표가 없습니다.";
+          card.classList.remove("has-distance");
+        }
+      });
+      researchCards = sorted.map(({ card }) => card);
+    }
+
+    function restoreAtelierOrder() {
+      resetArtisanCards();
+      defaultAtelierOrder.forEach((card) => {
+        if (card.isConnected) researchGrid.appendChild(card);
+      });
+      researchCards = defaultAtelierOrder.filter((card) => card.isConnected);
+      researchCards.forEach((card) => {
+        card.classList.remove("has-distance");
+        const label = card.querySelector(".research-distance");
+        if (label) label.textContent = "";
+      });
+    }
+
+    atelierNearMeButton?.addEventListener("click", () => {
+      if (atelierNearMeActive) {
+        atelierNearMeActive = false;
+        restoreAtelierOrder();
+        atelierNearMeButton.textContent = window.wwmmI18n?.t("NEAR ME · 가까운 원장 보기") || "NEAR ME · 가까운 원장 보기";
+        atelierLocationStatus.textContent = window.wwmmI18n?.t("어드민에서 지정한 기본 순서로 돌아왔습니다.") || "어드민에서 지정한 기본 순서로 돌아왔습니다.";
+        return;
+      }
+      if (!navigator.geolocation) {
+        atelierLocationStatus.textContent = window.wwmmI18n?.t("이 브라우저에서는 위치 기능을 사용할 수 없어 기본 순서로 표시합니다.") || "이 브라우저에서는 위치 기능을 사용할 수 없어 기본 순서로 표시합니다.";
+        return;
+      }
+      atelierNearMeButton.disabled = true;
+      atelierNearMeButton.textContent = window.wwmmI18n?.t("위치 확인 중...") || "위치 확인 중...";
+      atelierLocationStatus.textContent = window.wwmmI18n?.t("현재 위치를 확인하고 있습니다.") || "현재 위치를 확인하고 있습니다.";
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          atelierNearMeActive = true;
+          renderAtelierDistanceOrder({ lat: position.coords.latitude, lng: position.coords.longitude });
+          atelierNearMeButton.disabled = false;
+          atelierNearMeButton.textContent = window.wwmmI18n?.t("기본 순서로 보기") || "기본 순서로 보기";
+          atelierLocationStatus.textContent = window.wwmmI18n?.t("현재 위치 기준으로 가까운 순서로 정렬되었습니다.") || "현재 위치 기준으로 가까운 순서로 정렬되었습니다.";
+        },
+        () => {
+          atelierNearMeButton.disabled = false;
+          atelierNearMeButton.textContent = window.wwmmI18n?.t("NEAR ME · 가까운 원장 보기") || "NEAR ME · 가까운 원장 보기";
+          atelierLocationStatus.textContent = window.wwmmI18n?.t("위치 권한이 허용되지 않아 기본 순서로 표시합니다.") || "위치 권한이 허용되지 않아 기본 순서로 표시합니다.";
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+      );
+    });
+
     function renderSavedAtelierCards(cards) {
       if (!researchGrid || !Array.isArray(cards)) return;
       if (locationReturnSource?.type === "artisan") locationReturnSource = null;
       if (!cards.length) {
         researchGrid.innerHTML = '<div class="research-pair-outline" aria-hidden="true"></div>';
         researchCards = [];
+        defaultAtelierOrder = [];
+        atelierNearMeActive = false;
         researchPairOutline = researchGrid.querySelector(".research-pair-outline");
         prepareArtisanPairStage();
         return;
@@ -3001,6 +3116,7 @@ window.addEventListener("resize", () => {
               <p class="research-doctor">${escapeAtelier(card.doctor)} 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-promise">&quot;${escapeAtelier(card.promise || "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.")}&quot;</p>
+              <p class="research-distance"></p>
             </div>
             <div class="research-info">
               <p class="research-info-kicker">${escapeAtelier(card.role)}</p>
@@ -3013,6 +3129,10 @@ window.addEventListener("resize", () => {
         `).join("")}
       `;
       researchCards = Array.from(researchGrid.querySelectorAll(".research-card"));
+      defaultAtelierOrder = [...researchCards];
+      atelierNearMeActive = false;
+      if (atelierNearMeButton) atelierNearMeButton.textContent = window.wwmmI18n?.t("NEAR ME · 가까운 원장 보기") || "NEAR ME · 가까운 원장 보기";
+      if (atelierLocationStatus) atelierLocationStatus.textContent = window.wwmmI18n?.t("현재는 어드민에서 지정한 순서입니다.") || "현재는 어드민에서 지정한 순서입니다.";
       researchPairOutline = researchGrid.querySelector(".research-pair-outline");
       prepareArtisanPairStage();
       researchCards.forEach(bindArtisanCard);
