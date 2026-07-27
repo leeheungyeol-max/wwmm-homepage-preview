@@ -29,6 +29,7 @@ function normalizeCard(card, index) {
     role: clean(card.role, 80),
     bio: clean(card.bio, 500),
     promise: clean(card.promise, 180),
+    review: clean(card.review, 800),
     studioId: clean(card.studioId, 100),
     studio: clean(card.studio, 120),
     phone: clean(card.phone, 40),
