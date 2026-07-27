@@ -1162,9 +1162,12 @@
     }
 
     .research-card.is-active .research-default-copy {
-      top: 26px;
-      bottom: 26px;
+      inset: 0;
       display: flex;
+      width: auto;
+      max-width: none;
+      padding: 26px 28px;
+      box-sizing: border-box;
       flex-direction: column;
       transform: none;
     }
@@ -1179,8 +1182,8 @@
 
     .research-card.is-active .research-location-link--default {
       position: absolute;
-      right: 8px;
-      bottom: 8px;
+      right: 2mm;
+      bottom: 2mm;
       display: inline-flex;
       margin: 0;
     }
