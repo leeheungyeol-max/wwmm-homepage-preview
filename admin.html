@@ -1809,7 +1809,7 @@
               <div class="field"><label for="atelierPhone">전화번호</label><input id="atelierPhone" placeholder="02-0000-0000"></div>
               <div class="field"><label for="atelierAddress">주소</label><input id="atelierAddress" placeholder="서울 강남구..."></div>
               <div class="field full"><label for="atelierBio">원장 약력</label><textarea id="atelierBio" maxlength="500" placeholder="학력, 경력, 전문 분야 등 원장 약력을 입력하세요."></textarea></div>
-              <div class="field full"><label for="atelierPromise">카드 약속 문구</label><textarea id="atelierPromise" maxlength="180" placeholder="인생을 바꾸는 0.01mm의 약속을 지켜드립니다."></textarea></div>
+              <div class="field full"><label for="atelierPromise">카드 약속 문구</label><textarea id="atelierPromise" maxlength="180" placeholder="고객과의 약속 문구를 입력하세요."></textarea></div>
               <div class="field full">
                 <label for="atelierReview">고객 후기 (최대 5개)</label>
                 <textarea id="atelierReview" maxlength="800" placeholder="후기 사이에 &lt;br&gt;을 입력하세요. 예:&#10;꼼꼼하고 친절해서 편안했어요.&lt;br&gt;무섭지 않게 세심하게 진료해 주셨어요."></textarea>
@@ -1852,7 +1852,7 @@
               <div class="atelier-preview-copy">
                 <p class="atelier-preview-clinic" id="atelierPreviewClinic">치과 이름</p>
                 <p class="atelier-preview-doctor" id="atelierPreviewDoctor">원장 이름 원장</p>
-                <p class="atelier-preview-promise" id="atelierPreviewPromise">&quot;인생을 바꾸는 0.01mm의 약속을 지켜드립니다.&quot;</p>
+                <p class="atelier-preview-promise" id="atelierPreviewPromise"></p>
               </div>
             </article>
             <div class="atelier-clinic-preview">
@@ -1863,7 +1863,7 @@
                   <h4 class="atelier-preview-clinic-name" id="atelierPreviewClinicName">치과 이름</h4>
                   <div class="atelier-preview-review-wrap">
                     <p class="atelier-preview-bio-label">고객 후기</p>
-                    <p class="atelier-preview-review" id="atelierPreviewReview">고객 후기가 이곳에 표시됩니다.</p>
+                    <p class="atelier-preview-review" id="atelierPreviewReview"></p>
                   </div>
                 </div>
               </article>
@@ -2260,12 +2260,12 @@
     let currentView = "dashboard";
     let analyticsRange = "week";
     const defaultAtelierCards = [
-      { id: "artisan_1", clinic: "바른턱 치과", doctor: "김도윤", role: "Occlusion Master", bio: "교합 안정성과 안모 균형을 동시에 설계하는 초정밀 분석을 이끕니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Gangnam Signature Dental", phone: "02-0000-0101", address: "서울 강남구 테헤란로 01", portrait: "assets/images/R01.png", clinicImage: "assets/images/S01.png" },
-      { id: "artisan_2", clinic: "미소라인 치과", doctor: "이준서", role: "Facial Designer", bio: "스마일 아크와 미드라인의 미세한 변화를 조율합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Aurora Dental Studio", phone: "02-0000-0202", address: "서울 강남구 언주로 02", portrait: "assets/images/R03.png", clinicImage: "assets/images/S02.png" },
-      { id: "artisan_3", clinic: "페이스밸런스 치과", doctor: "박현우", role: "Line Analyst", bio: "정면과 측면의 데이터를 결합해 개인별 조화 기준을 정교화합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Harmony Dental House", phone: "02-0000-0303", address: "서울 서초구 사평대로 03", portrait: "assets/images/R05.png", clinicImage: "assets/images/S03.png" },
-      { id: "artisan_4", clinic: "라인아트 치과", doctor: "정하윤", role: "Micro Technician", bio: "0.01mm 단위의 감각으로 표면과 경계를 완성합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Aegis Dental", phone: "02-0000-0404", address: "서울 강남구 도산대로 04", portrait: "assets/images/R02.png", clinicImage: "assets/images/S04.png" },
-      { id: "artisan_5", clinic: "베니어랩 치과", doctor: "서민재", role: "Veneer Specialist", bio: "자연치와 가장 가까운 볼륨, 투명도, 착용감을 설계합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Luxe Smile Clinic", phone: "02-0000-0505", address: "서울 강남구 선릉로 05", portrait: "assets/images/R04.png", clinicImage: "assets/images/S05.png" },
-      { id: "artisan_6", clinic: "하모니덴탈", doctor: "한지율", role: "Harmony Director", bio: "치아와 입술, 얼굴선이 이어지는 최종 균형을 검수합니다.", promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.", studio: "Luxe Smile Botanical", phone: "02-0000-0606", address: "서울 서초구 반포대로 06", portrait: "assets/images/R06.png", clinicImage: "assets/images/S06.png" }
+      { id: "artisan_1", clinic: "바른턱 치과", doctor: "김도윤", role: "Occlusion Master", bio: "교합 안정성과 안모 균형을 동시에 설계하는 초정밀 분석을 이끕니다.", promise: "", review: "", studio: "Gangnam Signature Dental", phone: "02-0000-0101", address: "서울 강남구 테헤란로 01", portrait: "assets/images/R01.png", clinicImage: "assets/images/S01.png" },
+      { id: "artisan_2", clinic: "미소라인 치과", doctor: "이준서", role: "Facial Designer", bio: "스마일 아크와 미드라인의 미세한 변화를 조율합니다.", promise: "", review: "", studio: "Aurora Dental Studio", phone: "02-0000-0202", address: "서울 강남구 언주로 02", portrait: "assets/images/R03.png", clinicImage: "assets/images/S02.png" },
+      { id: "artisan_3", clinic: "페이스밸런스 치과", doctor: "박현우", role: "Line Analyst", bio: "정면과 측면의 데이터를 결합해 개인별 조화 기준을 정교화합니다.", promise: "", review: "", studio: "Harmony Dental House", phone: "02-0000-0303", address: "서울 서초구 사평대로 03", portrait: "assets/images/R05.png", clinicImage: "assets/images/S03.png" },
+      { id: "artisan_4", clinic: "라인아트 치과", doctor: "정하윤", role: "Micro Technician", bio: "0.01mm 단위의 감각으로 표면과 경계를 완성합니다.", promise: "", review: "", studio: "Aegis Dental", phone: "02-0000-0404", address: "서울 강남구 도산대로 04", portrait: "assets/images/R02.png", clinicImage: "assets/images/S04.png" },
+      { id: "artisan_5", clinic: "베니어랩 치과", doctor: "서민재", role: "Veneer Specialist", bio: "자연치와 가장 가까운 볼륨, 투명도, 착용감을 설계합니다.", promise: "", review: "", studio: "Luxe Smile Clinic", phone: "02-0000-0505", address: "서울 강남구 선릉로 05", portrait: "assets/images/R04.png", clinicImage: "assets/images/S05.png" },
+      { id: "artisan_6", clinic: "하모니덴탈", doctor: "한지율", role: "Harmony Director", bio: "치아와 입술, 얼굴선이 이어지는 최종 균형을 검수합니다.", promise: "", review: "", studio: "Luxe Smile Botanical", phone: "02-0000-0606", address: "서울 서초구 반포대로 06", portrait: "assets/images/R06.png", clinicImage: "assets/images/S06.png" }
     ];
     const defaultStudioCards = [
       { id: "studio_1", name: "Gangnam Signature Dental", phone: "02-0000-0101", address: "서울특별시 강남구 테헤란로 152", addressEn: "152 Teheran-ro, Gangnam-gu, Seoul, Republic of Korea", lat: 37.5007, lng: 127.0365, image: "assets/images/S01.png" },
@@ -2642,8 +2642,8 @@
       const doctor = atelierFields.doctor.value.trim() || "원장 이름";
       atelierPreviewClinic.textContent = clinic;
       atelierPreviewDoctor.textContent = `${doctor} 원장`;
-      const promise = atelierFields.promise.value.trim() || "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.";
-      atelierPreviewPromise.textContent = `“${promise}”`;
+      const promise = atelierFields.promise.value.trim();
+      atelierPreviewPromise.textContent = promise ? `“${promise}”` : "";
       atelierPreviewPortrait.src = cropStates.portrait.src || "assets/images/R01.png";
       atelierPreviewPortrait.style.objectPosition = `${50 + Number(cropStates.portrait.x)}% ${50 + Number(cropStates.portrait.y)}%`;
       atelierPreviewPortrait.style.transform = `scale(${cropStates.portrait.zoom})`;
@@ -2658,7 +2658,7 @@
         .slice(0, 5);
       atelierPreviewReview.textContent = reviews.length
         ? reviews.map((review) => `“${review}”`).join("\n\n")
-        : "고객 후기가 이곳에 표시됩니다.";
+        : "";
     }
 
     function renderAtelierCardList() {
@@ -2735,7 +2735,12 @@
     }
 
     function selectAtelierCard(id) {
-      if (activeAtelierCardId && activeAtelierCardId !== id && atelierEditorDirty) persistAtelierDraft();
+      const isChangingCard = activeAtelierCardId && activeAtelierCardId !== id;
+      if (isChangingCard && atelierDraftTimer) {
+        clearTimeout(atelierDraftTimer);
+        atelierDraftTimer = null;
+      }
+      if (isChangingCard && atelierEditorDirty) persistAtelierDraft();
       const card = atelierCards.find((item) => item.id === id);
       if (!card) return;
       activeAtelierCardId = id;
@@ -4055,7 +4060,7 @@ async function refreshAll(showFeedback = false) {
         clinic: "",
         role: "",
         bio: "",
-        promise: "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.",
+        promise: "",
         review: "",
         studio: "",
         phone: "",

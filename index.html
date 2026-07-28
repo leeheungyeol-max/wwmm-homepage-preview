@@ -2176,7 +2176,7 @@
               <p class="research-clinic">바른턱 치과</p>
               <p class="research-doctor">김도윤 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
-              <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-promise"></p>
               <p class="research-distance"></p>
             </div>
             <div class="research-info">
@@ -2194,7 +2194,7 @@
               <p class="research-clinic">미소라인 치과</p>
               <p class="research-doctor">이준서 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
-              <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-promise"></p>
               <p class="research-distance"></p>
             </div>
             <div class="research-info">
@@ -2212,7 +2212,7 @@
               <p class="research-clinic">페이스밸런스 치과</p>
               <p class="research-doctor">박현우 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
-              <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-promise"></p>
               <p class="research-distance"></p>
             </div>
             <div class="research-info">
@@ -2230,7 +2230,7 @@
               <p class="research-clinic">라인아트 치과</p>
               <p class="research-doctor">정하윤 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
-              <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-promise"></p>
               <p class="research-distance"></p>
             </div>
             <div class="research-info">
@@ -2248,7 +2248,7 @@
               <p class="research-clinic">베니어랩 치과</p>
               <p class="research-doctor">서민재 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
-              <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-promise"></p>
               <p class="research-distance"></p>
             </div>
             <div class="research-info">
@@ -2266,7 +2266,7 @@
               <p class="research-clinic">하모니덴탈</p>
               <p class="research-doctor">한지율 원장</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
-              <p class="research-promise">&quot;인생을 바꾸는 0.01mm의 약속을<br>지켜드립니다.&quot;</p>
+              <p class="research-promise"></p>
               <p class="research-distance"></p>
             </div>
             <div class="research-info">
@@ -2945,10 +2945,7 @@ function renderArtisanInfo(sourceCard, infoCard) {
       if (copy) copy.textContent = sourceCard.dataset.bio || "";
       if (clinicHeading) clinicHeading.textContent = window.wwmmI18n?.t(sourceCard.dataset.clinic || "") || sourceCard.dataset.clinic || "";
       if (review) {
-        const reviews = String(
-          sourceCard.dataset.review ||
-          "꼼꼼하고 친절한 진료 덕분에 편안하게 치료받았습니다."
-        )
+        const reviews = String(sourceCard.dataset.review || "")
           .split(/<br\s*\/?>|\n/gi)
           .map((item) => item.trim())
           .filter(Boolean)
@@ -3389,7 +3386,7 @@ window.addEventListener("resize", () => {
               <p class="research-role-default">${escapeAtelier(card.role)}</p>
               <p class="research-doctor">${escapeAtelier(card.doctor)} 원장</p>
               <p class="research-clinic">${escapeAtelier(card.clinic)}</p>
-              <p class="research-promise">&quot;${escapeAtelier(card.promise || "인생을 바꾸는 0.01mm의 약속을 지켜드립니다.")}&quot;</p>
+              <p class="research-promise">${card.promise ? `&quot;${escapeAtelier(card.promise)}&quot;` : ""}</p>
               <button class="research-location-link research-location-link--default" type="button">치과 위치 보기</button>
               <p class="research-distance"></p>
             </div>

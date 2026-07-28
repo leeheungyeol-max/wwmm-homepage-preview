@@ -42,6 +42,32 @@ function normalizeCard(card, index) {
   };
 }
 
+function hasInvalidCardIds(cards) {
+  const seen = new Set();
+  return cards.some((card) => {
+    const id = clean(card?.id, 100);
+    if (!id || seen.has(id)) return true;
+    seen.add(id);
+    return false;
+  });
+}
+
+function normalizeAtelierCards(cards) {
+  const seen = new Set();
+  return cards.map((card, index) => {
+    const normalized = normalizeCard(card, index);
+    const baseId = normalized.id;
+    let uniqueId = baseId;
+    let suffix = 2;
+    while (seen.has(uniqueId)) {
+      uniqueId = `${baseId}_${suffix}`;
+      suffix += 1;
+    }
+    seen.add(uniqueId);
+    return uniqueId === normalized.id ? normalized : { ...normalized, id: uniqueId };
+  });
+}
+
 function normalizeStudioCard(card, index) {
   return {
     id: clean(card.id, 100) || `studio_${Date.now()}_${index}`,
@@ -68,6 +94,10 @@ module.exports = async function handler(req, res) {
       let storageWarning = "";
       try {
         storedCards = isStudio ? await getStudioCards() : await getAtelierCards();
+        if (!isStudio && Array.isArray(storedCards) && hasInvalidCardIds(storedCards)) {
+          storedCards = normalizeAtelierCards(storedCards);
+          await updateAtelierCards(storedCards);
+        }
       } catch (error) {
         storageWarning = error.message;
       }
@@ -88,7 +118,10 @@ module.exports = async function handler(req, res) {
 
     const payload = await readJson(req);
     if (!isStudio && req.method === "PATCH") {
-      const currentCards = await getAtelierCards() || [];
+      const storedCards = await getAtelierCards() || [];
+      const currentCards = hasInvalidCardIds(storedCards)
+        ? normalizeAtelierCards(storedCards)
+        : storedCards;
       const incoming = normalizeCard(payload.card || {}, 0);
       const index = currentCards.findIndex((card) => card.id === incoming.id);
       const currentVersion = index >= 0 ? Math.max(0, Number.parseInt(currentCards[index].version, 10) || 0) : 0;
@@ -120,9 +153,12 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const cards = Array.isArray(payload.cards)
-      ? payload.cards.slice(0, isStudio ? 100 : 30).map(isStudio ? normalizeStudioCard : normalizeCard)
+    const rawCards = Array.isArray(payload.cards)
+      ? payload.cards.slice(0, isStudio ? 100 : 30)
       : [];
+    const cards = isStudio
+      ? rawCards.map(normalizeStudioCard)
+      : normalizeAtelierCards(rawCards);
     const invalid = isStudio
       ? cards.some((card) => !card.name || !card.address || !card.image)
       : cards.some((card) => !card.doctor || !card.clinic || !card.portrait || !card.clinicImage);
