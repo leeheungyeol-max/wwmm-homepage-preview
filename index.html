@@ -1826,6 +1826,39 @@
 
       .research-card.is-active .research-location-link--default {
         display: inline-flex;
+        right: 2mm;
+        bottom: 2mm;
+        min-height: 48px;
+        max-width: calc(100% - 4mm);
+        padding: 10px 14px;
+      }
+
+      .research-card.is-active {
+        min-height: clamp(500px, 128vw, 560px);
+      }
+
+      .research-card.is-active > img {
+        height: 100%;
+        aspect-ratio: auto;
+      }
+
+      .research-card.is-active .research-default-copy {
+        padding: 22px;
+      }
+
+      .research-card.is-active .research-info {
+        top: 46%;
+        right: 0;
+        bottom: 70px;
+        left: 0;
+        padding: 0 22px;
+        overflow: hidden;
+      }
+
+      .research-card.is-active .research-info-copy {
+        font-size: 13px;
+        line-height: 1.45;
+        -webkit-line-clamp: 5;
       }
 
       .research-card.is-info-panel .research-portrait {
@@ -1935,6 +1968,42 @@
 
       .research-card.is-active .research-location-link--default {
         display: inline-flex;
+      }
+
+      .research-card.is-active {
+        min-height: clamp(540px, 145vw, 620px);
+      }
+
+      .research-card.is-active > img {
+        height: 100%;
+        aspect-ratio: auto;
+      }
+
+      .research-card.is-active .research-default-copy {
+        padding: 22px;
+      }
+
+      .research-card.is-active .research-info {
+        top: 46%;
+        right: 0;
+        bottom: 92px;
+        left: 0;
+        padding: 0 22px;
+        overflow: hidden;
+      }
+
+      .research-card.is-active .research-info-copy {
+        font-size: 13px;
+        line-height: 1.45;
+        -webkit-line-clamp: 4;
+      }
+
+      .research-card.is-active .research-location-link--default {
+        right: 2mm;
+        bottom: 2mm;
+        min-height: 48px;
+        max-width: calc(100% - 4mm);
+        padding: 10px 14px;
       }
 
       .research-card.is-info-panel .research-info .research-location-link {
@@ -2922,6 +2991,10 @@ function renderArtisanInfo(sourceCard, infoCard) {
       if (!sourceCard || !infoCard) return;
       ensureArtisanCardStructure(sourceCard);
       ensureArtisanCardStructure(infoCard);
+      const sourceKicker = sourceCard.querySelector(".research-info-kicker");
+      const sourceHeading = sourceCard.querySelector(".research-info h3");
+      const sourceCopy = sourceCard.querySelector(".research-info-copy");
+      const sourceClinicHeading = sourceCard.querySelector(".research-clinic-heading");
       const clinicImage = infoCard.querySelector(".research-clinic-image");
       const kicker = infoCard.querySelector(".research-info-kicker");
       const heading = infoCard.querySelector(".research-info h3");
@@ -2936,6 +3009,16 @@ function renderArtisanInfo(sourceCard, infoCard) {
         .map((card) => card.querySelector(".research-location-link"))
         .filter(Boolean);
 
+      // A card can temporarily serve as the neighbouring clinic panel.
+      // Restore its own doctor data whenever it becomes the active source.
+      if (sourceKicker) sourceKicker.textContent = sourceCard.dataset.role || "";
+      renderArtisanHeading(sourceHeading, sourceCard);
+      if (sourceCopy) sourceCopy.textContent = sourceCard.dataset.bio || "";
+      if (sourceClinicHeading) {
+        sourceClinicHeading.textContent = window.wwmmI18n?.t(sourceCard.dataset.clinic || "")
+          || sourceCard.dataset.clinic
+          || "";
+      }
       if (clinicImage && sourceCard.dataset.clinicImage) {
         clinicImage.src = sourceCard.dataset.clinicImage;
         clinicImage.alt = `${sourceCard.dataset.clinic || "치과"} 진료 공간`;
