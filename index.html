@@ -1075,6 +1075,9 @@
     .research-location-link {
       position: relative;
       z-index: 4;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       align-self: flex-start;
       border: 1px solid rgba(215, 176, 104, 0.88);
       background: rgba(1, 28, 55, 0.2);
@@ -1084,8 +1087,14 @@
       font-size: 13px;
       font-weight: 800;
       letter-spacing: 0.08em;
+      line-height: 1.2;
+      text-align: center;
       text-transform: uppercase;
       cursor: pointer;
+    }
+
+    .research-location-link--default {
+      display: none;
     }
 
     .location-actions {
@@ -1139,11 +1148,15 @@
     }
 
     .research-role-default {
+      display: inline-block;
       margin: 0 0 18px;
+      padding: 7px 10px 6px;
+      background: rgba(1, 28, 55, 0.66);
       color: var(--gold);
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 0.14em;
+      line-height: 1.15;
       text-transform: uppercase;
     }
 
@@ -1834,7 +1847,8 @@
       }
 
       .research-card.is-active {
-        min-height: clamp(500px, 128vw, 560px);
+        height: 440px;
+        min-height: 0;
       }
 
       .research-card.is-active > img {
@@ -1971,7 +1985,7 @@
       }
 
       .research-card.is-active {
-        min-height: clamp(540px, 145vw, 620px);
+        min-height: 330px;
       }
 
       .research-card.is-active > img {
@@ -2822,11 +2836,12 @@
       }
     }
 
-    function selectStudioDetails(studioOrName, phone, address) {
+    function selectStudioDetails(studioOrName, phone, address, displayName) {
       const studio = typeof studioOrName === "object"
         ? studioOrName
         : studioByReference(studioOrName) || { name: studioOrName, phone, address };
-      if (selectedStudio && studio.name) selectedStudio.textContent = window.wwmmI18n?.t(studio.name) || studio.name;
+      const title = displayName || studio.name;
+      if (selectedStudio && title) selectedStudio.textContent = window.wwmmI18n?.t(title) || title;
       if (selectedPhone) selectedPhone.textContent = studio.phone || "전화번호 미입력";
       if (selectedAddress) selectedAddress.textContent = studio.addressEn || formatEnglishAddress(studio.address, studio.detailAddress);
       if (selectedStudioInput && studio.name) selectedStudioInput.value = studio.name;
@@ -2854,6 +2869,10 @@
     }
 
     studioCards.forEach(bindStudioCard);
+
+    function scrollLocationIntoView() {
+      document.getElementById("location")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
 
     let researchCards = Array.from(document.querySelectorAll(".research-card"));
     const researchGrid = document.querySelector(".research-grid");
@@ -2926,9 +2945,10 @@
         selectStudioDetails(
           studioByReference(source.dataset.studioId || source.dataset.studio) || source.dataset.studio,
           source.dataset.phone,
-          source.dataset.address
+          source.dataset.address,
+          source.dataset.clinic
         );
-        document.getElementById("location")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollLocationIntoView();
       });
     }
 
@@ -3149,8 +3169,14 @@ function renderArtisanInfo(sourceCard, infoCard) {
             type: "artisan",
             element: activeArtisanSource || target.closest(".research-card")
           };
-          selectStudioDetails(studioByReference(target.dataset.studioId || target.dataset.studio) || target.dataset.studio, target.dataset.phone, target.dataset.address);
-          document.getElementById("location")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          const source = activeArtisanSource || target.closest(".research-card");
+          selectStudioDetails(
+            studioByReference(target.dataset.studioId || target.dataset.studio) || target.dataset.studio,
+            target.dataset.phone,
+            target.dataset.address,
+            source?.dataset.clinic
+          );
+          scrollLocationIntoView();
         });
       });
     }
