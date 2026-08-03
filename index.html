@@ -2862,9 +2862,11 @@
     }
 
     function bindStudioCard(card) {
-      card.addEventListener("click", () => {
+      card.addEventListener("click", (event) => {
+        event.preventDefault();
         locationReturnSource = { type: "studio", element: card };
         selectStudioDetails(studioByReference(card.dataset.studioId || card.dataset.studio) || card.dataset.studio, card.dataset.phone, card.dataset.address);
+        scrollLocationIntoView();
       });
     }
 
