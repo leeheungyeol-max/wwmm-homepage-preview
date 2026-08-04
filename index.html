@@ -2641,6 +2641,7 @@
     const kakaoMapLevel = 5;
     const kakaoMarkerSize = { width: 36, height: 55 };
     let selectedStudioId = "";
+    let selectedLocationDetails = null;
     let nearMeActive = false;
     let defaultAtelierOrder = [];
     let atelierNearMeActive = false;
@@ -2735,6 +2736,28 @@
         && item.lat !== "" && item.lat !== null && item.lat !== undefined
         && item.lng !== "" && item.lng !== null && item.lng !== undefined
         && Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng));
+    }
+
+    function currentLanguage() {
+      return document.documentElement.dataset.language || document.documentElement.lang || "ko";
+    }
+
+    function localizedStudioAddress(studio) {
+      if (currentLanguage() === "ko") return studio.address || "주소 미입력";
+      return studio.addressEn || formatEnglishAddress(studio.address, studio.detailAddress);
+    }
+
+    function renderSelectedStudioDetails(studio, title) {
+      if (selectedStudio && title) selectedStudio.textContent = window.wwmmI18n?.t(title) || title;
+      if (selectedPhone) selectedPhone.textContent = studio.phone || "전화번호 미입력";
+      if (selectedAddress) selectedAddress.textContent = localizedStudioAddress(studio);
+      if (Number.isFinite(studio.distanceKm)) {
+        selectedDistance.textContent = `${window.wwmmI18n?.t("현재 위치에서 약") || "현재 위치에서 약"} ${studio.distanceKm.toFixed(1)} km`;
+        selectedDistance.classList.add("visible");
+      } else {
+        selectedDistance.textContent = "";
+        selectedDistance.classList.remove("visible");
+      }
     }
 
     function studioByReference(reference) {
@@ -2841,18 +2864,10 @@
         ? studioOrName
         : studioByReference(studioOrName) || { name: studioOrName, phone, address };
       const title = displayName || studio.name;
-      if (selectedStudio && title) selectedStudio.textContent = window.wwmmI18n?.t(title) || title;
-      if (selectedPhone) selectedPhone.textContent = studio.phone || "전화번호 미입력";
-      if (selectedAddress) selectedAddress.textContent = studio.addressEn || formatEnglishAddress(studio.address, studio.detailAddress);
+      selectedLocationDetails = { studio, title };
+      renderSelectedStudioDetails(studio, title);
       if (selectedStudioInput && studio.name) selectedStudioInput.value = studio.name;
       selectedStudioId = studio.id || "";
-      if (Number.isFinite(studio.distanceKm)) {
-        selectedDistance.textContent = `${window.wwmmI18n?.t("현재 위치에서 약") || "현재 위치에서 약"} ${studio.distanceKm.toFixed(1)} km`;
-        selectedDistance.classList.add("visible");
-      } else {
-        selectedDistance.textContent = "";
-        selectedDistance.classList.remove("visible");
-      }
       if (hasCoordinates(studio) && kakaoMap) {
         kakaoMap.panTo(new window.kakao.maps.LatLng(studio.lat, studio.lng));
         kakaoMap.setLevel(kakaoMapLevel);
@@ -2860,6 +2875,12 @@
         renderKakaoMap();
       }
     }
+
+    window.addEventListener("wwmm:languagechange", () => {
+      if (selectedLocationDetails) {
+        renderSelectedStudioDetails(selectedLocationDetails.studio, selectedLocationDetails.title);
+      }
+    });
 
     function bindStudioCard(card) {
       card.addEventListener("click", (event) => {
