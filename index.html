@@ -2744,7 +2744,8 @@
 
     function localizedStudioAddress(studio) {
       if (currentLanguage() === "ko") return studio.address || "주소 미입력";
-      return studio.addressEn || formatEnglishAddress(studio.address, studio.detailAddress);
+      if (studio.addressEn && !/[가-힣]/.test(studio.addressEn)) return studio.addressEn;
+      return formatEnglishAddress(studio.address, studio.detailAddress);
     }
 
     function renderSelectedStudioDetails(studio, title) {
@@ -3311,34 +3312,37 @@ window.addEventListener("resize", () => {
       renderKakaoMap();
     }
 
+    function hydrateStaticStudioCards() {
+      studioData = studioCards.map((card, index) => ({
+        id: card.dataset.studioId || `studio_${index + 1}`,
+        name: card.dataset.studio,
+        phone: card.dataset.phone,
+        address: card.dataset.address,
+        addressEn: card.dataset.addressEn,
+        lat: Number(card.dataset.lat) || null,
+        lng: Number(card.dataset.lng) || null,
+        sortOrder: index
+      }));
+      studioCards.forEach((card, index) => {
+        card.dataset.studioId = studioData[index].id;
+        const info = card.querySelector(".studio-info");
+        if (info && !info.querySelector(".studio-distance")) info.insertAdjacentHTML("beforeend", '<p class="studio-distance"></p>');
+      });
+      defaultStudioOrder = studioData.map((card) => card.id);
+      if (studioData[0]) selectStudioDetails(studioData[0]);
+      renderKakaoMap();
+    }
+
     fetch("/api/atelier-cards?resource=studio")
       .then((response) => response.ok ? response.json() : null)
       .then((result) => {
         if (result && result.ok) {
           kakaoMapKey = result.mapKey || "";
           if (result.configured) renderSavedStudioCards(result.cards);
-          else {
-            studioData = studioCards.map((card, index) => ({
-              id: card.dataset.studioId || `studio_${index + 1}`,
-              name: card.dataset.studio,
-              phone: card.dataset.phone,
-              address: card.dataset.address,
-              addressEn: card.dataset.addressEn,
-              lat: Number(card.dataset.lat) || null,
-              lng: Number(card.dataset.lng) || null,
-              sortOrder: index
-            }));
-            studioCards.forEach((card, index) => {
-              card.dataset.studioId = studioData[index].id;
-              const info = card.querySelector(".studio-info");
-              if (info && !info.querySelector(".studio-distance")) info.insertAdjacentHTML("beforeend", '<p class="studio-distance"></p>');
-            });
-            defaultStudioOrder = studioData.map((card) => card.id);
-            renderKakaoMap();
-          }
+          else hydrateStaticStudioCards();
         }
       })
-      .catch(() => {});
+      .catch(hydrateStaticStudioCards);
 
     function distanceKm(lat1, lng1, lat2, lng2) {
       const toRadians = (value) => value * Math.PI / 180;
