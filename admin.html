@@ -2563,6 +2563,16 @@
       return atelierCards.find((card) => card.id === activeAtelierCardId) || null;
     }
 
+    function studioByReference(studioId, studioName) {
+      const id = String(studioId || "").trim();
+      const name = String(studioName || "").trim();
+      return studioCards.find((studio) => (id && studio.id === id) || (name && studio.name === name)) || null;
+    }
+
+    function currentStudioName(card) {
+      return studioByReference(card?.studioId, card?.studio)?.name || card?.studio || "";
+    }
+
     function atelierVersionSnapshot() {
       return Object.fromEntries(atelierCards.map((card) => [card.id, Math.max(0, Number(card.version) || 0)]));
     }
@@ -2755,6 +2765,7 @@
         Object.entries(atelierFields).forEach(([key, input]) => {
           input.value = card[key] || "";
         });
+        atelierFields.studio.value = currentStudioName(card);
         cropStates.portrait = { src: card.portrait || "", zoom: 1, x: 0, y: 0, dirty: false };
         cropStates.clinic = { src: card.clinicImage || "", zoom: 1, x: 0, y: 0, dirty: false };
       }
@@ -2838,8 +2849,8 @@
       atelierEditorNotice.classList.remove("error");
       atelierEditorNotice.textContent = "이미지를 정리하고 카드를 저장하고 있습니다.";
       const [portrait, clinicImage] = await Promise.all([cropImageToDataUrl("portrait"), cropImageToDataUrl("clinic")]);
-      const linkedStudio = studioCards.find((studio) => studio.name === values.studio);
-      const nextCard = { ...current, ...values, studioId: linkedStudio?.id || "", portrait, clinicImage };
+      const linkedStudio = studioByReference(current.studioId, values.studio);
+      const nextCard = { ...current, ...values, studio: linkedStudio?.name || values.studio, studioId: linkedStudio?.id || "", portrait, clinicImage };
 
       const response = await fetch("/api/atelier-cards", {
         method: "PATCH",
