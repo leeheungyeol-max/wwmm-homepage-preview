@@ -1,5 +1,5 @@
 const { readJson, requireMethod, sendJson } = require("./_lib/http");
-const { createReservation, uploadReservationFiles } = require("./_lib/storage");
+const { createReservation } = require("./_lib/storage");
 const { notifyReservation } = require("./_lib/notifications");
 
 function cleanText(value, maxLength = 500) {
@@ -44,21 +44,6 @@ module.exports = async function handler(req, res) {
     }
 
     const reservationId = `wwmm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const requestedUploads = Array.isArray(payload.uploads) ? payload.uploads : [];
-    let uploads = [];
-    let uploadWarning = "";
-
-    try {
-      uploads = await uploadReservationFiles(reservationId, requestedUploads);
-    } catch (error) {
-      uploadWarning = error.message;
-      uploads = requestedUploads.slice(0, 4).map((file) => ({
-        name: cleanText(file.name, 160) || "photo",
-        size: Number(file.size) || 0,
-        type: cleanText(file.type, 80),
-        stored: false
-      }));
-    }
 
     const reservation = await createReservation({
       id: reservationId,
@@ -70,9 +55,9 @@ module.exports = async function handler(req, res) {
       email: cleanText(payload.email, 120),
       preferredDate: cleanText(payload.preferredDate, 40),
       message: cleanText(payload.message, 1000),
-      findLine: Boolean(payload.findLine),
+      findLine: false,
       privacyAccepted: Boolean(payload.privacyAccepted),
-      uploads,
+      uploads: [],
       notifications: {}
     });
 
@@ -85,8 +70,7 @@ module.exports = async function handler(req, res) {
         createdAt: reservation.createdAt,
         status: reservation.status
       },
-      notifications,
-      warnings: uploadWarning ? { uploads: uploadWarning } : {}
+      notifications
     });
   } catch (error) {
     sendJson(res, 500, { ok: false, error: error.message });

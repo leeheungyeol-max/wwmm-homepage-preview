@@ -47,7 +47,7 @@
       en: "Subtle refinements in angle and volume bring the entire face into harmony, revealing an elegance distinctly your own."
     },
     "당신만의 ww'mm line을 찾아 보세요.": { ja: "あなただけのww'mm lineを。", "zh-CN": "遇见专属于你的ww'mm line。", en: "Discover your own ww'mm line." },
-    "사진 두 장이면 충분합니다.": { ja: "必要なのは、2枚の写真だけ。", "zh-CN": "只需两张照片。", en: "Two photographs are all it takes." },
+    "1분이면 충분합니다.": { ja: "必要なのは、わずか1分。", "zh-CN": "只需1分钟。", en: "One minute is all it takes." },
     "심미를 향한 0.01mm의 집요함.": { ja: "美を追求する、0.01mmへのこだわり。", "zh-CN": "于0.01mm之间，执着于美。", en: "An unwavering pursuit of beauty, down to 0.01mm." },
     "완벽한 균형을 위한 테크놀로지.": { ja: "完璧な調和を支える、先端技術。", "zh-CN": "以精密技术，成就理想平衡。", en: "Technology engineered for perfect harmony." },
     "ww'mm은 초정밀 교합 조정을 통해 안모의 완벽한 조화를 실현하며, 스마일 라인과 E-line이 입체적인 조화를 이루는 나만의 ww'mm line을 완성합니다.": {
@@ -107,18 +107,14 @@
     "프라이빗 상담을 통해 고객님의 아름다움을 함께 이야기합니다.": { ja: "プライベートカウンセリングを通して、あなたらしい美しさを丁寧に見つめます。", "zh-CN": "通过私享咨询，与您从容探寻专属之美。", en: "A private consultation devoted to understanding the beauty that is uniquely yours." },
     "프라이빗 1:1": { ja: "プライベート 1:1", "zh-CN": "私享 1:1", en: "Private 1:1" },
     "상담 예약하기": { ja: "カウンセリング予約", "zh-CN": "预约咨询", en: "Consultation" },
-    "본인의 정면 사진과 측면 사진을 보내주세요. 첨단 ww'mm line의 AI 분석 시스템이 얼굴 사진을 입체적으로 분석하여, 0.01mm까지 계산된 가장 품격 있는 ww'mm line을 찾아드립니다.": {
-      ja: "正面と側面、2枚の写真をお送りください。ww'mm lineのAI分析が顔立ちを立体的に読み解き、0.01mmまで緻密に設計した、あなたにふさわしいラインをご提案します。", "zh-CN": "请上传正面与侧面照片。ww'mm line AI分析将立体研判面部结构，为您呈现精准至0.01mm的专属优雅线条。", en: "Send us one front and one profile photograph. The ww'mm line AI analysis studies facial structure in three dimensions to reveal your most refined line, calculated to 0.01mm."
+    "프라이빗 상담을 통해 나에게 가장 어울리는 ww'mm line을 확인해 보세요.": {
+      ja: "プライベートカウンセリングを通して、あなたに最もふさわしいww'mm lineをご確認ください。", "zh-CN": "通过私享咨询，探索最适合您的ww'mm line。", en: "Discover the ww'mm line that suits you best through a private consultation."
     },
     "이름": { ja: "お名前", "zh-CN": "姓名", en: "Name" },
     "전화번호": { ja: "電話番号", "zh-CN": "电话号码", en: "Phone" },
     "이메일": { ja: "メール", "zh-CN": "电子邮箱", en: "Email" },
     "상담 희망 내용": { ja: "ご相談内容", "zh-CN": "咨询内容", en: "How may we assist you?" },
-    "Find my ww'mm line 분석 참여": { ja: "Find my ww'mm line 分析に参加", "zh-CN": "参与Find my ww'mm line分析", en: "Join the Find my ww'mm line analysis" },
-    "정면 사진 촬영/업로드": { ja: "正面写真を撮影／アップロード", "zh-CN": "拍摄／上传正面照片", en: "Capture / Upload Front Photo" },
-    "측면 사진 촬영/업로드": { ja: "側面写真を撮影／アップロード", "zh-CN": "拍摄／上传侧面照片", en: "Capture / Upload Profile Photo" },
-    "카메라 촬영 또는 앨범 선택": { ja: "カメラで撮影、またはライブラリから選択", "zh-CN": "使用相机拍摄或从相册选择", en: "Use camera or choose from library" },
-    "ww'mm(윔)을 통해 눈부시게 변화할 심미적 균형을 미리 확인해 보세요.": { ja: "ww'mmが描く、あなたらしい美しさの調和をひと足先にご体験ください。", "zh-CN": "提前感受ww'mm为您呈现的专属美学平衡。", en: "Preview the refined aesthetic balance that ww'mm can bring to life." },
+    "윔 라인 앱 출시 예정": { ja: "ww'mm line アプリ近日公開", "zh-CN": "ww'mm line 应用即将上线", en: "ww'mm line app coming soon" },
     "개인정보 수집 및 상담 연락에 동의합니다": { ja: "個人情報の収集とご連絡に同意します", "zh-CN": "同意收集个人信息并接受咨询联系", en: "I consent to data collection and consultation contact" },
     "현재 위치에서 약": { ja: "現在地から約", "zh-CN": "距当前位置约", en: "Approximately" },
     "기본 순서로 보기": { ja: "指定順に戻す", "zh-CN": "恢复预设顺序", en: "CURATED ORDER" },
